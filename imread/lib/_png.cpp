@@ -14,6 +14,7 @@ class png_holder {
         png_holder(int m)
             :png_ptr((m == write_mode ? png_create_write_struct : png_create_read_struct)(PNG_LIBPNG_VER_STRING, 0, 0, 0))
             ,png_info(0)
+            ,mode(holder_mode(m))
             { }
         ~png_holder() {
             png_infopp pp = (png_info ? &png_info : 0);
@@ -27,7 +28,7 @@ class png_holder {
 
         png_structp png_ptr;
         png_infop png_info;
-        enum { read_mode, write_mode } mode;
+        enum holder_mode { read_mode, write_mode } mode;
 };
 
 namespace {
