@@ -1,3 +1,6 @@
+// Copyright 2012 Luis Pedro Coelho <luis@luispedro.org>
+// License: MIT (see COPYING.MIT file)
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>

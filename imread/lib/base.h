@@ -1,3 +1,6 @@
+// Copyright 2012 Luis Pedro Coelho <luis@luispedro.org>
+// License: MIT (see COPYING.MIT file)
+
 #ifndef LPC_IMREAD_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012
 #define LPC_IMREAD_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012
 #include <inttypes.h>

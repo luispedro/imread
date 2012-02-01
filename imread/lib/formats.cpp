@@ -1,3 +1,6 @@
+// Copyright 2012 Luis Pedro Coelho <luis@luispedro.org>
+// License: MIT (see COPYING.MIT file)
+
 #include "formats.h"
 #include "_png.h"
 #include <cstring>
