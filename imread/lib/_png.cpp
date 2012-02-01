@@ -61,6 +61,9 @@ void PNGFormat::read(byte_source* src, Image* output) {
         default:
             throw CannotReadError("Unhandled color type");
     }
+    if (png_get_bit_depth(p.png_ptr, p.png_info) != 8) {
+        throw CannotReadError("Can currently only read 8-bit images");
+    }
 
     output->set_size(h, w, d);
     std::vector<png_bytep> rowps;
