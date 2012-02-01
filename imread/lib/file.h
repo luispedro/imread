@@ -8,7 +8,7 @@
 
 #include "base.h"
 
-class fd_source_sink : public byte_source, byte_sink {
+class fd_source_sink : public byte_source, public byte_sink {
     public:
         fd_source_sink(int fd)
             :fd_(fd)

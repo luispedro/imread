@@ -31,6 +31,18 @@ struct ProgrammingError : std::exception {
     const char* w;
 };
 
-struct CannotReadError : std::exception { };
+struct CannotReadError : std::exception {
+    CannotReadError(const char* w)
+        :w(w)
+        { }
+    CannotReadError()
+        :w(0)
+        { }
+
+    const char* what() const throw() { return w ? w : "Read Error"; }
+    const char* w;
+
+};
+struct CannotWriteError : std::exception { };
 
 #endif // LPC_ERRORS_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012

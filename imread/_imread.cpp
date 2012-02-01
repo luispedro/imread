@@ -29,7 +29,7 @@ PyObject* py_imread(PyObject* self, PyObject* args) {
         PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
         return NULL;
     }
-    int fd = ::open(filename, 0);
+    int fd = ::open(filename, O_RDONLY);
     if (fd < 0) {
         PyErr_SetString(PyExc_OSError, "File does not exist");
         return 0;
@@ -50,9 +50,40 @@ PyObject* py_imread(PyObject* self, PyObject* args) {
     }
 }
 
+PyObject* py_imsave(PyObject* self, PyObject* args) {
+    const char* filename;
+    const char* formatstr;
+    PyArrayObject* array;
+    if (!PyArg_ParseTuple(args, "ssO", &filename, &formatstr, &array) || !PyArray_Check(array)) {
+        PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
+        return NULL;
+    }
+    int fd = ::open(filename, O_CREAT|O_WRONLY, 0644);
+    if (fd < 0) {
+        PyErr_SetString(PyExc_OSError, "File does not exist");
+        return 0;
+    }
+
+    Py_INCREF(array);
+    try {
+        NumpyImage input(array);
+        std::auto_ptr<byte_sink> output(new fd_source_sink(fd));
+        std::auto_ptr<ImageFormat> format(get_format(formatstr));
+        format->write(&input, output.get());
+        Py_RETURN_NONE;
+    } catch (const std::exception& e) {
+        PyErr_SetString(PyExc_RuntimeError, e.what());
+        return 0;
+    } catch (...) {
+        PyErr_SetString(PyExc_RuntimeError, "Mysterious error");
+        return 0;
+    }
+}
+
 
 PyMethodDef methods[] = {
   {"imread",(PyCFunction)py_imread, METH_VARARGS, NULL},
+  {"imsave",(PyCFunction)py_imsave, METH_VARARGS, NULL},
   {NULL, NULL,0,NULL},
 };
 

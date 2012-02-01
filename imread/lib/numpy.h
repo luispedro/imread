@@ -13,8 +13,8 @@ extern "C" {
 
 class NumpyImage : public Image {
     public:
-        NumpyImage()
-            :array_(0)
+        NumpyImage(PyArrayObject* array = 0)
+            :array_(array)
             { }
 
         ~NumpyImage() {
@@ -36,7 +36,7 @@ class NumpyImage : public Image {
                     PyArray_DIM(array_, 0) == h &&
                     PyArray_DIM(array_, 1) == w &&
                     ((d == -1 && PyArray_NDIM(array_) == 2) ||
-                     (PyArray_NDIM(array_) == 3 && PyArray_DIM(array_) == d))
+                     (PyArray_NDIM(array_) == 3 && PyArray_DIM(array_, 2) == d))
                     ) return;
 
             Py_XDECREF(array_);
@@ -49,7 +49,16 @@ class NumpyImage : public Image {
             if (!array_) throw std::bad_alloc();
         }
 
-        void* rowp(int r) {
+        virtual int ndims() const {
+            if (!array_) throw ProgrammingError();
+            return PyArray_NDIM(array_);
+        }
+        virtual int dim(int d) const {
+            if (!array_ || d >= this->ndims()) throw ProgrammingError();
+            return PyArray_DIM(array_, d);
+        }
+
+        virtual void* rowp(int r) {
             if (!array_) throw ProgrammingError();
             if (r >= PyArray_DIM(array_, 0)) throw ProgrammingError();
             return PyArray_GETPTR1(array_, r);

@@ -26,6 +26,7 @@ class byte_sink {
         virtual ~byte_sink() { }
 
         virtual size_t write(const byte* buffer, size_t n) = 0;
+        virtual void flush() { }
 };
 
 class Image {
@@ -34,6 +35,9 @@ class Image {
 
         virtual void set_size(int w, int h, int d=-1) = 0;
         virtual void* rowp(int r) = 0;
+
+        virtual int ndims() const = 0;
+        virtual int dim(int) const = 0;
 
         template<typename T>
         T* rowp_as(const int r) {
