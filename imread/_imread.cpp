@@ -35,11 +35,19 @@ PyObject* py_imread(PyObject* self, PyObject* args) {
         return 0;
     }
 
-    NumpyImage output;
-    std::auto_ptr<byte_source> input(new fd_source_sink(fd));
-    std::auto_ptr<ImageFormat> format(get_format("png"));
-    format->read(input.get(), &output);
-    return output.releasePyObject();
+    try {
+        NumpyImage output;
+        std::auto_ptr<byte_source> input(new fd_source_sink(fd));
+        std::auto_ptr<ImageFormat> format(get_format("png"));
+        format->read(input.get(), &output);
+        return output.releasePyObject();
+    } catch (const std::exception& e) {
+        PyErr_SetString(PyExc_RuntimeError, e.what());
+        return 0;
+    } catch (...) {
+        PyErr_SetString(PyExc_RuntimeError, "Mysterious error");
+        return 0;
+    }
 }
 
 
