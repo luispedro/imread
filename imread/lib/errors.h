@@ -43,6 +43,16 @@ struct CannotReadError : std::exception {
     const char* w;
 
 };
-struct CannotWriteError : std::exception { };
+struct CannotWriteError : std::exception {
+    CannotWriteError(const char* w)
+        :w(w)
+        { }
+    CannotWriteError()
+        :w(0)
+        { }
+
+    const char* what() const throw() { return w ? w : "Write Error"; }
+    const char* w;
+};
 
 #endif // LPC_ERRORS_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012

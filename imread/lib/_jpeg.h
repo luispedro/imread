@@ -12,7 +12,7 @@ class JPEGFormat : public ImageFormat {
         bool can_write() const { return true; }
 
         void read(byte_source* src, Image* output);
-        //void write(Image* input, byte_sink* output);
+        void write(Image* input, byte_sink* output);
 };
 
 
