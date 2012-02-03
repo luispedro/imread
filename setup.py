@@ -24,13 +24,13 @@ if os.environ.get('DEBUG'):
     undef_macros=['NDEBUG']
 
 extensions = {
-    'imread._imread': ['imread/_imread.cpp', 'imread/lib/formats.cpp', 'imread/lib/_png.cpp'],
+    'imread._imread': ['imread/_imread.cpp', 'imread/lib/formats.cpp', 'imread/lib/_png.cpp', 'imread/lib/_jpeg.cpp'],
 }
 
 ext_modules = [
     numpyutils.Extension(
         key,
-        libraries=['png'],
+        libraries=['png', 'jpeg'],
         sources=sources,
         undef_macros=undef_macros
         ) for key,sources in extensions.iteritems()]

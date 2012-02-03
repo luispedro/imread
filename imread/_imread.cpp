@@ -34,11 +34,17 @@ PyObject* py_imread(PyObject* self, PyObject* args) {
         PyErr_SetString(PyExc_OSError, "File does not exist");
         return 0;
     }
+    const char* formatstr = strchr(filename, '.');
+    if (!formatstr) {
+        PyErr_SetString(PyExc_RuntimeError, "Cannot read extension");
+        return NULL;
+    }
+    ++formatstr;
 
     try {
         NumpyImage output;
         std::auto_ptr<byte_source> input(new fd_source_sink(fd));
-        std::auto_ptr<ImageFormat> format(get_format("png"));
+        std::auto_ptr<ImageFormat> format(get_format(formatstr));
         format->read(input.get(), &output);
         return output.releasePyObject();
     } catch (const std::exception& e) {
