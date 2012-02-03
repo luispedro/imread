@@ -31,7 +31,7 @@ class NumpyImage : public Image {
             return reinterpret_cast<PyObject*>(this->release());
         }
 
-        void set_size(int w, int h, int d = -1) {
+        void set_size(int h, int w, int d = -1) {
             if (array_ &&
                     PyArray_DIM(array_, 0) == h &&
                     PyArray_DIM(array_, 1) == w &&
