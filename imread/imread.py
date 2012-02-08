@@ -22,11 +22,7 @@ def imread(filename):
     -------
     im : ndarray
     '''
-    dot = filename.rfind('.')
-    if dot < 0:
-        raise ValueError('imread.imread: Cannot determine file type from filename (%s)' % filename)
-    formatstr = filename[1+dot:]
-    return _imread.imread(filename, formatstr)
+    return _imread.imread(filename)
 
 
 def imsave(filename, array):
