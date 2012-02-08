@@ -19,6 +19,17 @@ class byte_source {
         virtual bool can_seek() const { return false; }
         virtual void seek_absolute(size_t) { throw NotImplementedError(); }
         virtual void seek_relative(int) { throw NotImplementedError(); }
+        virtual void seek_forward(size_t n) {
+            if (n <= 0) return;
+            byte buffer[128];
+
+            while (n >= sizeof(buffer)) {
+                const size_t r = this->read(buffer, sizeof(buffer));
+                if (r < sizeof(buffer)) return;
+                n -= r;
+            }
+            this->read(buffer, n);
+        }
 };
 
 class byte_sink {
