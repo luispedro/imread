@@ -23,6 +23,8 @@ class fd_source_sink : public byte_source, public byte_sink {
         virtual void seek_absolute(size_t pos) { ::lseek(fd_, pos, SEEK_SET); }
         virtual void seek_relative(int delta) { ::lseek(fd_, delta, SEEK_CUR); }
 
+        virtual size_t position() const { return ::lseek(fd_, 0, SEEK_CUR); }
+
         virtual size_t write(const byte* buffer, size_t n) {
             return ::write(fd_, buffer, n);
         }

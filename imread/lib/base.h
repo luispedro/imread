@@ -16,6 +16,8 @@ class byte_source {
 
         virtual size_t read(byte* buffer, size_t) = 0;
 
+        virtual size_t position() const { throw NotImplementedError(); }
+
         virtual bool can_seek() const { return false; }
         virtual void seek_absolute(size_t) { throw NotImplementedError(); }
         virtual void seek_relative(int) { throw NotImplementedError(); }
