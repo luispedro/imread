@@ -1,4 +1,6 @@
-from nose.tools import with_setup
+from nose.tools import with_setup, raises
+import numpy as np
+from imread import imread
 from imread import _imread
 import numpy as np
 
@@ -26,3 +28,8 @@ def test_asym():
     _imread.imsave(_filename, 'png', simple)
     back = _imread.imread(_filename)
     assert np.all(simple == back)
+
+
+@raises(RuntimeError)
+def test_error():
+    imread('imread/tests/data/error.png')

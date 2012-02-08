@@ -1,6 +1,7 @@
-from nose.tools import with_setup
+from nose.tools import with_setup, raises
 import numpy as np
 from imread import _imread
+from imread import imread
 _filename = 'imread_testing_file.jpg'
 
 def _remove_file():
@@ -18,3 +19,12 @@ def test_jpeg():
     _imread.imsave(_filename, 'jpeg', f)
     g = _imread.imread(_filename).squeeze()
     assert np.mean(np.abs(f.astype(float)-g)) < 1.
+
+
+@raises(RuntimeError)
+def test_error():
+    imread('imread/tests/data/error.jpg')
+
+@raises(OSError)
+def test_error():
+    imread('imread/tests/data/this-file-does-not-exist.jpeg')
