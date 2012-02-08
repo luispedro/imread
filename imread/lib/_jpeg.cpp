@@ -4,12 +4,15 @@
 #include "_jpeg.h"
 
 #include <stdio.h>
+#include <setjmp.h>
+
 extern "C" {
 #include <jpeglib.h>
 }
 
 namespace {
 const size_t buffer_size = 4096;
+
 
 struct jpeg_source_adaptor {
     jpeg_source_mgr mgr;
@@ -97,73 +100,104 @@ jpeg_dst_adaptor::jpeg_dst_adaptor(byte_sink* s)
         mgr.empty_output_buffer = empty_output_buffer;
         mgr.term_destination = flush_output_buffer;
     }
+
+struct jpeg_decompress_holder {
+    jpeg_decompress_holder() { jpeg_create_decompress(&info); }
+    ~jpeg_decompress_holder() { jpeg_destroy_decompress(&info); }
+
+    jpeg_decompress_struct info;
+};
+
+struct jpeg_compress_holder {
+    jpeg_compress_holder() { jpeg_create_compress(&info); }
+    ~jpeg_compress_holder() { jpeg_destroy_compress(&info); }
+
+    jpeg_compress_struct info;
+};
+
+struct error_mgr {
+    error_mgr();
+
+    struct jpeg_error_mgr pub;
+    jmp_buf setjmp_buffer;
+};
+
+void err_long_jump(j_common_ptr cinfo) {
+  error_mgr* err = reinterpret_cast<error_mgr*>(cinfo->err);
+  longjmp(err->setjmp_buffer, 1);
 }
+
+
+error_mgr::error_mgr() {
+    jpeg_std_error(&pub);
+    pub.error_exit = err_long_jump;
+}
+
+inline
+J_COLOR_SPACE color_space(int components) {
+    if (components == 1) return JCS_GRAYSCALE;
+    if (components == 3) return JCS_RGB;
+    throw CannotWriteError("unsupported image dimensions");
+}
+
+} // namespace
 
 void JPEGFormat::read(byte_source* src, Image* output) {
     jpeg_source_adaptor adaptor(src);
-
-    jpeg_decompress_struct cinfo;
-    jpeg_create_decompress(&cinfo);
+    jpeg_decompress_holder c;
 
     // error management
-    jpeg_error_mgr error;
-    cinfo.err = jpeg_std_error(&error);
+    error_mgr jerr;
+    c.info.err = &jerr.pub;
 
     // source
-    cinfo.src = &adaptor.mgr;
+    c.info.src = &adaptor.mgr;
 
+    if (setjmp(jerr.setjmp_buffer)) {
+        throw CannotReadError();
+    }
     // now read the header & image data
-    jpeg_read_header(&cinfo, TRUE);
-    jpeg_start_decompress(&cinfo);
-    const int h = cinfo.output_height;
-    const int w = cinfo.output_width;
-    const int d = cinfo.output_components;
+    jpeg_read_header(&c.info, TRUE);
+    jpeg_start_decompress(&c.info);
+    const int h = c.info.output_height;
+    const int w = c.info.output_width;
+    const int d = c.info.output_components;
     output->set_size(h, w, d);
 
     for (int r = 0; r != h; ++r) {
         byte* rowp = output->rowp_as<byte>(r);
-        jpeg_read_scanlines(&cinfo, &rowp, 1);
+        jpeg_read_scanlines(&c.info, &rowp, 1);
     }
-    jpeg_finish_decompress(&cinfo);
-    jpeg_destroy_decompress(&cinfo);
+    jpeg_finish_decompress(&c.info);
 }
+
 
 void JPEGFormat::write(Image* input, byte_sink* output) {
     jpeg_dst_adaptor adaptor(output);
-
-    jpeg_compress_struct cinfo;
-    jpeg_create_compress(&cinfo);
+    jpeg_compress_holder c;
 
     // error management
-    jpeg_error_mgr jerr;
-    cinfo.err = jpeg_std_error(&jerr);
-    cinfo.err->trace_level = 128;
+    error_mgr jerr;
+    c.info.err = &jerr.pub;
+    c.info.dest = &adaptor.mgr;
 
-    cinfo.dest = &adaptor.mgr;
-
-    cinfo.image_height = input->dim(0);
-    cinfo.image_width = input->dim(1);
-    cinfo.input_components = (input->ndims() > 2 ? input->dim(2) : 1);
-    switch (cinfo.input_components) {
-        case 1:
-            cinfo.in_color_space = JCS_GRAYSCALE;
-            break;
-        case 3:
-            cinfo.in_color_space = JCS_RGB;
-            break;
-        default:
-            throw CannotWriteError("unsupported image dimensions");
+    if (setjmp(jerr.setjmp_buffer)) {
+        throw CannotWriteError();
     }
 
-    jpeg_set_defaults(&cinfo);
-    jpeg_start_compress(&cinfo, TRUE);
+    c.info.image_height = input->dim(0);
+    c.info.image_width = input->dim(1);
+    c.info.input_components = (input->ndims() > 2 ? input->dim(2) : 1);
+    c.info.in_color_space = color_space(c.info.input_components);
 
-    while (cinfo.next_scanline < cinfo.image_height) {
-        JSAMPROW rowp = static_cast<JSAMPROW>(input->rowp_as<void>(cinfo.next_scanline));
-        (void) jpeg_write_scanlines(&cinfo, &rowp, 1);
+    jpeg_set_defaults(&c.info);
+    jpeg_start_compress(&c.info, TRUE);
+
+    while (c.info.next_scanline < c.info.image_height) {
+        JSAMPROW rowp = static_cast<JSAMPROW>(input->rowp_as<void>(c.info.next_scanline));
+        (void) jpeg_write_scanlines(&c.info, &rowp, 1);
     }
-    jpeg_finish_compress(&cinfo);
-    jpeg_destroy_compress(&cinfo);
+    jpeg_finish_compress(&c.info);
 }
 
 
