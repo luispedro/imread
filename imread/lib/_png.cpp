@@ -3,6 +3,7 @@
 
 #include "base.h"
 #include "_png.h"
+#include "tools.h"
 
 #include <png.h>
 
@@ -90,11 +91,7 @@ void PNGFormat::read(byte_source* src, Image* output) {
     }
 
     output->set_size(h, w, d);
-    std::vector<png_bytep> rowps;
-    for (int r = 0; r != h; ++r) {
-        png_byte* rowp = output->rowp_as<png_byte>(r);
-        rowps.push_back(rowp);
-    }
+    std::vector<png_bytep> rowps = allrows<png_byte>(*output);
     png_read_image(p.png_ptr, &rowps[0]);
 }
 
@@ -115,10 +112,7 @@ void PNGFormat::write(Image* input, byte_sink* output) {
                      PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
     png_write_info(p.png_ptr, p.png_info);
 
-    std::vector<png_bytep> rowps;
-    for (int r = 0; r != height; ++r) {
-        rowps.push_back(input->rowp_as<png_byte>(r));
-    }
+    std::vector<png_bytep> rowps = allrows<png_byte>(*input);
     png_write_image(p.png_ptr, &rowps[0]);
     png_write_end(p.png_ptr, p.png_info);
 }
