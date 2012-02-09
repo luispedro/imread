@@ -10,17 +10,23 @@
 
 typedef uint8_t byte;
 
-class byte_source {
+struct seekable {
+        virtual bool can_seek() const { return false; }
+
+        virtual void seek_absolute(size_t) { throw NotImplementedError(); }
+        virtual void seek_relative(int) { throw NotImplementedError(); }
+        virtual void seek_forward(size_t n) { throw NotImplementedError(); }
+        virtual void seek_end(int) { throw NotImplementedError(); }
+
+        virtual size_t position() const { throw NotImplementedError(); }
+};
+
+class byte_source : virtual public seekable {
     public:
         virtual ~byte_source() { }
 
         virtual size_t read(byte* buffer, size_t) = 0;
 
-        virtual size_t position() const { throw NotImplementedError(); }
-
-        virtual bool can_seek() const { return false; }
-        virtual void seek_absolute(size_t) { throw NotImplementedError(); }
-        virtual void seek_relative(int) { throw NotImplementedError(); }
         virtual void seek_forward(size_t n) {
             if (n <= 0) return;
             byte buffer[128];
@@ -34,7 +40,7 @@ class byte_source {
         }
 };
 
-class byte_sink {
+class byte_sink : virtual public seekable {
     public:
         virtual ~byte_sink() { }
 
@@ -51,6 +57,11 @@ class Image {
 
         virtual int ndims() const = 0;
         virtual int dim(int) const = 0;
+
+        virtual int dim_or(int dim, int def) const {
+            if (dim >= this->ndims()) return def;
+            return this->dim(dim);
+        }
 
         template<typename T>
         T* rowp_as(const int r) {
