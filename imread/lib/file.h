@@ -20,11 +20,10 @@ class fd_source_sink : public byte_source, public byte_sink {
             return ::read(fd_, buffer, n);
         }
         virtual bool can_seek() const { return true; }
-        virtual void seek_absolute(size_t pos) { ::lseek(fd_, pos, SEEK_SET); }
-        virtual void seek_relative(int delta) { ::lseek(fd_, delta, SEEK_CUR); }
-        virtual void seek_end(int delta) { ::lseek(fd_, delta, SEEK_END); }
+        virtual size_t seek_absolute(size_t pos) { return ::lseek(fd_, pos, SEEK_SET); }
+        virtual size_t seek_relative(int delta) { return ::lseek(fd_, delta, SEEK_CUR); }
+        virtual size_t seek_end(int delta) { return ::lseek(fd_, delta, SEEK_END); }
 
-        virtual size_t position() const { return ::lseek(fd_, 0, SEEK_CUR); }
 
         virtual size_t write(const byte* buffer, size_t n) {
             return ::write(fd_, buffer, n);

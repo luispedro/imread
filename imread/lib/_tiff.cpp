@@ -4,7 +4,6 @@
 #include "base.h"
 #include "_tiff.h"
 #include "tools.h"
-#include <iostream>
 
 extern "C" {
    #include <tiffio.h>
@@ -21,14 +20,12 @@ tsize_t tiff_write(thandle_t handle, void* data, tsize_t n) {
 }
 template<typename T>
 toff_t tiff_seek(thandle_t handle, toff_t off, int whence) {
-    std::cerr << "SEEK(" << off << ", " << whence << ")\n";
     T* s = static_cast<T*>(handle);
     switch (whence) {
-        case SEEK_SET: s->seek_absolute(off); return s->position();
-        case SEEK_CUR: s->seek_relative(off); return s->position();
-        case SEEK_END: s->seek_end(off); return s->position();
+        case SEEK_SET: return s->seek_absolute(off);
+        case SEEK_CUR: return s->seek_relative(off);
+        case SEEK_END: return s->seek_end(off);
     }
-    std::cerr << "still here\n";
     return -1;
 }
 int tiff_close(thandle_t handle) { return 0; }
