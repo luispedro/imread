@@ -25,9 +25,9 @@ def imread(filename):
     return _imread.imread(filename)
 
 
-def imsave(filename, array):
+def imsave(filename, array, formatstr=None):
     '''
-    imsave(filename, array)
+    imsave(filename, array, formatstr={auto-detect})
 
     Writes `array` into file `filename`
 
@@ -36,6 +36,13 @@ def imsave(filename, array):
     filename : str
         path on file system
     array : ndarray-like
+    formatstr: str, optional
+        format string
     '''
     array = np.asanyarray(array)
-    _imread.imsave(filename, array)
+    if formatstr is None:
+        dot = filename.rfind('.')
+        if dot < 0:
+            raise ValueError('imread.imsave: dot not found in filename (%s)' % filename)
+        formatstr = filename[dot+1:]
+    _imread.imsave(filename, formatstr, array)
