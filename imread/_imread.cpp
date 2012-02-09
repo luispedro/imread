@@ -21,7 +21,7 @@ namespace{
 
 const char TypeErrorMsg[] =
     "Type not understood. "
-    "This is caused by either a direct call to _convolve (which is dangerous: types are not checked!) or a bug in convolve.py.\n";
+    "This is caused by either a direct call to _imread (which is dangerous: types are not checked!) or a bug in imread.py.\n";
 
 PyObject* py_imread(PyObject* self, PyObject* args) {
     const char* filename;
