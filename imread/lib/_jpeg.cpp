@@ -142,7 +142,7 @@ J_COLOR_SPACE color_space(int components) {
 
 } // namespace
 
-void JPEGFormat::read(byte_source* src, Image* output) {
+std::auto_ptr<Image> JPEGFormat::read(byte_source* src, ImageFactory* factory) {
     jpeg_source_adaptor adaptor(src);
     jpeg_decompress_holder c;
 
@@ -162,13 +162,14 @@ void JPEGFormat::read(byte_source* src, Image* output) {
     const int h = c.info.output_height;
     const int w = c.info.output_width;
     const int d = c.info.output_components;
-    output->set_size(h, w, d);
+    std::auto_ptr<Image> output(factory->create<byte>(h, w, d));
 
     for (int r = 0; r != h; ++r) {
         byte* rowp = output->rowp_as<byte>(r);
         jpeg_read_scanlines(&c.info, &rowp, 1);
     }
     jpeg_finish_decompress(&c.info);
+    return output;
 }
 
 

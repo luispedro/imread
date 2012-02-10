@@ -52,7 +52,7 @@ T tiff_get(const tif_holder& t, const int tag) {
 } // namespace
 
 
-void TIFFFormat::read(byte_source* src, Image* output) {
+std::auto_ptr<Image> TIFFFormat::read(byte_source* src, ImageFactory* factory) {
     tif_holder t = TIFFClientOpen(
                     "internal",
                     "r",
@@ -73,7 +73,7 @@ void TIFFFormat::read(byte_source* src, Image* output) {
     if (bits_per_sample != 8) {
         throw CannotReadError("Can only handle 8 bit images");
     }
-    output->set_size(h, w, (nr_samples > 1 ? nr_samples : -1));
+    std::auto_ptr<Image> output(factory->create<byte>(h, w, (nr_samples > 1 ? nr_samples : -1)));
 
     const tsize_t strip_size = TIFFStripSize(t.tif);
     const tsize_t nr_strips = TIFFNumberOfStrips(t.tif);
@@ -86,6 +86,7 @@ void TIFFFormat::read(byte_source* src, Image* output) {
         }
         start += nbytes;
     }
+    return output;
 }
 
 void TIFFFormat::write(Image* input, byte_sink* output) {

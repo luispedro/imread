@@ -61,7 +61,7 @@ int color_type_of(Image* im) {
     throw CannotWriteError();
 }
 }
-void PNGFormat::read(byte_source* src, Image* output) {
+std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory) {
     png_holder p(png_holder::read_mode);
     if (setjmp(png_jmpbuf(p.png_ptr))) {
         throw CannotReadError();
@@ -90,9 +90,11 @@ void PNGFormat::read(byte_source* src, Image* output) {
         throw CannotReadError("Can currently only read 8-bit images");
     }
 
-    output->set_size(h, w, d);
+    std::auto_ptr<Image> output(factory->create<byte>(h, w, d));
     std::vector<png_bytep> rowps = allrows<png_byte>(*output);
     png_read_image(p.png_ptr, &rowps[0]);
+
+    return output;
 }
 
 void PNGFormat::write(Image* input, byte_sink* output) {

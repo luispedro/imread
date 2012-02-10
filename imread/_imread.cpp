@@ -42,14 +42,15 @@ PyObject* py_imread(PyObject* self, PyObject* args) {
     ++formatstr;
 
     try {
-        NumpyImage output;
+        NumpyFactory factory;
         std::auto_ptr<byte_source> input(new fd_source_sink(fd));
         std::auto_ptr<ImageFormat> format(get_format(formatstr));
         if (!format->can_read()) {
             throw CannotReadError("Cannot read this format");
         }
-        format->read(input.get(), &output);
-        return output.releasePyObject();
+        std::auto_ptr<Image> output = format->read(input.get(), &factory);
+        return static_cast<NumpyImage&>(*output).releasePyObject();
+
     } catch (const std::exception& e) {
         PyErr_SetString(PyExc_RuntimeError, e.what());
         return 0;
