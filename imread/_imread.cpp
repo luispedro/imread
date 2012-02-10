@@ -45,6 +45,9 @@ PyObject* py_imread(PyObject* self, PyObject* args) {
         NumpyImage output;
         std::auto_ptr<byte_source> input(new fd_source_sink(fd));
         std::auto_ptr<ImageFormat> format(get_format(formatstr));
+        if (!format->can_read()) {
+            throw CannotReadError("Cannot read this format");
+        }
         format->read(input.get(), &output);
         return output.releasePyObject();
     } catch (const std::exception& e) {
@@ -75,6 +78,9 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
         NumpyImage input(array);
         std::auto_ptr<byte_sink> output(new fd_source_sink(fd));
         std::auto_ptr<ImageFormat> format(get_format(formatstr));
+        if (!format->can_write()) {
+            throw CannotWriteError("Cannot write this format");
+        }
         format->write(&input, output.get());
         Py_RETURN_NONE;
     } catch (const std::exception& e) {
