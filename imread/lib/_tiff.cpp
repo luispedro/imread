@@ -39,6 +39,16 @@ struct tif_holder {
     ~tif_holder() { TIFFClose(tif); }
     TIFF* tif;
 };
+
+template <typename T>
+inline
+T tiff_get(const tif_holder& t, const int tag) {
+    T val;
+    if (!TIFFGetField(t.tif, tag, &val)) {
+        throw CannotReadError("Cannot find necessary tag");
+    }
+    return val;
+}
 } // namespace
 
 
@@ -54,12 +64,27 @@ void TIFFFormat::read(byte_source* src, Image* output) {
                     tiff_size,
                     NULL,
                     NULL);
-    uint32 w, h;
-	TIFFGetField(t.tif, TIFFTAG_IMAGEWIDTH, &w);
-	TIFFGetField(t.tif, TIFFTAG_IMAGELENGTH, &h);
-    output->set_size(h, w, 4);
-    if (!TIFFReadRGBAImageOriented(t.tif, w, h, output->rowp_as<uint32>(0), ORIENTATION_TOPLEFT, 0)) {
-        throw CannotReadError("Error reading TIFF file");
+    const uint32 h = tiff_get<uint32>(t, TIFFTAG_IMAGELENGTH);
+    const uint32 w = tiff_get<uint32>(t, TIFFTAG_IMAGEWIDTH);
+    const uint16 nr_samples = tiff_get<uint16>(t, TIFFTAG_SAMPLESPERPIXEL);
+    const uint16 bits_per_sample = tiff_get<uint16>(t, TIFFTAG_BITSPERSAMPLE);
+
+
+    if (bits_per_sample != 8) {
+        throw CannotReadError("Can only handle 8 bit images");
+    }
+    output->set_size(h, w, (nr_samples > 1 ? nr_samples : -1));
+
+    const tsize_t strip_size = TIFFStripSize(t.tif);
+    const tsize_t nr_strips = TIFFNumberOfStrips(t.tif);
+
+    byte* start = output->rowp_as<byte>(0);
+    for (int s = 0; s != nr_strips; ++s) {
+        const tsize_t nbytes = TIFFReadEncodedStrip(t.tif, s, start, strip_size);
+        if (nbytes == tsize_t(-1)) {
+            throw CannotReadError("Error reading strip");
+        }
+        start += nbytes;
     }
 }
 
