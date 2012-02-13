@@ -33,9 +33,17 @@ toff_t tiff_size(thandle_t handle) {
     throw NotImplementedError();
 }
 
+void tiff_error(const char* module, const char* fmt, va_list ap) {
+    //char buffer[4096];
+    //vsnprintf(buffer, sizeof(buffer), fmt, ap);
+    //std::string error_message(buffer);
+    throw CannotReadError("Libtiff error");
+}
+
 struct tif_holder {
     tif_holder(TIFF* tif)
-        :tif(tif) { }
+        :tif(tif)
+        { TIFFSetErrorHandler(tiff_error); }
     ~tif_holder() { TIFFClose(tif); }
     TIFF* tif;
 };
