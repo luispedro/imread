@@ -12,11 +12,12 @@
 typedef uint8_t byte;
 
 struct seekable {
-        virtual bool can_seek() const { return false; }
+    virtual ~seekable() { }
+    virtual bool can_seek() const { return false; }
 
-        virtual size_t seek_absolute(size_t) { throw NotImplementedError(); }
-        virtual size_t seek_relative(int) { throw NotImplementedError(); }
-        virtual size_t seek_end(int) { throw NotImplementedError(); }
+    virtual size_t seek_absolute(size_t) { throw NotImplementedError(); }
+    virtual size_t seek_relative(int) { throw NotImplementedError(); }
+    virtual size_t seek_end(int) { throw NotImplementedError(); }
 };
 
 class byte_source : virtual public seekable {
