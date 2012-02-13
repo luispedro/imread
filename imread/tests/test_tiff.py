@@ -19,3 +19,7 @@ def test_read_back():
     imsave(_filename, simple)
     back = imread(_filename)
     assert np.all(simple == back)
+
+@raises(RuntimeError)
+def test_error():
+    imread('imread/tests/data/error.tif')
