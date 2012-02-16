@@ -10,10 +10,16 @@
 #include <cstring>
 #include <vector>
 
+namespace {
+
+void throw_error(png_structp png_ptr, png_const_charp error_msg) {
+    throw CannotReadError(error_msg);
+}
+
 class png_holder {
     public:
         png_holder(int m)
-            :png_ptr((m == write_mode ? png_create_write_struct : png_create_read_struct)(PNG_LIBPNG_VER_STRING, 0, 0, 0))
+            :png_ptr((m == write_mode ? png_create_write_struct : png_create_read_struct)(PNG_LIBPNG_VER_STRING, 0, throw_error, 0))
             ,png_info(0)
             ,mode(holder_mode(m))
             { }
@@ -32,7 +38,6 @@ class png_holder {
         enum holder_mode { read_mode, write_mode } mode;
 };
 
-namespace {
 void read_from_source(png_structp png_ptr, png_byte* buffer, size_t n) {
     byte_source* s = static_cast<byte_source*>(png_get_io_ptr(png_ptr));
     const size_t actual = s->read(reinterpret_cast<byte*>(buffer), n);
@@ -63,9 +68,6 @@ int color_type_of(Image* im) {
 }
 std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory) {
     png_holder p(png_holder::read_mode);
-    if (setjmp(png_jmpbuf(p.png_ptr))) {
-        throw CannotReadError();
-    }
     png_set_read_fn(p.png_ptr, src, read_from_source);
     p.create_info();
     png_read_info(p.png_ptr, p.png_info);
@@ -105,9 +107,6 @@ void PNGFormat::write(Image* input, byte_sink* output) {
     const int width = input->dim(1);
     const int bit_depth = 8;
     const int color_type = color_type_of(input);
-    if (setjmp(png_jmpbuf(p.png_ptr))) {
-        throw CannotWriteError();
-    }
 
     png_set_IHDR(p.png_ptr, p.png_info, width, height,
                      bit_depth, color_type, PNG_INTERLACE_NONE,
