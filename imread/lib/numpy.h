@@ -57,7 +57,16 @@ class NumpyFactory : public ImageFactory {
             dims[1] = w;
             dims[2] = d;
             const npy_intp nd = 2 + (d != -1);
-            PyArrayObject* array = reinterpret_cast<PyArrayObject*>(PyArray_SimpleNew(nd, dims, NPY_UINT8));
+            int dtype = -1;
+            switch (code) {
+                case uint8_v: dtype = NPY_UINT8; break;
+                case uint16_v: dtype = NPY_UINT16; break;
+                case uint32_v: dtype = NPY_UINT32; break;
+                default:
+                    throw ProgrammingError("Cannot handle this code");
+            }
+
+            PyArrayObject* array = reinterpret_cast<PyArrayObject*>(PyArray_SimpleNew(nd, dims, dtype));
             if (!array) throw std::bad_alloc();
             try {
                 return new NumpyImage(array);
