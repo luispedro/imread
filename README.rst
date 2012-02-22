@@ -13,6 +13,10 @@ This grew out of frustration at current image loading solutions in Python, in
 either my packages [mahotas] or packages from others [scikits.image, for
 example].
 
+The relationship with numpy is very contained and this could be easily
+repurposed to load images in other frameworks, even other programming
+languages.
+
 Dependencies
 ~~~~~~~~~~~~
 
