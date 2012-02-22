@@ -76,12 +76,19 @@ std::auto_ptr<Image> TIFFFormat::read(byte_source* src, ImageFactory* factory) {
     const uint32 w = tiff_get<uint32>(t, TIFFTAG_IMAGEWIDTH);
     const uint16 nr_samples = tiff_get<uint16>(t, TIFFTAG_SAMPLESPERPIXEL);
     const uint16 bits_per_sample = tiff_get<uint16>(t, TIFFTAG_BITSPERSAMPLE);
+    const int depth = nr_samples > 1 ? nr_samples : -1;
 
-
-    if (bits_per_sample != 8) {
-        throw CannotReadError("Can only handle 8 bit images");
+    std::auto_ptr<Image> output;
+    switch (bits_per_sample) {
+        case 8:
+            output.reset(factory->create<byte>(h, w, depth));
+            break;
+        case 16:
+            output.reset(factory->create<uint16_t>(h, w, depth));
+            break;
+        default:
+            throw CannotReadError("Can only handle 8 or 16 bit images");
     }
-    std::auto_ptr<Image> output(factory->create<byte>(h, w, (nr_samples > 1 ? nr_samples : -1)));
 
     const tsize_t strip_size = TIFFStripSize(t.tif);
     const tsize_t nr_strips = TIFFNumberOfStrips(t.tif);
