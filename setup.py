@@ -55,10 +55,12 @@ classifiers = [
 'Development Status :: 5 - Production/Stable',
 'Intended Audience :: Developers',
 'Intended Audience :: Science/Research',
+'Topic :: Multimedia',
 'Topic :: Scientific/Engineering :: Image Recognition',
 'Topic :: Software Development :: Libraries',
 'Programming Language :: Python',
 'Programming Language :: C++',
+'License :: OSI Approved :: MIT License',
 ]
 
 numpyutils.setup(name = 'imread',
