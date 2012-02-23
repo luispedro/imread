@@ -45,7 +45,7 @@ PyObject* py_imread(PyObject* self, PyObject* args) {
         NumpyFactory factory;
         std::auto_ptr<byte_source> input(new fd_source_sink(fd));
         std::auto_ptr<ImageFormat> format(get_format(formatstr));
-        if (!format->can_read()) {
+        if (!format.get() || !format->can_read()) {
             throw CannotReadError("Cannot read this format");
         }
         std::auto_ptr<Image> output = format->read(input.get(), &factory);
