@@ -76,6 +76,8 @@ std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory) {
     const int h = png_get_image_height(p.png_ptr, p.png_info);
     int d = -1;
     switch (png_get_color_type(p.png_ptr, p.png_info)) {
+        case PNG_COLOR_TYPE_PALETTE:
+        png_set_palette_to_rgb(p.png_ptr);
         case PNG_COLOR_TYPE_RGB:
             d = 3;
             break;

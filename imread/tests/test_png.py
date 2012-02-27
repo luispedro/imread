@@ -33,3 +33,8 @@ def test_asym():
 @raises(RuntimeError)
 def test_error():
     imread('imread/tests/data/error.png')
+
+def test_regression():
+    im = imread('imread/tests/data/palette_zero.png')
+    assert im.sum() == 0
+    assert im.shape == (128, 64, 3)
