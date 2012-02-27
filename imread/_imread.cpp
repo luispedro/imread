@@ -34,7 +34,7 @@ PyObject* py_imread(PyObject* self, PyObject* args) {
         PyErr_SetString(PyExc_OSError, "File does not exist");
         return 0;
     }
-    const char* formatstr = strchr(filename, '.');
+    const char* formatstr = strrchr(filename, '.');
     if (!formatstr) {
         PyErr_SetString(PyExc_RuntimeError, "Cannot read extension");
         return NULL;
