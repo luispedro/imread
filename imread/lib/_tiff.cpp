@@ -29,8 +29,13 @@ toff_t tiff_seek(thandle_t handle, toff_t off, int whence) {
     return -1;
 }
 int tiff_close(thandle_t handle) { return 0; }
+template<typename T>
 toff_t tiff_size(thandle_t handle) {
-    throw NotImplementedError();
+    T* s = static_cast<T*>(handle);
+    const size_t curpos = s->seek_relative(0);
+    const size_t size = s->seek_end(0);
+    s->seek_absolute(curpos);
+    return size;
 }
 
 void tiff_error(const char* module, const char* fmt, va_list ap) {
@@ -69,7 +74,7 @@ std::auto_ptr<Image> TIFFFormat::read(byte_source* src, ImageFactory* factory) {
                     tiff_write,
                     tiff_seek<byte_source>,
                     tiff_close,
-                    tiff_size,
+                    tiff_size<byte_source>,
                     NULL,
                     NULL);
     const uint32 h = tiff_get<uint32>(t, TIFFTAG_IMAGELENGTH);
@@ -113,7 +118,7 @@ void TIFFFormat::write(Image* input, byte_sink* output) {
                     tiff_write,
                     tiff_seek<byte_sink>,
                     tiff_close,
-                    tiff_size,
+                    tiff_size<byte_sink>,
                     NULL,
                     NULL);
 
