@@ -7,9 +7,9 @@
 import numpy as np
 import _imread
 
-def imread(filename):
+def imread(filename, as_grey=False):
     '''
-    im = imread(filename)
+    im = imread(filename, as_grey=False)
 
     The file type is guessed from `filename`.
 
@@ -17,12 +17,22 @@ def imread(filename):
     ----------
     filename : str
         filename
+    as_grey : boolean, optional
+        Whether to convert to grey scale image (default: no)
 
     Returns
     -------
     im : ndarray
+        The type of this array will depend on the contents of the file and of
+        `as_grey`. Conversion from colour to grayscale will return a floating
+        point image.
     '''
-    return _imread.imread(filename)
+    im = _imread.imread(filename)
+    if as_grey and len(im.shape) == 3:
+        # these are the values that wikipedia says are typical
+        transform = np.array([ 0.30,  0.59,  0.11])
+        return np.dot(im, transform)
+    return im
 
 
 def imsave(filename, array, formatstr=None):
