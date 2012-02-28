@@ -52,7 +52,7 @@ package_data = {
     }
 
 classifiers = [
-'Development Status :: 5 - Production/Stable',
+'Development Status :: 4 - Beta',
 'Intended Audience :: Developers',
 'Intended Audience :: Science/Research',
 'Topic :: Multimedia',
