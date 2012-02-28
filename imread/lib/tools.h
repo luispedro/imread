@@ -17,4 +17,12 @@ inline std::vector<T*> allrows(Image& im) {
     return res;
 }
 
+inline std::vector<byte> full_data(byte_source& s) {
+    std::vector<byte> res;
+    byte buffer[4096];
+    while (int n = s.read(buffer, sizeof buffer)) {
+        res.insert(res.end(), buffer, buffer + n);
+    }
+    return res;
+}
 #endif // LPC_TOOLS_H_INCLUDE_GUARD_WED_FEB__8_17_05_13_WET_2012

@@ -31,13 +31,14 @@ extensions = {
         'imread/lib/_png.cpp',
         'imread/lib/_jpeg.cpp',
         'imread/lib/_tiff.cpp',
+        'imread/lib/_webp.cpp',
         ],
 }
 
 ext_modules = [
     numpyutils.Extension(
         key,
-        libraries=['png', 'jpeg', 'tiff'],
+        libraries=['png', 'jpeg', 'tiff', 'webp'],
         sources=sources,
         undef_macros=undef_macros
         ) for key,sources in extensions.iteritems()]
