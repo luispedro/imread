@@ -10,17 +10,17 @@
 std::auto_ptr<Image> WebPFormat::read(byte_source* src, ImageFactory* factory) {
     std::vector<byte> data = full_data(*src);
     int w, h;
-    int err = WebPGetInfo(&data[0], data.size(), &w, &h);
-    if (err) {
-        throw CannotReadError();
+    int ok = WebPGetInfo(&data[0], data.size(), &w, &h);
+    if (!ok) {
+        throw CannotReadError("imread.imread._webp: File does not validate as WebP");
     }
     std::auto_ptr<Image> output(factory->create<byte>(h, w, 4));
     const int stride = w*4;
-    const uint8_t* errp = WebPDecodeRGBAInto(
+    const uint8_t* p = WebPDecodeRGBAInto(
             &data[0], data.size(),
             output->rowp_as<byte>(0), h*stride, stride);
-    if (errp) {
-        throw CannotReadError();
+    if (p != output->rowp_as<uint8_t>(0)) {
+        throw CannotReadError("imread.imread._webp: Error in decoding file");
     }
 
     return output;
