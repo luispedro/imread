@@ -1,4 +1,5 @@
 /build/
+/docs/build/
 /dist/
 /imread.egg-info/
 *.pyc
