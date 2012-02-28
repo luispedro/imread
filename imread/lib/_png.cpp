@@ -74,6 +74,7 @@ std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory) {
     
     const int w = png_get_image_width (p.png_ptr, p.png_info);
     const int h = png_get_image_height(p.png_ptr, p.png_info);
+    int bit_depth = png_get_bit_depth(p.png_ptr, p.png_info);
     int d = -1;
     switch (png_get_color_type(p.png_ptr, p.png_info)) {
         case PNG_COLOR_TYPE_PALETTE:
@@ -85,16 +86,24 @@ std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory) {
             d = 4;
             break;
         case PNG_COLOR_TYPE_GRAY:
+            if (bit_depth < 8) {
+                png_set_expand_gray_1_2_4_to_8(p.png_ptr);
+                bit_depth = 8;
+            }
             d = -1;
             break;
         default:
             throw CannotReadError("Unhandled color type");
     }
-    if (png_get_bit_depth(p.png_ptr, p.png_info) != 8) {
-        throw CannotReadError("Can currently only read 8-bit images");
+    std::auto_ptr<Image> output;
+    if (bit_depth == 8) {
+        output.reset(factory->create<byte>(h, w, d));
+    } else if (bit_depth == 16) {
+        output.reset(factory->create<uint16_t>(h, w, d));
+    } else {
+        throw CannotReadError("Cannot read this bit depth and color combination");
     }
 
-    std::auto_ptr<Image> output(factory->create<byte>(h, w, d));
     std::vector<png_bytep> rowps = allrows<png_byte>(*output);
     png_read_image(p.png_ptr, &rowps[0]);
 
