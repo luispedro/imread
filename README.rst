@@ -17,10 +17,21 @@ The relationship with numpy is very contained and this could be easily
 repurposed to load images in other frameworks, even other programming
 languages.
 
+
 Dependencies
 ~~~~~~~~~~~~
 
 To install on debian/ubuntu::
 
     sudo apt-get install libpng12-dev libtiff4-dev
+
+History
+~~~~~~~
+
+Version 0.1 (2012-02-28)
+------------------------
+
+- Support for PNG
+- Support for TIFF
+- Support for JPEG
 
