@@ -1,6 +1,8 @@
 Version 0.1+
 	* Compile on MSVC++
 	* Support for WebP
+	* Support for 1-bit TIFFs
+	* Better error message
 
 Version 0.1 2012-02-28 by luispedro
 	* Support for PNG

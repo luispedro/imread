@@ -28,6 +28,7 @@ extensions = {
     'imread._imread': [
         'imread/_imread.cpp',
         'imread/lib/formats.cpp',
+        'imread/lib/numpy.cpp',
         'imread/lib/_png.cpp',
         'imread/lib/_jpeg.cpp',
         'imread/lib/_tiff.cpp',

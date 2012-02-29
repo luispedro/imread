@@ -28,6 +28,7 @@ class NumpyImage : public Image {
         }
 
         PyObject* releasePyObject() {
+            this->finalize();
             return reinterpret_cast<PyObject*>(this->release());
         }
 
@@ -46,6 +47,7 @@ class NumpyImage : public Image {
             if (r >= PyArray_DIM(array_, 0)) throw ProgrammingError();
             return PyArray_GETPTR1(array_, r);
         }
+        void finalize();
         PyArrayObject* array_;
 };
 
@@ -59,6 +61,7 @@ class NumpyFactory : public ImageFactory {
             const npy_intp nd = 2 + (d != -1);
             int dtype = -1;
             switch (code) {
+                case bool_v: dtype = NPY_BOOL; break;
                 case uint8_v: dtype = NPY_UINT8; break;
                 case uint16_v: dtype = NPY_UINT16; break;
                 case uint32_v: dtype = NPY_UINT32; break;

@@ -89,6 +89,9 @@ std::auto_ptr<Image> TIFFFormat::read(byte_source* src, ImageFactory* factory) {
 
     std::auto_ptr<Image> output;
     switch (bits_per_sample) {
+        case 1:
+            output.reset(factory->create<bool>(h, w, depth));
+            break;
         case 8:
             output.reset(factory->create<byte>(h, w, depth));
             break;
@@ -102,16 +105,10 @@ std::auto_ptr<Image> TIFFFormat::read(byte_source* src, ImageFactory* factory) {
             }
     }
 
-    const tsize_t strip_size = TIFFStripSize(t.tif);
-    const tsize_t nr_strips = TIFFNumberOfStrips(t.tif);
-
-    byte* start = output->rowp_as<byte>(0);
-    for (int s = 0; s != nr_strips; ++s) {
-        const tsize_t nbytes = TIFFReadEncodedStrip(t.tif, s, start, strip_size);
-        if (nbytes == tsize_t(-1)) {
+    for (int r = 0; r != h; ++r) {
+        if(TIFFReadScanline(t.tif, output->rowp_as<byte>(r), r) == -1) {
             throw CannotReadError("imread.imread._tiff: Error reading strip");
         }
-        start += nbytes;
     }
     return output;
 }

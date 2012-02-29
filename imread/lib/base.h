@@ -79,13 +79,14 @@ class ImageFactory {
         Image* create(int w, int h, int d) { return this->do_create(code_for<T>(), w, h, d); }
 
     protected:
-        enum type_code { uint8_v, uint16_v, uint32_v };
+        enum type_code { bool_v, uint8_v, uint16_v, uint32_v };
         virtual Image* do_create(type_code, int w, int h, int d) = 0;
 
         template <typename T>
         type_code code_for();
 };
 
+template <> inline ImageFactory::type_code ImageFactory::code_for<bool>() { return bool_v; }
 template <> inline ImageFactory::type_code ImageFactory::code_for<uint8_t>() { return uint8_v; }
 template <> inline ImageFactory::type_code ImageFactory::code_for<uint16_t>() { return uint16_v; }
 template <> inline ImageFactory::type_code ImageFactory::code_for<uint32_t>() { return uint32_v; }
