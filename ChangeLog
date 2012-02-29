@@ -1,5 +1,5 @@
 Version 0.1+
-	* Compile on MSVC++
+	* Compile on MSVC++ (Patches by Christoph Gohlke)
 	* Support for WebP
 	* Support for 1-bit TIFFs
 	* Better error message
