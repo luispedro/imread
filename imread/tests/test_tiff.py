@@ -23,3 +23,11 @@ def test_read_back():
 @raises(RuntimeError)
 def test_error():
     imread('imread/tests/data/error.tif')
+
+def test_monochrome():
+    mono = imread('imread/tests/data/mono.tif')
+    assert mono.shape == (8,8)
+    z = np.zeros((8,8),np.uint8)
+    z.flat[::3] = 1
+    assert np.all(z == mono)
+

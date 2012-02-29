@@ -105,7 +105,7 @@ std::auto_ptr<Image> TIFFFormat::read(byte_source* src, ImageFactory* factory) {
             }
     }
 
-    for (int r = 0; r != h; ++r) {
+    for (uint32 r = 0; r != h; ++r) {
         if(TIFFReadScanline(t.tif, output->rowp_as<byte>(r), r) == -1) {
             throw CannotReadError("imread.imread._tiff: Error reading strip");
         }
