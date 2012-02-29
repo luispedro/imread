@@ -42,7 +42,7 @@ void tiff_error(const char* module, const char* fmt, va_list ap) {
     //char buffer[4096];
     //vsnprintf(buffer, sizeof(buffer), fmt, ap);
     //std::string error_message(buffer);
-    throw CannotReadError("Libtiff error");
+    throw CannotReadError("imread.imread._tiff: libtiff error");
 }
 
 struct tif_holder {
@@ -58,7 +58,7 @@ inline
 T tiff_get(const tif_holder& t, const int tag) {
     T val;
     if (!TIFFGetField(t.tif, tag, &val)) {
-        throw CannotReadError("Cannot find necessary tag");
+        throw CannotReadError("imread.imread._tiff: Cannot find necessary tag");
     }
     return val;
 }
@@ -92,7 +92,7 @@ std::auto_ptr<Image> TIFFFormat::read(byte_source* src, ImageFactory* factory) {
             output.reset(factory->create<uint16_t>(h, w, depth));
             break;
         default:
-            throw CannotReadError("Can only handle 8 or 16 bit images");
+            throw CannotReadError("imread.imread._tiff: Can only handle 8 or 16 bit images");
     }
 
     const tsize_t strip_size = TIFFStripSize(t.tif);
@@ -102,7 +102,7 @@ std::auto_ptr<Image> TIFFFormat::read(byte_source* src, ImageFactory* factory) {
     for (int s = 0; s != nr_strips; ++s) {
         const tsize_t nbytes = TIFFReadEncodedStrip(t.tif, s, start, strip_size);
         if (nbytes == tsize_t(-1)) {
-            throw CannotReadError("Error reading strip");
+            throw CannotReadError("imread.imread._tiff: Error reading strip");
         }
         start += nbytes;
     }
@@ -134,7 +134,7 @@ void TIFFFormat::write(Image* input, byte_sink* output) {
 
     for (uint32 r = 0; r != h; ++r) {
         if (TIFFWriteScanline(t.tif, input->rowp(r), r) == -1) {
-            throw CannotWriteError("Error writing TIFF file");
+            throw CannotWriteError("imread.imsave._tiff: Error writing TIFF file");
         }
     }
     TIFFFlush(t.tif);
