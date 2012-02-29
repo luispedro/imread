@@ -69,7 +69,7 @@ T tiff_get(const tif_holder& t, const int tag) {
 } // namespace
 
 
-std::auto_ptr<Image> TIFFFormat::read(byte_source* src, ImageFactory* factory) {
+std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* factory, bool is_multi) {
     tif_holder t = TIFFClientOpen(
                     "internal",
                     "r",
@@ -81,36 +81,40 @@ std::auto_ptr<Image> TIFFFormat::read(byte_source* src, ImageFactory* factory) {
                     tiff_size<byte_source>,
                     NULL,
                     NULL);
-    const uint32 h = tiff_get<uint32>(t, TIFFTAG_IMAGELENGTH);
-    const uint32 w = tiff_get<uint32>(t, TIFFTAG_IMAGEWIDTH);
-    const uint16 nr_samples = tiff_get<uint16>(t, TIFFTAG_SAMPLESPERPIXEL);
-    const uint16 bits_per_sample = tiff_get<uint16>(t, TIFFTAG_BITSPERSAMPLE);
-    const int depth = nr_samples > 1 ? nr_samples : -1;
+    std::auto_ptr<image_list> images(new image_list);
+    do {
+        const uint32 h = tiff_get<uint32>(t, TIFFTAG_IMAGELENGTH);
+        const uint32 w = tiff_get<uint32>(t, TIFFTAG_IMAGEWIDTH);
+        const uint16 nr_samples = tiff_get<uint16>(t, TIFFTAG_SAMPLESPERPIXEL);
+        const uint16 bits_per_sample = tiff_get<uint16>(t, TIFFTAG_BITSPERSAMPLE);
+        const int depth = nr_samples > 1 ? nr_samples : -1;
 
-    std::auto_ptr<Image> output;
-    switch (bits_per_sample) {
-        case 1:
-            output.reset(factory->create<bool>(h, w, depth));
-            break;
-        case 8:
-            output.reset(factory->create<byte>(h, w, depth));
-            break;
-        case 16:
-            output.reset(factory->create<uint16_t>(h, w, depth));
-            break;
-        default: {
-                std::stringstream out;
-                out << "imread.imread._tiff: Can only handle 8 or 16 bit images. Found " << bits_per_sample << "-bit image.";
-                throw CannotReadError(out.str());
-            }
-    }
-
-    for (uint32 r = 0; r != h; ++r) {
-        if(TIFFReadScanline(t.tif, output->rowp_as<byte>(r), r) == -1) {
-            throw CannotReadError("imread.imread._tiff: Error reading strip");
+        std::auto_ptr<Image> output;
+        switch (bits_per_sample) {
+            case 1:
+                output.reset(factory->create<bool>(h, w, depth));
+                break;
+            case 8:
+                output.reset(factory->create<byte>(h, w, depth));
+                break;
+            case 16:
+                output.reset(factory->create<uint16_t>(h, w, depth));
+                break;
+            default: {
+                    std::stringstream out;
+                    out << "imread.imread._tiff: Can only handle 8 or 16 bit images. Found " << bits_per_sample << "-bit image.";
+                    throw CannotReadError(out.str());
+                }
         }
-    }
-    return output;
+
+        for (uint32 r = 0; r != h; ++r) {
+            if(TIFFReadScanline(t.tif, output->rowp_as<byte>(r), r) == -1) {
+                throw CannotReadError("imread.imread._tiff: Error reading scanline");
+            }
+        }
+        images->push_back(output);
+    } while (is_multi && TIFFReadDirectory(t.tif));
+    return images;
 }
 
 void TIFFFormat::write(Image* input, byte_sink* output) {

@@ -6,6 +6,7 @@
 
 #include <inttypes.h>
 #include <memory>
+#include <vector>
 
 #if defined(_MSC_VER)
  #include <io.h>
@@ -91,14 +92,42 @@ template <> inline ImageFactory::type_code ImageFactory::code_for<uint8_t>() { r
 template <> inline ImageFactory::type_code ImageFactory::code_for<uint16_t>() { return uint16_v; }
 template <> inline ImageFactory::type_code ImageFactory::code_for<uint32_t>() { return uint32_v; }
 
+/// This class *owns* its members and will delete them if destroyed
+struct image_list {
+    public:
+        image_list() { }
+        ~image_list() {
+            for (unsigned i = 0; i != content.size(); ++i) delete content[i];
+        }
+        std::vector<Image*>::size_type size() const { return content.size(); }
+        void push_back(std::auto_ptr<Image> p) { content.push_back(p.release()); }
+
+        /// After release(), all of the pointers will be owned by the caller
+        /// who must figure out how to delete them. Note that release() resets the list.
+        std::vector<Image*> release() {
+            std::vector<Image*> r;
+            r.swap(content);
+            return r;
+        }
+    private:
+        image_list(const image_list&);
+        image_list& operator = (const image_list&);
+        std::vector<Image*> content;
+};
+
+
 class ImageFormat {
     public:
         virtual ~ImageFormat() { }
 
         virtual bool can_read() const { return false; }
+        virtual bool can_read_multi() const { return false; }
         virtual bool can_write() const { return false; }
 
         virtual std::auto_ptr<Image> read(byte_source* src, ImageFactory* factory) {
+            throw NotImplementedError();
+        }
+        virtual std::auto_ptr<image_list> read_multi(byte_source* src, ImageFactory* factory) {
             throw NotImplementedError();
         }
         virtual void write(Image* input, byte_sink* output) {

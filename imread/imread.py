@@ -7,6 +7,7 @@
 import numpy as np
 import _imread
 
+
 def imread(filename, as_grey=False):
     '''
     im = imread(filename, as_grey=False)
@@ -33,6 +34,24 @@ def imread(filename, as_grey=False):
         transform = np.array([ 0.30,  0.59,  0.11])
         return np.dot(im, transform)
     return im
+
+
+def imread_multi(filename):
+    '''
+    images = imread_multi(filename)
+
+    The file type is guessed from `filename`.
+
+    Parameters
+    ----------
+    filename : str
+        filename
+
+    Returns
+    -------
+    images : list
+    '''
+    return _imread.imread_multi(filename)
 
 
 def imsave(filename, array, formatstr=None):

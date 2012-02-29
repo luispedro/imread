@@ -28,16 +28,11 @@ const char TypeErrorMsg[] =
     "Type not understood. "
     "This is caused by either a direct call to _imread (which is dangerous: types are not checked!) or a bug in imread.py.\n";
 
-PyObject* py_imread(PyObject* self, PyObject* args) {
+PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi) {
     const char* filename;
     if (!PyArg_ParseTuple(args, "s", &filename)) {
         PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
         return NULL;
-    }
-    int fd = ::open(filename, O_RDONLY);
-    if (fd < 0) {
-        PyErr_SetString(PyExc_OSError, "File does not exist");
-        return 0;
     }
     const char* formatstr = strrchr(filename, '.');
     if (!formatstr) {
@@ -46,16 +41,35 @@ PyObject* py_imread(PyObject* self, PyObject* args) {
     }
     ++formatstr;
 
+    int fd = ::open(filename, O_RDONLY);
+    if (fd < 0) {
+        PyErr_SetString(PyExc_OSError, "File does not exist");
+        return 0;
+    }
+
     try {
         NumpyFactory factory;
         std::auto_ptr<byte_source> input(new fd_source_sink(fd));
         std::auto_ptr<ImageFormat> format(get_format(formatstr));
-        if (!format.get() || !format->can_read()) {
+        if (!format.get() ||
+                (is_multi && !format->can_read_multi()) ||
+                (!is_multi && !format->can_read())) {
             throw CannotReadError("Cannot read this format");
         }
-        std::auto_ptr<Image> output = format->read(input.get(), &factory);
-        return static_cast<NumpyImage&>(*output).releasePyObject();
-
+        if (is_multi) {
+            std::auto_ptr<image_list> images = format->read_multi(input.get(), &factory);
+            PyObject* output = PyList_New(images->size());
+            if (!output) return NULL;
+            std::vector<Image*> pages = images->release();
+            for (unsigned i = 0; i != pages.size(); ++i) {
+                PyList_SET_ITEM(output, i, static_cast<NumpyImage&>(*pages[i]).releasePyObject());
+                delete pages[i];
+            }
+            return output;
+        } else {
+            std::auto_ptr<Image> output = format->read(input.get(), &factory);
+            return static_cast<NumpyImage&>(*output).releasePyObject();
+        }
     } catch (const std::exception& e) {
         PyErr_SetString(PyExc_RuntimeError, e.what());
         return 0;
@@ -64,6 +78,9 @@ PyObject* py_imread(PyObject* self, PyObject* args) {
         return 0;
     }
 }
+
+PyObject* py_imread      (PyObject* self, PyObject* args) { return py_imread_may_multi(self, args, false); }
+PyObject* py_imread_multi(PyObject* self, PyObject* args) { return py_imread_may_multi(self, args, true); }
 
 PyObject* py_imsave(PyObject* self, PyObject* args) {
     const char* filename;
@@ -101,6 +118,7 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
 
 PyMethodDef methods[] = {
   {"imread",(PyCFunction)py_imread, METH_VARARGS, NULL},
+  {"imread_multi",(PyCFunction)py_imread_multi, METH_VARARGS, NULL},
   {"imsave",(PyCFunction)py_imsave, METH_VARARGS, NULL},
   {NULL, NULL,0,NULL},
 };
