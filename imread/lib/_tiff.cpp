@@ -5,6 +5,8 @@
 #include "_tiff.h"
 #include "tools.h"
 
+#include <sstream>
+
 extern "C" {
    #include <tiffio.h>
 }
@@ -39,10 +41,10 @@ toff_t tiff_size(thandle_t handle) {
 }
 
 void tiff_error(const char* module, const char* fmt, va_list ap) {
-    //char buffer[4096];
-    //vsnprintf(buffer, sizeof(buffer), fmt, ap);
-    //std::string error_message(buffer);
-    throw CannotReadError("imread.imread._tiff: libtiff error");
+    char buffer[4096];
+    vsnprintf(buffer, sizeof(buffer), fmt, ap);
+    std::string error_message(buffer);
+    throw CannotReadError(std::string("imread.imread._tiff: libtiff error: `") + buffer + std::string("`"));
 }
 
 struct tif_holder {
@@ -58,7 +60,9 @@ inline
 T tiff_get(const tif_holder& t, const int tag) {
     T val;
     if (!TIFFGetField(t.tif, tag, &val)) {
-        throw CannotReadError("imread.imread._tiff: Cannot find necessary tag");
+        std::stringstream out;
+        out << "imread.imread._tiff: Cannot find necessary tag (" << tag << ")";
+        throw CannotReadError(out.str());
     }
     return val;
 }
@@ -91,8 +95,11 @@ std::auto_ptr<Image> TIFFFormat::read(byte_source* src, ImageFactory* factory) {
         case 16:
             output.reset(factory->create<uint16_t>(h, w, depth));
             break;
-        default:
-            throw CannotReadError("imread.imread._tiff: Can only handle 8 or 16 bit images");
+        default: {
+                std::stringstream out;
+                out << "imread.imread._tiff: Can only handle 8 or 16 bit images. Found " << bits_per_sample << "-bit image.";
+                throw CannotReadError(out.str());
+            }
     }
 
     const tsize_t strip_size = TIFFStripSize(t.tif);
