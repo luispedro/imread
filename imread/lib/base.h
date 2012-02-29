@@ -3,9 +3,16 @@
 
 #ifndef LPC_IMREAD_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012
 #define LPC_IMREAD_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012
+
 #include <inttypes.h>
-#include <unistd.h>
 #include <memory>
+
+#if defined(_MSC_VER)
+ #include <io.h>
+ #include <fcntl.h>
+#else
+ #include <unistd.h>
+#endif
 
 #include "errors.h"
 

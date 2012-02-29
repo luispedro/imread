@@ -3,8 +3,12 @@
 
 #ifndef LPC_FILE_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012
 #define LPC_FILE_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012
-#include <sys/types.h>
-#include <unistd.h>
+#if defined(_MSC_VER)
+ #include <io.h>
+#else
+ #include <unistd.h>
+ #include <sys/types.h>
+#endif
 
 #include "base.h"
 
