@@ -25,6 +25,10 @@ To install on debian/ubuntu::
 
     sudo apt-get install libpng12-dev libtiff4-dev libwebp-dev
 
+To install on Mac::
+
+    sudo port install libpng tiff webp
+
 History
 ~~~~~~~
 
