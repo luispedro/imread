@@ -53,26 +53,26 @@ class NumpyImage : public Image {
 
 class NumpyFactory : public ImageFactory {
     protected:
-        Image* do_create(type_code code, int h, int w, int d) {
+        std::auto_ptr<Image> create(int nbits, int h, int w, int d) {
             npy_intp dims[3];
             dims[0] = h;
             dims[1] = w;
             dims[2] = d;
             const npy_intp nd = 2 + (d != -1);
             int dtype = -1;
-            switch (code) {
-                case bool_v: dtype = NPY_BOOL; break;
-                case uint8_v: dtype = NPY_UINT8; break;
-                case uint16_v: dtype = NPY_UINT16; break;
-                case uint32_v: dtype = NPY_UINT32; break;
+            switch (nbits) {
+                case 1: dtype = NPY_BOOL; break;
+                case 8: dtype = NPY_UINT8; break;
+                case 16: dtype = NPY_UINT16; break;
+                case 32: dtype = NPY_UINT32; break;
                 default:
-                    throw ProgrammingError("Cannot handle this code");
+                    throw ProgrammingError("Cannot handle this number of bits");
             }
 
             PyArrayObject* array = reinterpret_cast<PyArrayObject*>(PyArray_SimpleNew(nd, dims, dtype));
             if (!array) throw std::bad_alloc();
             try {
-                return new NumpyImage(array);
+                return std::auto_ptr<Image>(new NumpyImage(array));
             } catch(...) {
                 Py_DECREF(array);
                 throw;

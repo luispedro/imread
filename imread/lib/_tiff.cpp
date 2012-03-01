@@ -89,23 +89,7 @@ std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* fa
         const uint16 bits_per_sample = tiff_get<uint16>(t, TIFFTAG_BITSPERSAMPLE);
         const int depth = nr_samples > 1 ? nr_samples : -1;
 
-        std::auto_ptr<Image> output;
-        switch (bits_per_sample) {
-            case 1:
-                output.reset(factory->create<bool>(h, w, depth));
-                break;
-            case 8:
-                output.reset(factory->create<byte>(h, w, depth));
-                break;
-            case 16:
-                output.reset(factory->create<uint16_t>(h, w, depth));
-                break;
-            default: {
-                    std::stringstream out;
-                    out << "imread.imread._tiff: Can only handle 8 or 16 bit images. Found " << bits_per_sample << "-bit image.";
-                    throw CannotReadError(out.str());
-                }
-        }
+        std::auto_ptr<Image> output(factory->create(bits_per_sample, h, w, depth));
 
         for (uint32 r = 0; r != h; ++r) {
             if(TIFFReadScanline(t.tif, output->rowp_as<byte>(r), r) == -1) {

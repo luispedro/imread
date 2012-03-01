@@ -27,5 +27,4 @@ class TIFFFormat : public ImageFormat {
         std::auto_ptr<image_list> do_read(byte_source* s, ImageFactory* f, bool is_multi);
 };
 
-
 #endif // LPC_TIFF_INCLUDE_GUARD_Wed_Feb__8_19_02_16_WET_2012

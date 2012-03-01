@@ -14,7 +14,7 @@ std::auto_ptr<Image> WebPFormat::read(byte_source* src, ImageFactory* factory) {
     if (!ok) {
         throw CannotReadError("imread.imread._webp: File does not validate as WebP");
     }
-    std::auto_ptr<Image> output(factory->create<byte>(h, w, 4));
+    std::auto_ptr<Image> output(factory->create(8, h, w, 4));
     const int stride = w*4;
     const uint8_t* p = WebPDecodeRGBAInto(
             &data[0], data.size(),

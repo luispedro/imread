@@ -31,14 +31,10 @@ You also need to support the ``ImageFactory`` interface::
 
     class ImageFactory {
         public:
-            template <typename T>
-            Image* create(int w, int h);
-
-            template <typename T>
-            Image* create(int w, int h, int d);
+            Image* create(int nbits, int w, int h, int d);
     };
 
-The ``create`` methods create 2 or 3-dimensional images of the specified type.
+The ``create`` methods create 2 or 3-dimensional images with ``nbits`` per pixel.
 
 See the numpy interface in the source code for inspiration.
 
