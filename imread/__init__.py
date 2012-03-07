@@ -4,5 +4,5 @@
 #
 # License: MIT (see COPYING.MIT file)
 
-from .imread import imread, imsave
+from .imread import imread, imsave, imread_multi
 
