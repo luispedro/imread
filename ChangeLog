@@ -4,6 +4,7 @@ Version 0.1+
 	* Support for 1-bit TIFFs
 	* Better error message
 	* Support for multi-page TIFF reading
+	* Experimental support for STK files
 
 Version 0.1 2012-02-28 by luispedro
 	* Support for PNG

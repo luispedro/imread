@@ -27,4 +27,15 @@ class TIFFFormat : public ImageFormat {
         std::auto_ptr<image_list> do_read(byte_source* s, ImageFactory* f, bool is_multi);
 };
 
+
+class STKFormat : public ImageFormat {
+    public:
+        bool can_read() const { return false; }
+        bool can_read_multi() const { return true; }
+        bool can_write() const { return false; }
+
+        std::auto_ptr<image_list> read_multi(byte_source* s, ImageFactory* f);
+};
+
+
 #endif // LPC_TIFF_INCLUDE_GUARD_Wed_Feb__8_19_02_16_WET_2012

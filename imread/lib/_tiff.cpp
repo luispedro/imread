@@ -66,11 +66,15 @@ T tiff_get(const tif_holder& t, const int tag) {
     }
     return val;
 }
-} // namespace
-
-
-std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* factory, bool is_multi) {
-    tif_holder t = TIFFClientOpen(
+template <typename T>
+inline
+T tiff_get(const tif_holder& t, const int tag, const T def) {
+    T val;
+    if (!TIFFGetField(t.tif, tag, &val)) return def;
+    return val;
+}
+TIFF* read_client(byte_source* src) {
+    return TIFFClientOpen(
                     "internal",
                     "r",
                     src,
@@ -81,6 +85,103 @@ std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* fa
                     tiff_size<byte_source>,
                     NULL,
                     NULL);
+}
+
+const int UIC1Tag = 33628;
+const int UIC2Tag = 33629;
+const int UIC3Tag = 33630;
+const int UIC4Tag = 33631;
+
+const TIFFFieldInfo stkTags[] = {
+    { UIC1Tag, -1,-1, TIFF_LONG, FIELD_CUSTOM, true, true,   const_cast<char*>("UIC1Tag") },
+    { UIC1Tag, -1,-1, TIFF_RATIONAL, FIELD_CUSTOM, true, true,   const_cast<char*>("UIC1Tag") },
+    //{ UIC2Tag, -1, -1, TIFF_RATIONAL, FIELD_CUSTOM, true, true,   const_cast<char*>("UIC2Tag") },
+    { UIC2Tag, -1, -1, TIFF_LONG, FIELD_CUSTOM, true, true,   const_cast<char*>("UIC2Tag") },
+    { UIC3Tag, -1,-1, TIFF_RATIONAL, FIELD_CUSTOM, true, true,   const_cast<char*>("UIC3Tag") },
+    { UIC4Tag, -1,-1, TIFF_LONG, FIELD_CUSTOM, true, true,   const_cast<char*>("UIC4Tag") },
+};
+
+void set_stk_tags(TIFF* tif) {
+    TIFFMergeFieldInfo(tif, stkTags, sizeof(stkTags)/sizeof(stkTags[0]));
+}
+
+
+
+class shift_source : public byte_source {
+    public:
+        explicit shift_source(byte_source* s)
+            :s(s)
+            ,shift_(0)
+            { }
+
+        virtual size_t read(byte* buf, size_t n) { return s->read(buf, n); }
+
+        virtual size_t seek_absolute(size_t pos) { return s->seek_absolute(pos + shift_)-shift_; }
+        virtual size_t seek_relative(int n) { return s->seek_relative(n)-shift_; }
+        virtual size_t seek_end(int n) { return s->seek_end(n+shift_)-shift_; }
+
+        void shift(int nshift) {
+            s->seek_relative(nshift - shift_);
+            shift_ = nshift;
+        }
+
+        byte_source* s;
+        int shift_;
+};
+
+struct stk_extend {
+    stk_extend()
+        :proc(TIFFSetTagExtender(set_stk_tags)) { }
+    ~stk_extend() {
+        TIFFSetTagExtender(proc);
+    }
+    TIFFExtendProc proc;
+};
+
+} // namespace
+
+
+std::auto_ptr<image_list> STKFormat::read_multi(byte_source* src, ImageFactory* factory) {
+    shift_source moved(src);
+    stk_extend ext;
+    tif_holder t = read_client(&moved);
+    std::auto_ptr<image_list> images(new image_list);
+    const uint32 h = tiff_get<uint32>(t, TIFFTAG_IMAGELENGTH);
+    const uint32 w = tiff_get<uint32>(t, TIFFTAG_IMAGEWIDTH);
+
+    const uint16 nr_samples = tiff_get<uint16>(t, TIFFTAG_SAMPLESPERPIXEL, 1);
+    const uint16 bits_per_sample = tiff_get<uint16>(t, TIFFTAG_BITSPERSAMPLE, 8);
+    const int depth = nr_samples > 1 ? nr_samples : -1;
+
+    const int strip_size = TIFFStripSize(t.tif);
+    const int n_strips = TIFFNumberOfStrips(t.tif);
+    int32_t n_planes;
+    void* data;
+    TIFFGetField(t.tif, UIC3Tag, &n_planes, &data);
+    int raw_strip_size = 0;
+    for (int st = 0; st != n_strips; ++st) {
+        raw_strip_size += TIFFRawStripSize(t.tif, st);
+    }
+    for (int z = 0; z < n_planes; ++z) {
+        // Monkey patch strip offsets. This is very hacky, but it seems to work!
+        moved.shift(z * raw_strip_size);
+
+        std::auto_ptr<Image> output(factory->create(bits_per_sample, h, w, depth));
+        uint8_t* start = output->rowp_as<uint8_t>(0);
+        for (int st = 0; st != n_strips; ++st) {
+            const int offset = TIFFReadEncodedStrip(t.tif, st, start, strip_size);
+            if (offset == -1) {
+                throw CannotReadError("imread.imread._tiff.stk: Error reading strip");
+            }
+            start += offset;
+        }
+        images->push_back(output);
+    }
+    return images;
+}
+
+std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* factory, bool is_multi) {
+    tif_holder t = read_client(src);
     std::auto_ptr<image_list> images(new image_list);
     do {
         const uint32 h = tiff_get<uint32>(t, TIFFTAG_IMAGELENGTH);
