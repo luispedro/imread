@@ -48,14 +48,23 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi) {
     }
 
     try {
+        std::auto_ptr<ImageFormat> format(get_format(formatstr));
+        if (!format.get()) {
+            throw CannotReadError("This format is unknown to imread");
+        }
+        if (is_multi && !format->can_read_multi()) {
+            throw CannotReadError("imread cannot read_multi in this format");
+        }
+        if (!is_multi && !format->can_read()) {
+            if (format->can_read_multi()) {
+                throw CannotReadError("imread cannot read in this format (but can read_multi!)");
+            } else {
+                throw CannotReadError("imread cannot read in this format");
+            }
+        }
+
         NumpyFactory factory;
         std::auto_ptr<byte_source> input(new fd_source_sink(fd));
-        std::auto_ptr<ImageFormat> format(get_format(formatstr));
-        if (!format.get() ||
-                (is_multi && !format->can_read_multi()) ||
-                (!is_multi && !format->can_read())) {
-            throw CannotReadError("Cannot read this format");
-        }
         if (is_multi) {
             std::auto_ptr<image_list> images = format->read_multi(input.get(), &factory);
             PyObject* output = PyList_New(images->size());
