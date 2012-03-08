@@ -2,10 +2,13 @@
 imread: Read Image Files
 ========================
 
-Simple module with two functions:
+Simple module with a small number of functions:
 
 imread
     Reads an image file
+imread_multi
+    Reads an image file with multiple images. Currently, TIFF and STK (a TIFF
+    sub-based format) support this function.
 imsave
     Writes an image file
 
@@ -28,6 +31,17 @@ To install on debian/ubuntu::
 To install on Mac::
 
     sudo port install libpng tiff webp
+
+Bug Reports
+~~~~~~~~~~~
+
+Please report any bugs either on github or by email to luis@luispedro.org
+
+If you are not sure of whether this is the correct behaviour, you can discuss
+this on the
+`pythonvision mailing list <https://groups.google.com/forum/?fromgroups#!forum/pythonvision>`__
+
+If at all possible, include a small image as a test case.
 
 History
 ~~~~~~~
