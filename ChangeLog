@@ -1,10 +1,10 @@
-Version 0.1+
+Version 0.2 2012-03-19 by luispedro
 	* Compile on MSVC++ (Patches by Christoph Gohlke)
 	* Support for WebP
 	* Support for 1-bit TIFFs
 	* Better error message
 	* Support for multi-page TIFF reading
-	* Experimental support for STK files
+	* Experimental read-only support for STK files
 
 Version 0.1 2012-02-28 by luispedro
 	* Support for PNG

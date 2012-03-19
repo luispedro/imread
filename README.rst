@@ -46,6 +46,16 @@ If at all possible, include a small image as a test case.
 History
 ~~~~~~~
 
+Version 0.2 (2012-02-28)
+------------------------
+- Compile on MSVC++ (Patches by Christoph Gohlke)
+- Support for WebP
+- Support for 1-bit TIFFs
+- Better error message
+- Support for multi-page TIFF reading
+- Experimental read-only support for STK files
+
+
 Version 0.1 (2012-02-28)
 ------------------------
 
