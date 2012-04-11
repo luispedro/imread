@@ -46,6 +46,10 @@ If at all possible, include a small image as a test case.
 History
 ~~~~~~~
 
+Version 0.2.1 (2012-02-11)
+--------------------------
+- Add missing files to distribution
+
 Version 0.2 (2012-03-19)
 ------------------------
 - Compile on MSVC++ (Patches by Christoph Gohlke)

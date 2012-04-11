@@ -1,0 +1,4 @@
+include README.rst
+include docs/source/*.rst
+include ChangeLog
+include COPYING

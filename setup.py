@@ -18,7 +18,7 @@ import numpy.distutils.core as numpyutils
 
 
 execfile('imread/imread_version.py')
-long_description = file('docs/source/readme.rst').read()
+long_description = file('README.rst').read()
 
 undef_macros=[]
 if os.environ.get('DEBUG'):
