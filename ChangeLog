@@ -1,3 +1,6 @@
+Version 0.2.1 2012-02-10 by luispedro
+	* Add missing files to distribution
+
 Version 0.2 2012-03-19 by luispedro
 	* Compile on MSVC++ (Patches by Christoph Gohlke)
 	* Support for WebP
