@@ -1,28 +1,28 @@
 /*=========================================================================
 
   Program:   BioImageXD
-  Module:    $RCSfile: vtkLSMReader.h,v $
+  Module:    $RCSfile: LSMFormat.h,v $
   Language:  C++
   Date:      $Date: 2003/08/22 14:46:02 $
   Version:   $Revision: 1.39 $
 
  This is an open-source copyright as follows:
  Copyright (c) 2004-2008 BioImageXD Development Team
- 
+
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met: 
- 
+ modification, are permitted provided that the following conditions are met:
+
  * Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer. 
+   this list of conditions and the following disclaimer.
 
  * Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.   
+   and/or other materials provided with the distribution.
 
  * Modified source versions must be plainly marked as such, and must not be
-   misrepresented as being the original software.   
+   misrepresented as being the original software.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -34,16 +34,16 @@
  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- POSSIBILITY OF SUCH DAMAGE.          
+ POSSIBILITY OF SUCH DAMAGE.
 
 
 =========================================================================*/
 #ifndef __vtkLSMReader_h
 #define __vtkLSMReader_h
 
-// .NAME vtkLSMReader - read LSM files
+// .NAME LSMFormat - read LSM files
 // .SECTION Description
-// vtkLSMReader is a source object that reads LSM files.
+// LSMFormat is a source object that reads LSM files.
 // It should be able to read most any LSM file
 //
 // .SECTION Thanks
@@ -52,18 +52,25 @@
 //
 // Dan White <dan@chalkie.org.uk>
 // Kalle Pahajoki <kalpaha@st.jyu.fi>
-// Pasi Kankaanp‰‰ <ppkank@bytl.jyu.fi>
-// 
+// Pasi Kankaanp√§√§ <ppkank@bytl.jyu.fi>
+//
 #include "base.h"
+
+#include <vector>
+#include <string>
+#include <ostream>
 
 class LSMFormat : public ImageFormat {
     public:
+        LSMFormat();
+        ~LSMFormat();
+
         bool can_read() const { return true; }
 
         std::auto_ptr<Image> read(byte_source* src, ImageFactory* factory);
- 
+
     private:
-        virtual void PrintSelf(ostream& os, vtkIndent indent);
+        virtual void PrintSelf(std::ostream& os, const char* indent="");
 
 
         int GetHeaderIdentifier();
@@ -74,12 +81,7 @@ class LSMFormat : public ImageFormat {
         int OpenFile();
 
         int GetChannelColorComponent(int,int);
-        const char* GetChannelName(int);
-        void SetFileName(const char *);
-        int RequestInformation (
-            vtkInformation       * vtkNotUsed( request ),
-            vtkInformationVector** vtkNotUsed( inputVector ),
-            vtkInformationVector * outputVector);
+        std::string GetChannelName(int);
         void SetUpdateTimePoint(int);
         void SetUpdateChannel(int);
 
@@ -90,70 +92,29 @@ class LSMFormat : public ImageFormat {
         const char *GetDataByteOrderAsString();
 
         int GetDataTypeForChannel(unsigned int channel);
-
-        vtkGetStringMacro(Objective);
-        vtkGetStringMacro(Description);
-
-        vtkGetStringMacro(FileName);
-        vtkGetVector3Macro(VoxelSizes,double);
-        vtkGetVectorMacro(Dimensions,int,5);
-        vtkGetVectorMacro(NumberOfIntensityValues,int,4);
-        vtkGetVectorMacro(DataSpacing,double,3);
-        vtkGetMacro(Identifier,unsigned short);
-        vtkGetMacro(NewSubFileType,unsigned int);
-        vtkGetMacro(Compression,unsigned int);
-        vtkGetMacro(SamplesPerPixel,unsigned int);
-        vtkGetMacro(ScanType,unsigned short);
-        vtkGetMacro(DataType,int);
-        vtkGetMacro(TimeInterval, double);
-        vtkGetObjectMacro(TimeStampInformation,vtkDoubleArray);
-        vtkGetObjectMacro(ChannelColors,vtkIntArray);
-        vtkGetObjectMacro(TrackWavelengths, vtkDoubleArray);
         unsigned int GetUpdateChannel();
-        vtkImageData* GetTimePointOutput(int,int);
 
-        otected:
-
-        vtkLSMReader();
-        ~vtkLSMReader();
+    protected:
 
         int TIFF_BYTES(unsigned short);
         int BYTES_BY_DATA_TYPE(int);
-        void ClearFileName();
         void Clean();
-        unsigned long ReadImageDirectory(ifstream *,unsigned long);
-        int AllocateChannelNames(int);
-        int SetChannelName(const char *,int);
+        unsigned long ReadImageDirectory(byte_source *,unsigned long);
+        void SetChannelName(const char *,int);
         int ClearChannelNames();
         int FindChannelNameStart(const char *, int);
         int ReadChannelName(const char *, int, char *);
-        int ReadChannelDataTypes(ifstream*, unsigned long);
-        int ReadChannelColorsAndNames(ifstream *,unsigned long);
-        int ReadTimeStampInformation(ifstream *,unsigned long);
-        int ReadLSMSpecificInfo(ifstream *,unsigned long);
-        int AnalyzeTag(ifstream *,unsigned long);
-        int ReadScanInformation(ifstream*, unsigned long);
+        int ReadChannelDataTypes(byte_source*, unsigned long);
+        int ReadChannelColorsAndNames(byte_source *,unsigned long);
+        int ReadTimeStampInformation(byte_source *,unsigned long);
+        int ReadLSMSpecificInfo(byte_source *,unsigned long);
+        int AnalyzeTag(byte_source *,unsigned long);
+        int ReadScanInformation(byte_source*, unsigned long);
         int NeedToReadHeaderInformation();
         void NeedToReadHeaderInformationOn();
         void NeedToReadHeaderInformationOff();
         unsigned long SeekFile(int);
         unsigned long GetOffsetToImage(int, int);
-        ifstream *GetFile();
-
-        int RequestUpdateExtent (
-          vtkInformation* request,
-          vtkInformationVector** inputVector,
-          vtkInformationVector* outputVector);
-
-        t RequestData(
-
-        vtkInformation *vtkNotUsed(request),
-
-        vtkInformationVector **vtkNotUsed(inputVector),
-
-        vtkInformationVector *outputVector);
-
-
 
 
         //void ExecuteData(vtkDataObject *out);
@@ -166,26 +127,25 @@ class LSMFormat : public ImageFormat {
         unsigned int GetSliceOffset(unsigned int timepoint, unsigned int slice);
 
 
-        int SwapBytes;
+        bool swap_bytes_;
 
         int IntUpdateExtent[6];
         unsigned long OffsetToLastAccessedImage;
         int NumberOfLastAccessedImage;
         int FileNameChanged;
-        ifstream *File;
         char *FileName;
         double VoxelSizes[3];
         int Dimensions[5];// x,y,z,time,channels
         int NumberOfIntensityValues[4];
         unsigned short Identifier;
         unsigned int NewSubFileType;
-        vtkUnsignedShortArray *BitsPerSample;
+        std::vector<unsigned short> bits_per_sample_;
         unsigned int Compression;
-        vtkUnsignedIntArray *StripOffset;
-        vtkUnsignedIntArray *ChannelDataTypes;
-        vtkDoubleArray *TrackWavelengths;
+        std::vector<unsigned int> strip_offset_;
+        std::vector<unsigned int> channel_data_types_;
+        std::vector<double> track_wavelengths_;
         unsigned int SamplesPerPixel;
-        vtkUnsignedIntArray *StripByteCount;
+        std::vector<unsigned int> strip_byte_count_;
         unsigned int LSMSpecificInfoOffset;
         unsigned short PhotometricInterpretation;
         unsigned long ColorMapOffset;
@@ -194,27 +154,28 @@ class LSMFormat : public ImageFormat {
         unsigned short ScanType;
         int DataScalarType;
 
-        vtkUnsignedIntArray *ImageOffsets;
-        vtkUnsignedIntArray *ReadSizes;
-        vtkDoubleArray* DetectorOffsetFirstImage;
-        vtkDoubleArray* DetectorOffsetLastImage;
-        vtkStringArray* LaserNames;
+        std::vector<unsigned int> image_offsets_;
+        std::vector<unsigned int> read_sizes_;
+        std::vector<double> detector_offset_first_image_;
+        std::vector<double> detector_offset_last_image_;
+        std::vector<std::string> laser_names_;
 
         double DataSpacing[3];
         int DataExtent[6];
         int NumberOfScalarComponents;
-        int DataType;
+        int data_type_;
         unsigned long ChannelInfoOffset;
         unsigned long ChannelDataTypesOffset;
-        vtkIntArray *ChannelColors;
-        char **ChannelNames;
-        vtkDoubleArray *TimeStampInformation;
+        std::vector<int> channel_colors_;
+        std::vector<std::string> channel_names_;
+        std::vector<double> time_stamp_info_;
         char* Objective;
         char* Description;
         double TimeInterval;
+        byte_source* src;
 
     private:
-        vtkLSMReader(const vtkLSMReader&);  // Not implemented.
-        void operator=(const vtkLSMReader&);  // Not implemented.
+        LSMFormat(const LSMFormat&);  // Not implemented.
+        void operator=(const LSMFormat&);  // Not implemented.
 };
 #endif
