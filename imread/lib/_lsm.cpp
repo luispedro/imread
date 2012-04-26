@@ -39,17 +39,115 @@
 
 =========================================================================*/
 
-#include "vtkLSMReader.h"
-#include "vtkObjectFactory.h"
-#include "vtkImageData.h"
-#include "vtkSource.h"
-#include "vtkPointData.h"
-#include "vtkByteSwap.h"
-#include "vtkInformation.h"
-#include "vtkInformationVector.h"
-#include "vtkStreamingDemandDrivenPipeline.h"
+#include "_lsm.h"
 #include <time.h>
 
+#define TIF_NEWSUBFILETYPE 254
+#define TIF_IMAGEWIDTH 256
+#define TIF_IMAGELENGTH 257
+#define TIF_BITSPERSAMPLE 258
+#define TIF_COMPRESSION 259
+#define TIF_PHOTOMETRICINTERPRETATION 262
+#define TIF_STRIPOFFSETS 273
+#define TIF_SAMPLESPERPIXEL 277
+#define TIF_STRIPBYTECOUNTS 279
+#define TIF_PLANARCONFIGURATION 284
+#define TIF_PREDICTOR 317
+#define TIF_COLORMAP 320
+#define TIF_CZ_LSMINFO 34412
+
+#define SUBBLOCK_END        0x0FFFFFFFF
+#define SUBBLOCK_RECORDING  0x010000000
+#define SUBBLOCK_LASERS     0x030000000
+#define SUBBLOCK_LASER      0x050000000
+#define SUBBLOCK_TRACKS     0x020000000
+#define SUBBLOCK_TRACK      0x040000000
+#define SUBBLOCK_DETECTION_CHANNELS      0x060000000
+#define SUBBLOCK_DETECTION_CHANNEL       0x070000000
+#define SUBBLOCK_ILLUMINATION_CHANNELS   0x080000000
+#define SUBBLOCK_ILLUMINATION_CHANNEL    0x090000000
+#define SUBBLOCK_BEAM_SPLITTERS          0x0A0000000
+#define SUBBLOCK_BEAM_SPLITTER           0x0B0000000
+#define SUBBLOCK_DATA_CHANNELS           0x0C0000000
+#define SUBBLOCK_DATA_CHANNEL            0x0D0000000
+#define SUBBLOCK_TIMERS                  0x011000000
+#define SUBBLOCK_TIMER                   0x012000000
+#define SUBBLOCK_MARKERS                 0x013000000
+#define SUBBLOCK_MARKER                  0x014000000
+
+#define RECORDING_ENTRY_NAME            0x010000001
+#define RECORDING_ENTRY_DESCRIPTION     0x010000002
+#define RECORDING_ENTRY_NOTES           0x010000003
+#define RECORDING_ENTRY_OBJETIVE        0x010000004
+#define RECORDING_ENTRY_PROCESSING_SUMMARY  0x010000005
+#define RECORDING_ENTRY_SPECIAL_SCAN_MODE   0x010000006
+#define RECORDING_ENTRY_SCAN_TYPE           0x010000007
+#define OLEDB_RECORDING_ENTRY_SCAN_MODE     0x010000008
+#define RECORDING_ENTRY_NUMBER_OF_STACKS    0x010000009
+#define RECORDING_ENTRY_LINES_PER_PLANE     0x01000000A
+#define RECORDING_ENTRY_SAMPLES_PER_LINE    0x01000000B
+#define RECORDING_ENTRY_PLANES_PER_VOLUME   0x01000000C
+#define RECORDING_ENTRY_IMAGES_WIDTH        0x01000000D
+#define RECORDING_ENTRY_IMAGES_HEIGHT       0x01000000E
+#define RECORDING_ENTRY_IMAGES_NUMBER_PLANES 0x01000000F
+#define RECORDING_ENTRY_IMAGES_NUMBER_STACKS 0x010000010
+#define RECORDING_ENTRY_IMAGES_NUMBER_CHANNELS 0x010000011
+#define RECORDING_ENTRY_LINSCAN_XY_SIZE     0x010000012
+#define RECORDING_ENTRY_SCAN_DIRECTION      0x010000013
+#define RECORDING_ENTRY_TIME_SERIES         0x010000014
+#define RECORDING_ENTRY_ORIGINAL_SCAN_DATA  0x010000015
+#define RECORDING_ENTRY_ZOOM_X              0x010000016
+#define RECORDING_ENTRY_ZOOM_Y              0x010000017
+#define RECORDING_ENTRY_ZOOM_Z              0x010000018
+#define RECORDING_ENTRY_SAMPLE_0X           0x010000019
+#define RECORDING_ENTRY_SAMPLE_0Y           0x01000001A
+#define RECORDING_ENTRY_SAMPLE_0Z           0x01000001B
+#define RECORDING_ENTRY_SAMPLE_SPACING      0x01000001C
+#define RECORDING_ENTRY_LINE_SPACING        0x01000001D
+#define RECORDING_ENTRY_PLANE_SPACING       0x01000001E
+#define RECORDING_ENTRY_PLANE_WIDTH         0x01000001F
+#define RECORDING_ENTRY_PLANE_HEIGHT        0x010000020
+#define RECORDING_ENTRY_VOLUME_DEPTH        0x010000021
+#define RECORDING_ENTRY_ROTATION            0x010000034
+#define RECORDING_ENTRY_NUTATION            0x010000023
+#define RECORDING_ENTRY_PRECESSION          0x010000035
+#define RECORDING_ENTRY_SAMPLE_0TIME        0x010000036
+
+
+#define LASER_ENTRY_NAME                         0x050000001
+#define LASER_ENTRY_ACQUIRE                      0x050000002
+#define LASER_ENTRY_POWER                        0x050000003
+
+#define DETCHANNEL_ENTRY_DETECTOR_GAIN_FIRST     0x070000003
+#define DETCHANNEL_ENTRY_DETECTOR_GAIN_LAST      0x070000004
+#define DETCHANNEL_ENTRY_INTEGRATION_MODE        0x070000001
+#define DETCHANNEL_ENTRY_ACQUIRE                 0x07000000B
+#define DETCHANNEL_DETECTION_CHANNEL_NAME        0x070000014
+
+#define ILLUMCHANNEL_ENTRY_WAVELENGTH            0x090000003
+#define ILLUMCHANNEL_ENTRY_AQUIRE                0x090000004
+#define ILLUMCHANNEL_DETCHANNEL_NAME             0x090000005
+
+#define TRACK_ENTRY_ACQUIRE                      0x040000006
+#define TRACK_ENTRY_NAME                         0x04000000C
+#define TYPE_SUBBLOCK   0
+#define TYPE_LONG       4
+#define TYPE_RATIONAL   5
+#define TYPE_ASCII      2
+
+
+#define TIFF_BYTE 1
+#define TIFF_ASCII 2
+#define TIFF_SHORT 3
+#define TIFF_LONG 4
+#define TIFF_RATIONAL 5
+
+#define LSM_MAGIC_NUMBER 42
+
+#define LSM_COMPRESSED 5
+
+#define VTK_FILE_BYTE_ORDER_BIG_ENDIAN 0
+#define VTK_FILE_BYTE_ORDER_LITTLE_ENDIAN 1
 
 #define PRT_EXT(ext) ext[0],ext[1],ext[2],ext[3],ext[4],ext[5]
 #define PRT_EXT2(ext) ext[0]<<","<<ext[1]<<","<<ext[2]<<","<<ext[3]<<","<<ext[4]<<","<<ext[5]
@@ -206,8 +304,6 @@ int lzw_decode(LZWState *p, unsigned char *buf, int len){
     s->fc = fc;
     return len - l;
 }
-
-vtkStandardNewMacro(vtkLSMReader);
 
 vtkLSMReader::vtkLSMReader()
 {
@@ -564,7 +660,7 @@ int vtkLSMReader::ReadChannelDataTypes(ifstream *f,unsigned long start)
     this->ChannelDataTypes->SetNumberOfTuples(numOfChls);
     this->ChannelDataTypes->SetNumberOfComponents(1);  
     for(unsigned int i=0; i < numOfChls; i++) {
-        dataType = this->ReadUnsignedInt(f, &pos);
+        dataType = ReadUnsignedInt(f, &pos);
         this->ChannelDataTypes->SetValue(i, dataType);
         vtkDebugMacro(<<"Channel "<<i<<" has datatype "<<dataType<<"\n");
     }
@@ -580,12 +676,12 @@ int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)
 
   pos = start;
   // Read size of structure
-  sizeOfStructure = this->ReadInt(f,&pos);
+  sizeOfStructure = ReadInt(f,&pos);
   vtkDebugMacro(<<"size of structure = "<<sizeOfStructure<<"\n");
   // Read number of colors
-  colNum = this->ReadInt(f,&pos);
+  colNum = ReadInt(f,&pos);
   // Read number of names
-  nameNum = this->ReadInt(f,&pos);
+  nameNum = ReadInt(f,&pos);
   vtkDebugMacro(<<"nameNum="<<nameNum);
   sizeOfNames = sizeOfStructure - ( (10*4) + (colNum*4) );
   vtkDebugMacro(<<"sizeofNames="<<sizeOfNames<<"\n");
@@ -607,9 +703,9 @@ int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)
     }
 
   // Read offset to color info
-  colorOffset = this->ReadInt(f,&pos) + start;
+  colorOffset = ReadInt(f,&pos) + start;
   // Read offset to name info
-  nameOffset = this->ReadInt(f,&pos) + start;
+  nameOffset = ReadInt(f,&pos) + start;
 
   vtkDebugMacro(<<"colorOffset="<<colorOffset);
   vtkDebugMacro(<<"nameOffset="<<nameOffset);
@@ -622,17 +718,17 @@ int vtkLSMReader::ReadChannelColorsAndNames(ifstream *f,unsigned long start)
   // Read the colors
   for(int j = 0; j < this->GetNumberOfChannels(); j++)
     {
-    this->ReadFile(f,&colorOffset,4,colorBuff,1);
+    ReadFile(f,&colorOffset,4,colorBuff,1);
     
     for(int i=0;i<3;i++)
       {
-        component = this->CharPointerToUnsignedChar(colorBuff+i);        
+        component = CharPointerToUnsignedChar(colorBuff+i);        
 
         this->ChannelColors->SetValue(i+(3*j),component);
       }
     }
 
-  this->ReadFile(f,&nameOffset,sizeOfNames,nameBuff,1);
+  ReadFile(f,&nameOffset,sizeOfNames,nameBuff,1);
 
   nameLength = nameSkip = 0;
   tempBuff = nameBuff;
@@ -661,7 +757,7 @@ int vtkLSMReader::ReadTimeStampInformation(ifstream *f,unsigned long offset)
     return 0;
   }
   offset += 4;
-  numOffStamps = this->ReadInt(f,&offset);
+  numOffStamps = ReadInt(f,&offset);
   vtkDebugMacro(<<"There are "<<numOffStamps<<" stamps available");
   if(numOffStamps != this->GetNumberOfTimePoints())
     {
@@ -672,7 +768,7 @@ int vtkLSMReader::ReadTimeStampInformation(ifstream *f,unsigned long offset)
   this->TimeStampInformation->SetNumberOfComponents(1);
   for(int i=0;i<numOffStamps;i++)
     {
-    this->TimeStampInformation->SetValue(i,this->ReadDouble(f,&offset));
+    this->TimeStampInformation->SetValue(i,ReadDouble(f,&offset));
     }
   return 0;
 }
@@ -691,23 +787,23 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
                 // second is number of bytes in this structure
 
   // Then we read X
-  this->NumberOfIntensityValues[0] = this->ReadInt(f,&pos); 
+  this->NumberOfIntensityValues[0] = ReadInt(f,&pos); 
   
   // vtkByteSwap::Swap4LE((int*)&this->NumberOfIntensityValues[0]);
   this->Dimensions[0] = this->NumberOfIntensityValues[0];
   // Y
-  this->NumberOfIntensityValues[1] = this->ReadInt(f,&pos); 
+  this->NumberOfIntensityValues[1] = ReadInt(f,&pos); 
   this->Dimensions[1] = this->NumberOfIntensityValues[1];
   // and Z dimension
-  this->NumberOfIntensityValues[2] = this->ReadInt(f,&pos); 
+  this->NumberOfIntensityValues[2] = ReadInt(f,&pos); 
   this->Dimensions[2] = this->NumberOfIntensityValues[2];
   vtkDebugMacro(<<"Dimensions =" << Dimensions[0]<<","<<Dimensions[1]<<","<<Dimensions[2]<<"\n");
   // Read number of channels
-  this->Dimensions[4] = this->ReadInt(f,&pos); 
+  this->Dimensions[4] = ReadInt(f,&pos); 
   vtkDebugMacro(<<"Number of Channels"<<this->Dimensions[4]<<"\n");
 
   // Read number of timepoints
-  this->NumberOfIntensityValues[3] = this->ReadInt(f,&pos);
+  this->NumberOfIntensityValues[3] = ReadInt(f,&pos);
   this->Dimensions[3] = this->NumberOfIntensityValues[3];
 
   // Read datatype, 1 for 8-bit unsigned int
@@ -716,16 +812,16 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
   //                0 if the channels have different types
   //                In that case, u32OffsetChannelDataTypes
   //                has further info
-  this->DataType = this->ReadInt(f,&pos);
+  this->DataType = ReadInt(f,&pos);
   vtkDebugMacro(<<"Data type="<<this->DataType<<"\n");
 
   // Skip the width and height of thumbnails
   pos += 2 * 4;
 
   // Read voxel sizes
-  this->VoxelSizes[0] = this->ReadDouble(f,&pos);
-  this->VoxelSizes[1] = this->ReadDouble(f,&pos);
-  this->VoxelSizes[2] = this->ReadDouble(f,&pos);
+  this->VoxelSizes[0] = ReadDouble(f,&pos);
+  this->VoxelSizes[1] = ReadDouble(f,&pos);
+  this->VoxelSizes[2] = ReadDouble(f,&pos);
   vtkDebugMacro("Voxel size="<<VoxelSizes[0]<<","<<VoxelSizes[1]<<","<<VoxelSizes[2]<<"\n");
 
   // Skip over OriginX,OriginY,OriginZ which are not used
@@ -743,7 +839,7 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
   // 8 spline plane x-z
   // 9 time series spline plane
   // 10 point mode
-  this->ScanType = this->ReadShort(f,&pos);
+  this->ScanType = ReadShort(f,&pos);
   vtkDebugMacro("ScanType="<<this->ScanType<<"\n");
 
   if (this->ScanType == 1)
@@ -760,20 +856,20 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
   pos += 1*2 + 4*4;// + 1*8 + 3*4;
   
   // Read OffsetChannelColors, which is an offset to channel colors and names
-  this->ChannelInfoOffset = this->ReadUnsignedInt(f,&pos);
+  this->ChannelInfoOffset = ReadUnsignedInt(f,&pos);
   vtkDebugMacro(<<"Channel info offset (from addr"<<pos<<")="<<this->ChannelInfoOffset<<"\n");
   if (this->ChannelInfoOffset != 0)
 	this->ReadChannelColorsAndNames(f,this->ChannelInfoOffset);
 
   // Skip time interval in seconds (8 bytes)
   //pos += 1*8;
-  this->TimeInterval = this->ReadDouble(f, &pos);
+  this->TimeInterval = ReadDouble(f, &pos);
   printf("Time interval = %f\n", this->TimeInterval);
   
   // If each channel has different datatype (meaning DataType == 0), then
   // read the offset to more information and read the info
-  this->ChannelDataTypesOffset = this->ReadInt(f, &pos);
-  unsigned long scanInformationOffset = this->ReadUnsignedInt(f, &pos);
+  this->ChannelDataTypesOffset = ReadInt(f, &pos);
+  unsigned long scanInformationOffset = ReadUnsignedInt(f, &pos);
   if(this->DataType == 0) {
     this->ReadChannelDataTypes(f, this->ChannelDataTypesOffset);
   }
@@ -784,7 +880,7 @@ int vtkLSMReader::ReadLSMSpecificInfo(ifstream *f,unsigned long pos)
   // SKip Zeiss Vision KS-3D speific data
   pos +=  4;
   // Read timestamp information
-  offset = this->ReadUnsignedInt(f,&pos);
+  offset = ReadUnsignedInt(f,&pos);
   this->ReadTimeStampInformation(f,offset);
   
   return 1;
@@ -800,9 +896,9 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
     char* chName; 
     int chIsOn = 0, trackIsOn = 0, isOn = 0;
     while( 1 ) {
-        entry = this->ReadUnsignedInt(f, &pos);
-        type =  this->ReadUnsignedInt(f, &pos);
-        size =  this->ReadUnsignedInt(f, &pos);
+        entry = ReadUnsignedInt(f, &pos);
+        type =  ReadUnsignedInt(f, &pos);
+        size =  ReadUnsignedInt(f, &pos);
                 
         //printf("entry=%d\n", entry);
         if(type == TYPE_SUBBLOCK && entry == SUBBLOCK_END) subblocksOpen--;
@@ -812,45 +908,45 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
        
         switch(entry) {
             case DETCHANNEL_ENTRY_DETECTOR_GAIN_FIRST:
-                gain = this->ReadDouble(f, &pos);
+                gain = ReadDouble(f, &pos);
                 continue;
                 break;
             case DETCHANNEL_ENTRY_DETECTOR_GAIN_LAST:
-                gain = this->ReadDouble(f, &pos);
+                gain = ReadDouble(f, &pos);
                 continue;
                 break;
             case DETCHANNEL_ENTRY_INTEGRATION_MODE:
-                mode = this->ReadInt(f, &pos);
+                mode = ReadInt(f, &pos);
                 continue;
                 break;
             case LASER_ENTRY_NAME:
                 name = new char[size+1];
-                this->ReadData(f, &pos, size, name);
+                ReadData(f, &pos, size, name);
                 //printf("Laser name: %s\n", name);
                 this->LaserNames->InsertNextValue(name);
                 delete[] name;
                 continue;
                 break;
             case ILLUMCHANNEL_ENTRY_WAVELENGTH:
-                wavelength = this->ReadDouble(f, &pos);
+                wavelength = ReadDouble(f, &pos);
          
                 continue;
                 break;
             case ILLUMCHANNEL_DETCHANNEL_NAME: 
                 chName = new char[size+1];
-                this->ReadData(f, &pos, size, chName);
+                ReadData(f, &pos, size, chName);
 //                printf("chName = %s\n", chName);
                 delete[] chName;
                 continue;
                 break;
             case TRACK_ENTRY_ACQUIRE:
-                trackIsOn = this->ReadInt(f, &pos);
+                trackIsOn = ReadInt(f, &pos);
                 
                 continue;
                 break;
             case TRACK_ENTRY_NAME:
                 chName = new char[size+1];
-                this->ReadData(f, &pos, size, chName);
+                ReadData(f, &pos, size, chName);
                 if(trackIsOn) {
                   //  printf("Track name = %s is on\n", chName);
                 }
@@ -859,7 +955,7 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
                 break;      
             case DETCHANNEL_DETECTION_CHANNEL_NAME:
                chName = new char[size+1];
-                this->ReadData(f, &pos, size, chName);
+                ReadData(f, &pos, size, chName);
                 if(chIsOn) {
                     //printf("Detection channel name = %s is on\n", chName);
                 }
@@ -867,12 +963,12 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
                 continue;
                 break;
             case DETCHANNEL_ENTRY_ACQUIRE:
-                chIsOn = this->ReadInt(f, &pos);
+                chIsOn = ReadInt(f, &pos);
                 continue;
                 break;
     
             case ILLUMCHANNEL_ENTRY_AQUIRE:
-                isOn = this->ReadInt(f, &pos);
+                isOn = ReadInt(f, &pos);
                 if(isOn) {
                    if(trackIsOn) {    
                          this->TrackWavelengths->InsertNextValue(wavelength);            
@@ -883,7 +979,7 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
                 break;
             case RECORDING_ENTRY_DESCRIPTION:
                 Description = new char[size+1];
-                this->ReadData(f, &pos, size, Description);
+                ReadData(f, &pos, size, Description);
                 //printf("Description: %s\n", Description);
                 continue;
                 break;
@@ -894,7 +990,7 @@ int vtkLSMReader::ReadScanInformation(ifstream* f, unsigned long pos)
 					this->Objective = NULL;
 					}
                 Objective = new char[size+1];
-                this->ReadData(f, &pos, size, Objective);
+                ReadData(f, &pos, size, Objective);
                 continue;
                 
             case SUBBLOCK_RECORDING:
@@ -946,11 +1042,11 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
   char tempValue[4],tempValue2[4];
   char *actualValue = NULL;
     //vtkDebugMacro(<<"Analyze tag start pos="<<startPos<<"\n");
-  tag = this->ReadUnsignedShort(f,&startPos);
-  type = this->ReadUnsignedShort(f,&startPos);
-  length = this->ReadUnsignedInt(f,&startPos);
+  tag = ReadUnsignedShort(f,&startPos);
+  type = ReadUnsignedShort(f,&startPos);
+  length = ReadUnsignedInt(f,&startPos);
    
-  this->ReadFile(f,&startPos,4,tempValue);
+  ReadFile(f,&startPos,4,tempValue);
 
   for(i=0;i<4;i++)tempValue2[i]=tempValue[i];
 #ifdef VTK_WORDS_BIGENDIAN
@@ -968,7 +1064,7 @@ int vtkLSMReader::AnalyzeTag(ifstream *f,unsigned long startPos)
     startPos = value;
    if(tag == TIF_STRIPOFFSETS ||tag == TIF_STRIPBYTECOUNTS) {
       // vtkDebugMacro(<<"Reading actual value from "<<startPos<<"to " << startPos+readSize);
-        if( !this->ReadFile(f,&startPos,readSize,actualValue) ) {
+        if( !ReadFile(f,&startPos,readSize,actualValue) ) {
             vtkErrorMacro(<<"Failed to get strip offsets\n");
             return 0;
         }
@@ -1200,7 +1296,7 @@ unsigned long vtkLSMReader::SeekFile(int image)
   }
   else
   {
-    offset = (unsigned long)this->ReadInt(this->GetFile(),&offset);
+    offset = (unsigned long)ReadInt(this->GetFile(),&offset);
     vtkDebugMacro(<<"offset (from file): "<< offset<<"\n");
   }
 
@@ -1233,7 +1329,7 @@ unsigned long vtkLSMReader::ReadImageDirectory(ifstream *f,unsigned long offset)
   unsigned long nextOffset = offset;
   
   //vtkDebugMacro(<<"Reading unsigned short from "<<offset<<"\n");
-  numberOfTags = this->ReadUnsignedShort(f,&offset);
+  numberOfTags = ReadUnsignedShort(f,&offset);
   for(int i = 0; i < numberOfTags; i++)
   {   
     this->AnalyzeTag(f,offset);
@@ -1246,7 +1342,7 @@ unsigned long vtkLSMReader::ReadImageDirectory(ifstream *f,unsigned long offset)
     //vtkDebugMacro(<<"New offset="<<offset);
   }
   nextOffset += 2 + numberOfTags * 12;
-  return this->ReadUnsignedInt(f,&nextOffset);
+  return ReadUnsignedInt(f,&nextOffset);
 }
 
 
@@ -1472,14 +1568,14 @@ int vtkLSMReader::RequestInformation (
 
   startPos = 2;  // header identifier
 
-  this->Identifier = this->ReadUnsignedShort(this->GetFile(),&startPos);
+  this->Identifier = ReadUnsignedShort(this->GetFile(),&startPos);
   if(!this->IsValidLSMFile())
     {
     vtkErrorMacro("Given file is not a valid LSM-file.");
     return 0;
     }
   
-  imageDirOffset = this->ReadUnsignedInt(this->GetFile(),&startPos);
+  imageDirOffset = ReadUnsignedInt(this->GetFile(),&startPos);
 
   this->ReadImageDirectory(this->GetFile(),imageDirOffset);
 
@@ -1632,92 +1728,93 @@ int vtkLSMReader::TIFF_BYTES(unsigned short type)
   return bytes;
 }
 
+namespace {
 unsigned char vtkLSMReader::CharPointerToUnsignedChar(char *buf)
 {
   return *((unsigned char*)(buf));
 }
 
-int vtkLSMReader::CharPointerToInt(char *buf)
+int CharPointerToInt(char *buf)
 {
   return *((int*)(buf));
 }
 
-unsigned int vtkLSMReader::CharPointerToUnsignedInt(char *buf)
+unsigned int CharPointerToUnsignedInt(char *buf)
 {
   return *((unsigned int*)(buf));
 }
 
-short vtkLSMReader::CharPointerToShort(char *buf)
+short CharPointerToShort(char *buf)
 {
   return *((short*)(buf));
 }
 
-unsigned short vtkLSMReader::CharPointerToUnsignedShort(char *buf)
+unsigned short CharPointerToUnsignedShort(char *buf)
 {
   return *((unsigned short*)(buf));
 }
 
-double vtkLSMReader::CharPointerToDouble(char *buf)
+double CharPointerToDouble(char *buf)
 {
   return *((double*)(buf));
 }
 
-int vtkLSMReader::ReadInt(ifstream *f,unsigned long *pos)
+int ReadInt(ifstream *f,unsigned long *pos)
 {
   char buff[4];
-  this->ReadFile(f,pos,4,buff);
+  ReadFile(f,pos,4,buff);
 #ifdef VTK_WORDS_BIGENDIAN
   vtkByteSwap::Swap4LE((int*)buff);
 #endif
   return CharPointerToInt(buff);
 }
 
-unsigned int vtkLSMReader::ReadUnsignedInt(ifstream *f,unsigned long *pos)
+unsigned int ReadUnsignedInt(ifstream *f,unsigned long *pos)
 {
   char buff[4];
-  this->ReadFile(f,pos,4,buff);
+  ReadFile(f,pos,4,buff);
 #ifdef VTK_WORDS_BIGENDIAN
   vtkByteSwap::Swap4LE((unsigned int*)buff);
 #endif
   return this->CharPointerToUnsignedInt(buff);
 }
 
-short vtkLSMReader::ReadShort(ifstream *f,unsigned long *pos)
+short ReadShort(ifstream *f,unsigned long *pos)
 {
   char buff[2];
-  this->ReadFile(f,pos,2,buff);
+  ReadFile(f,pos,2,buff);
 #ifdef VTK_WORDS_BIGENDIAN
   vtkByteSwap::Swap2LE((short*)buff);
 #endif  
   return this->CharPointerToShort(buff);
 }
 
-unsigned short vtkLSMReader::ReadUnsignedShort(ifstream *f,unsigned long *pos)
+unsigned short ReadUnsignedShort(ifstream *f,unsigned long *pos)
 {
   char buff[2];
-  this->ReadFile(f,pos,2,buff);
+  ReadFile(f,pos,2,buff);
 #ifdef VTK_WORDS_BIGENDIAN
   vtkByteSwap::Swap2LE((unsigned short*)buff);
 #endif
   return this->CharPointerToUnsignedShort(buff);
 }
 
-double vtkLSMReader::ReadDouble(ifstream *f,unsigned long *pos)
+double ReadDouble(ifstream *f,unsigned long *pos)
 {
   char buff[8];
-  this->ReadFile(f,pos,8,buff);
+  ReadFile(f,pos,8,buff);
 #ifdef VTK_WORDS_BIGENDIAN
   vtkByteSwap::Swap8LE((double*)buff);
 #endif  
-  return this->CharPointerToDouble(buff);
+  return CharPointerToDouble(buff);
 }
 
 int vtkLSMReader::ReadData(ifstream *f,unsigned long *pos,int size,char *buf)
 {
-  return this->ReadFile(f,pos,size,buf,1);
+  return ReadFile(f,pos,size,buf,1);
 }
 
-int vtkLSMReader::ReadFile(ifstream *f,unsigned long *pos,int size,char *buf,bool swap)
+int ReadFile(ifstream *f,unsigned long *pos,int size,char *buf,bool swap)
 {
   unsigned int ret = 1;
   f->seekg(*pos,ios::beg);
@@ -1733,6 +1830,8 @@ int vtkLSMReader::ReadFile(ifstream *f,unsigned long *pos,int size,char *buf,boo
   *pos = *pos + size;
   return ret;
 }
+
+} // namespace
 
 unsigned int vtkLSMReader::GetUpdateChannel() {
    return (this->IntUpdateExtent[4]>this->GetNumberOfChannels()-1?this->GetNumberOfChannels()-1:this->IntUpdateExtent[4]);
