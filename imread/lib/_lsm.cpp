@@ -184,7 +184,6 @@ class LSMReader {
 
         unsigned long ReadImageDirectory(byte_source *,unsigned long);
         void SetChannelName(const char *,int);
-        int ClearChannelNames();
         int FindChannelNameStart(const char *, int);
         int ReadChannelName(const char *, int, char *);
         int ReadChannelDataTypes(byte_source*, unsigned long);
@@ -478,35 +477,20 @@ void LSMReader::SetChannelName(const char * name, const int chNum)
     this->channel_names_[chNum] = std::string(name);
 }
 
-int LSMReader::FindChannelNameStart(const char *nameBuff, int length)
-{
-  int i;
-  char ch;
-  for(i=0;i<length;i++)
-    {
-    ch = *(nameBuff+i);
-    if(ch > 32)
-      {
-      break;
-      }
+int LSMReader::FindChannelNameStart(const char *buf, const int length) {
+    for (int i = 0; i < length; ++i) {
+        char ch = buf[i];
+        if (ch > 32) return i;
     }
-  return i;
+    return length;
 }
 
-int LSMReader::ReadChannelName(const char *nameBuff, int length, char *buffer)
-{
-  int i;
-  char component;
-  for(i=0;i<length;i++)
-    {
-    component = *(nameBuff+i);
-    *(buffer+i) = component;
-    if(component == 0)
-      {
-      break;
-      }
+int LSMReader::ReadChannelName(const char *nameBuff, const int length, char *buffer) {
+    for (int i = 0; i < length; ++i) {
+        buffer[i] = nameBuff[i];
+        if (!buffer[i]) return i;
     }
-  return i;
+    return length;
 }
 
 int LSMReader::ReadChannelDataTypes(byte_source* s, unsigned long start)
@@ -523,69 +507,61 @@ int LSMReader::ReadChannelDataTypes(byte_source* s, unsigned long start)
 
 int LSMReader::ReadChannelColorsAndNames(byte_source* s, unsigned long start)
 {
-  int colNum,nameNum,sizeOfStructure,sizeOfNames,nameLength, nameSkip;
-  unsigned long colorOffset,nameOffset,pos;
-  char *nameBuff,*colorBuff,*name,*tempBuff;
-  unsigned char component;
+    int colNum,nameNum,sizeOfStructure,sizeOfNames,nameLength, nameSkip;
+    unsigned long colorOffset,nameOffset,pos;
+    char *nameBuff,*colorBuff,*name,*tempBuff;
+    unsigned char component;
 
-  pos = start;
-  // Read size of structure
-  sizeOfStructure = ReadInt(s,&pos);
-  // Read number of colors
-  colNum = ReadInt(s,&pos);
-  // Read number of names
-  nameNum = ReadInt(s,&pos);
-  sizeOfNames = sizeOfStructure - ( (10*4) + (colNum*4) );
+    pos = start;
+    // Read size of structure
+    sizeOfStructure = ReadInt(s,&pos);
+    // Read number of colors
+    colNum = ReadInt(s,&pos);
+    // Read number of names
+    nameNum = ReadInt(s,&pos);
+    sizeOfNames = sizeOfStructure - ( (10*4) + (colNum*4) );
 
-  nameBuff = new char[sizeOfNames+1];
-  name = new char[sizeOfNames+1];
-  colorBuff = new char[5];
+    nameBuff = new char[sizeOfNames+1];
+    name = new char[sizeOfNames+1];
 
-  if(colNum != this->GetNumberOfChannels())
-    {
+    if(colNum != this->GetNumberOfChannels()) {
+        // not great
     }
-  if(nameNum != this->GetNumberOfChannels())
-    {
-
+    if(nameNum != this->GetNumberOfChannels()) {
+        // not great
     }
 
-  // Read offset to color info
-  colorOffset = ReadInt(s,&pos) + start;
-  // Read offset to name info
-  nameOffset = ReadInt(s,&pos) + start;
+    // Read offset to color info
+    colorOffset = ReadInt(s,&pos) + start;
+    // Read offset to name info
+    nameOffset = ReadInt(s,&pos) + start;
 
-  this->channel_colors_.resize( 3 *  (colNum+1));
+    this->channel_colors_.resize( 3 *  (colNum+1));
 
   // Read the colors
-  for(int j = 0; j < this->GetNumberOfChannels(); j++)
-    {
-    ReadFile(s,&colorOffset,4,colorBuff,1);
-
-    for(int i=0;i<3;i++)
-      {
-        component = CharPointerToUnsignedChar(colorBuff+i);
-
-        this->channel_colors_[i + 3*j] = component;
-      }
+    for(int j = 0; j < this->GetNumberOfChannels(); ++j) {
+        char colorBuff[5];
+        ReadFile(s,&colorOffset,4,colorBuff,1);
+        for(int i=0;i<3;i++) {
+            component = CharPointerToUnsignedChar(colorBuff+i);
+            this->channel_colors_[i + 3*j] = component;
+        }
     }
 
-  ReadFile(s,&nameOffset,sizeOfNames,nameBuff,1);
+    ReadFile(s,&nameOffset,sizeOfNames,nameBuff,1);
 
-  nameLength = nameSkip = 0;
-  tempBuff = nameBuff;
-  for(int i = 0; i < this->GetNumberOfChannels(); i++)
-    {
-    nameSkip = this->FindChannelNameStart(tempBuff,sizeOfNames-nameSkip);
-    nameLength = this->ReadChannelName(tempBuff+nameSkip,sizeOfNames-nameSkip,name);
+    nameLength = nameSkip = 0;
+    tempBuff = nameBuff;
+    for(int i = 0; i < this->GetNumberOfChannels(); i++) {
+        nameSkip = this->FindChannelNameStart(tempBuff,sizeOfNames-nameSkip);
+        nameLength = this->ReadChannelName(tempBuff+nameSkip,sizeOfNames-nameSkip,name);
 
-    tempBuff += nameSkip + nameLength;
-    this->SetChannelName(name,i);
+        tempBuff += nameSkip + nameLength;
+        this->SetChannelName(name,i);
     }
-
-  delete [] nameBuff;
-  delete [] name;
-  delete [] colorBuff;
-  return 0;
+    delete [] nameBuff;
+    delete [] name;
+    return 0;
 }
 
 int LSMReader::ReadTimeStampInformation(byte_source* s, unsigned long offset)
