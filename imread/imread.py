@@ -8,11 +8,11 @@ import numpy as np
 import _imread
 
 
-def imread(filename, as_grey=False):
+def imread(filename, as_grey=False, formatstr=None):
     '''
-    im = imread(filename, as_grey=False)
+    im = imread(filename, as_grey=False, formatstr={filename extension})
 
-    The file type is guessed from `filename`.
+    Read an image into a ndarray.
 
     Parameters
     ----------
@@ -20,6 +20,10 @@ def imread(filename, as_grey=False):
         filename
     as_grey : boolean, optional
         Whether to convert to grey scale image (default: no)
+    formatstr : str, optional
+        Format name. This is typically the same as the extension of the file
+        and inferred from there. However, if you have a file whose extension
+        does not correspond to the format, you can pass it explicitly.
 
     Returns
     -------
@@ -28,7 +32,15 @@ def imread(filename, as_grey=False):
         `as_grey`. Conversion from colour to grayscale will return a floating
         point image.
     '''
-    im = _imread.imread(filename)
+    if formatstr is None:
+        from os import path
+        _,ext = path.splitext(filename)
+        if len(ext) and ext[0] == '.':
+            formatstr = ext[1:]
+        else:
+            raise ValueError('imread.imread: Could not identify format from filename: `%s`' % filename)
+
+    im = _imread.imread(filename, formatstr)
     if as_grey and len(im.shape) == 3:
         # these are the values that wikipedia says are typical
         transform = np.array([ 0.30,  0.59,  0.11])

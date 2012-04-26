@@ -18,7 +18,7 @@ def test_png_raw():
     simple = np.arange(16*16).reshape((16,16))
     simple = simple.astype(np.uint8)
     _imread.imsave(_filename, 'png', simple)
-    back = _imread.imread(_filename)
+    back = imread(_filename)
     assert np.all(simple == back)
 
 @with_setup(teardown=_remove_file)
@@ -26,7 +26,7 @@ def test_asym():
     simple = np.arange(16*16).reshape((32,8))
     simple = simple.astype(np.uint8)
     _imread.imsave(_filename, 'png', simple)
-    back = _imread.imread(_filename)
+    back = imread(_filename)
     assert np.all(simple == back)
 
 

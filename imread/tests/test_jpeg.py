@@ -17,7 +17,7 @@ def test_jpeg():
     f %= 16
     f = f.astype(np.uint8)
     _imread.imsave(_filename, 'jpeg', f)
-    g = _imread.imread(_filename).squeeze()
+    g = imread(_filename).squeeze()
     assert np.mean(np.abs(f.astype(float)-g)) < 1.
 
 
