@@ -1181,8 +1181,8 @@ std::auto_ptr<Image> LSMReader::read(ImageFactory* factory) {
         for (int timepoint = 0; timepoint < this->dimensions_[3]; ++timepoint) {
             for (int ch = 0; ch < this->dimensions_[4]; ++ch) {
                 this->ConstructSliceOffsets(ch);
-                byte* imdata = imstart + (z*(this->dimensions_[3]*this->dimensions_[4] + timepoint*this->dimensions_[4] + ch)
-                                    * this->dimensions_[0]*this->dimensions_[1]* BYTES_BY_DATA_TYPE(dataType));
+                byte* imdata = imstart + (z*(this->dimensions_[3]*this->dimensions_[4]) + timepoint*this->dimensions_[4] + ch)
+                                    * this->dimensions_[0]*this->dimensions_[1]* BYTES_BY_DATA_TYPE(dataType);
                 unsigned long offset = this->GetSliceOffset(timepoint, z);
                 const int readSize = this->GetStripByteCount(timepoint, z);
                 std::fill(imdata, imdata + readSize, 0);
