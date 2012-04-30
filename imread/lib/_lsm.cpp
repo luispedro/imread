@@ -159,7 +159,7 @@ class LSMReader {
         ~LSMReader();
 
         virtual void PrintSelf(std::ostream& os, const char* indent="");
-        void read();
+        std::auto_ptr<Image> read(ImageFactory* factory);
         void readHeader();
 
         int GetNumberOfTimePoints() { return dimensions_[3]; }
@@ -168,8 +168,6 @@ class LSMReader {
 
         int GetChannelColorComponent(int,int);
         std::string GetChannelName(int);
-        void SetUpdateTimePoint(int);
-        void SetUpdateChannel(int);
 
         void SetDataByteOrderToBigEndian();
         void SetDataByteOrderToLittleEndian();
@@ -250,9 +248,10 @@ class LSMReader {
         std::string description_;
         double TimeInterval;
         byte_source* src;
+
 };
 
-int ReadFile(byte_source* s, unsigned long *pos,int size,char *buf,bool swap=false)
+int ReadFile(byte_source* s, unsigned long *pos,int size,void *buf,bool swap=false)
 {
   s->seek_absolute(*pos);
   const unsigned ret = s->read(reinterpret_cast<byte*>(buf), size);
@@ -1150,17 +1149,6 @@ int LSMReader::GetChannelColorComponent(int ch, int component)
   return this->channel_colors_[(ch*3) + component];
 }
 
-void LSMReader::SetUpdateTimePoint(int timepoint)
-{
-    if (timepoint >= 0) this->update_timepoint_ = timepoint;
-}
-
-void LSMReader::SetUpdateChannel(int ch)
-{
-    if (ch >= 0) this-> update_channel_ = ch;
-}
-
-
 unsigned int LSMReader::GetUpdateChannel() {
    return (this->update_channel_ > this->GetNumberOfChannels()-1?this->GetNumberOfChannels()-1:this->update_channel_);
 
@@ -1206,68 +1194,43 @@ void LSMReader::PrintSelf(std::ostream& os, const char* indent)
     }
 }
 
-std::auto_ptr<Image> LSMReader::read() {
+std::auto_ptr<Image> LSMReader::read(ImageFactory* factory) {
     this->readHeader();
-    unsigned char *buf, *tempBuf;
-    int size,readSize,numberOfPixels,timepoint,channel;
-    int outExtent[6];
-
     this->ConstructSliceOffsets();
+
 
     // if given time point or channel index is bigger than maximum,
     // we use maximum
-    timepoint = (this->update_timepoint_ >this->GetNumberOfTimePoints()-1?this->GetNumberOfTimePoints()-1:this->update_timepoint_);
-    channel = this->GetUpdateChannel();
-    numberOfPixels = this->dimensions_[0]*this->dimensions_[1]*(outExtent[5]-outExtent[4]+1 );
-    int dataType = this->GetDataTypeForChannel(channel);
-    size = numberOfPixels * BYTES_BY_DATA_TYPE(dataType);
+    const int timepoint = (this->update_timepoint_ >this->GetNumberOfTimePoints()-1?this->GetNumberOfTimePoints()-1:this->update_timepoint_);
+    const int channel = this->GetUpdateChannel();
+    const int numberOfPixels = this->dimensions_[0]*this->dimensions_[1]*this->dimensions_[2];
+    const int dataType = this->GetDataTypeForChannel(channel);
+    const int size = numberOfPixels * BYTES_BY_DATA_TYPE(dataType);
 
-    buf = new unsigned char[size];
-    tempBuf = buf;
+    const int h = this->dimensions_[0];
+    const int w = this->dimensions_[1];
+    const int depth = this->dimensions_[4];
 
-    for(int i=outExtent[4];i<=outExtent[5];i++)
-    {
+    std::auto_ptr<Image> output = factory->create(BYTES_BY_DATA_TYPE(dataType)*8, h, w, depth);
+
+    byte* imdata = output->rowp_as<byte>(0);
+
+    for(int i=0; i < this->dimensions_[2]; ++i) {
         unsigned long offset = this->GetSliceOffset(timepoint, i);
-        readSize = this->GetStripByteCount(timepoint, i);
-        for(int i=0;i<readSize;i++) tempBuf[i] = 0;
+        const int readSize = this->GetStripByteCount(timepoint, i);
+        std::fill(imdata, imdata + readSize, 0);
 
-        int bytes = ReadFile(this->src, &offset, readSize, (char *)tempBuf, 1);
+        int bytes = ReadFile(this->src, &offset, readSize, imdata, true);
 
         if (bytes != readSize) {
             throw "oops";
         }
         if (this->compression_ == LSM_COMPRESSED) {
-            this->DecodeLZWCompression(tempBuf,readSize);
+            this->DecodeLZWCompression(imdata, readSize);
         }
-        tempBuf += readSize;
+        imdata += readSize;
     }
-
-
-
-/*
-  vtkUnsignedCharArray *uscarray;
-  vtkUnsignedShortArray *ussarray;
-  if(BYTES_BY_DATA_TYPE(dataType) > 1) {
-        ussarray = vtkUnsignedShortArray::New();
-        ussarray->SetNumberOfComponents(1);
-        ussarray->SetNumberOfValues(numberOfPixels);
-
-        ussarray->SetArray((unsigned short *)buf, numberOfPixels, 0);
-        data->GetPointData()->SetScalars(ussarray);
-
-        ussarray->Delete();
-  } else {
-        uscarray = vtkUnsignedCharArray::New();
-        uscarray->SetNumberOfComponents(1);
-        uscarray->SetNumberOfValues(numberOfPixels);
-
-        uscarray->SetArray(buf, numberOfPixels, 0);
-        data->GetPointData()->SetScalars(uscarray);
-
-        uscarray->Delete();
-    }
-    return 1;
-    */
+    return output;
 }
 
 
@@ -1275,5 +1238,5 @@ std::auto_ptr<Image> LSMReader::read() {
 
 std::auto_ptr<Image> LSMFormat::read(byte_source* s, ImageFactory* factory) {
     LSMReader reader(s);
-    return reader.read();
+    return reader.read(factory);
 }
