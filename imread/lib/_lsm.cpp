@@ -162,21 +162,16 @@ class LSMReader {
         std::auto_ptr<Image> read(ImageFactory* factory);
         void readHeader();
 
-        int GetNumberOfTimePoints() { return dimensions_[3]; }
-        int GetNumberOfChannels() { return dimensions_[4]; }
-
         int GetChannelColorComponent(int,int);
         std::string GetChannelName(int);
 
         void SetDataByteOrderToBigEndian();
         void SetDataByteOrderToLittleEndian();
         void SetDataByteOrder(int);
-        int GetDataByteOrder();
-        const char *GetDataByteOrderAsString();
 
         int GetDataTypeForChannel(unsigned int channel);
 
-    protected:
+    private:
 
         unsigned long ReadImageDirectory(byte_source *,unsigned long);
         void SetChannelName(const char *,int);
@@ -203,8 +198,6 @@ class LSMReader {
         byte_source* src;
         bool swap_bytes_;
 
-        int update_timepoint_;
-        int update_channel_;
         unsigned long OffsetToLastAccessedImage;
         int NumberOfLastAccessedImage;
         double VoxelSizes[3];
@@ -379,12 +372,11 @@ int TIFF_BYTES(unsigned short type)
 
 LSMReader::LSMReader(byte_source* s)
     :src(s)
-    ,data_type_(0)
+    ,swap_bytes_(false)
     ,compression_(0)
     ,sample_per_pixel_(0)
     ,scan_type_(0)
-    ,update_timepoint_(0)
-    ,update_channel_(0)
+    ,data_type_(0)
 {
     std::fill(this->dimensions_, this->dimensions_ + 5, 0);
 
@@ -463,7 +455,7 @@ std::string LSMReader::GetChannelName(int chNum)
 
 void LSMReader::SetChannelName(const char * name, const int chNum)
 {
-    const int n_channels = this->GetNumberOfChannels();
+    const int n_channels = this->dimensions_[4];
     if(!name || chNum > n_channels) return;
     this->channel_names_.resize(n_channels);
     this->channel_names_[chNum] = std::string(name);
@@ -487,7 +479,7 @@ int LSMReader::ReadChannelName(const char *nameBuff, const int length, char *buf
 
 int LSMReader::ReadChannelDataTypes(byte_source* s, unsigned long start)
 {
-    const unsigned int numOfChls = this->GetNumberOfChannels();
+    const unsigned int numOfChls = this->dimensions_[4];
     this->channel_data_types_.resize(numOfChls);
 
     unsigned long pos = start;
@@ -516,10 +508,10 @@ int LSMReader::ReadChannelColorsAndNames(byte_source* s, unsigned long start)
     nameBuff = new char[sizeOfNames+1];
     name = new char[sizeOfNames+1];
 
-    if(colNum != this->GetNumberOfChannels()) {
+    if(colNum != this->dimensions_[4]) {
         // not great
     }
-    if(nameNum != this->GetNumberOfChannels()) {
+    if(nameNum != this->dimensions_[4]) {
         // not great
     }
 
@@ -531,7 +523,7 @@ int LSMReader::ReadChannelColorsAndNames(byte_source* s, unsigned long start)
     this->channel_colors_.resize( 3 *  (colNum+1));
 
   // Read the colors
-    for(int j = 0; j < this->GetNumberOfChannels(); ++j) {
+    for(int j = 0; j < this->dimensions_[4]; ++j) {
         char colorBuff[5];
         ReadFile(s,&colorOffset,4,colorBuff,1);
         for(int i=0;i<3;i++) {
@@ -544,7 +536,7 @@ int LSMReader::ReadChannelColorsAndNames(byte_source* s, unsigned long start)
 
     nameLength = nameSkip = 0;
     tempBuff = nameBuff;
-    for(int i = 0; i < this->GetNumberOfChannels(); i++) {
+    for(int i = 0; i < this->dimensions_[4]; i++) {
         nameSkip = this->FindChannelNameStart(tempBuff,sizeOfNames-nameSkip);
         nameLength = this->ReadChannelName(tempBuff+nameSkip,sizeOfNames-nameSkip,name);
 
@@ -792,18 +784,16 @@ int LSMReader::ReadScanInformation(byte_source* s,  unsigned long pos)
 }
 int LSMReader::AnalyzeTag(byte_source* s, unsigned long startPos)
 {
-  unsigned short type,length,tag;
-  unsigned long readSize;
-  int value, dataSize,i;
+  int value, dataSize;
   char tempValue[4],tempValue2[4];
   char *actualValue = NULL;
-  tag = ReadUnsignedShort(s,&startPos);
-  type = ReadUnsignedShort(s,&startPos);
-  length = ReadUnsignedInt(s,&startPos);
+  const unsigned short tag = ReadUnsignedShort(s,&startPos);
+  const unsigned short type = ReadUnsignedShort(s,&startPos);
+  const unsigned short length = ReadUnsignedInt(s,&startPos);
 
   ReadFile(s,&startPos,4,tempValue);
 
-  for(i=0;i<4;i++)tempValue2[i]=tempValue[i];
+  for(int i=0;i<4;i++)tempValue2[i]=tempValue[i];
 #ifdef VTK_WORDS_BIGENDIAN
   vtkByteSwap::Swap4LE((unsigned int*)tempValue2);
 #endif
@@ -812,7 +802,7 @@ int LSMReader::AnalyzeTag(byte_source* s, unsigned long startPos)
   // if there is more than 4 bytes in value,
   // value is an offset to the actual data
   dataSize = TIFF_BYTES(type);
-  readSize = dataSize*length;
+  const unsigned long readSize = dataSize*length;
   if(readSize > 4 && tag != TIF_CZ_LSMINFO)
   {
     actualValue = new char[readSize];
@@ -856,7 +846,7 @@ int LSMReader::AnalyzeTag(byte_source* s, unsigned long startPos)
 #endif
         this->bits_per_sample_.resize(length);
         unsigned short bits_per_sample_;
-        for(i=0;i<length;i++)
+        for(int i=0;i<length;i++)
         {
            bits_per_sample_ = CharPointerToUnsignedShort(actualValue + TIFF_BYTES(TIFF_SHORT)*i);
            this->bits_per_sample_[i] = bits_per_sample_;
@@ -883,7 +873,7 @@ int LSMReader::AnalyzeTag(byte_source* s, unsigned long startPos)
       vtkByteSwap::Swap4LERange((unsigned int*)actualValue,length);
 #endif
         if(length>1) {
-            for(i=0;i<length;i++)
+            for(int i=0;i<length;++i)
             {
                 unsigned int* offsets = (unsigned int*)actualValue;
                 this->strip_offset_[i] = offsets[i];
@@ -906,7 +896,7 @@ int LSMReader::AnalyzeTag(byte_source* s, unsigned long startPos)
 #endif
         this->strip_byte_count_.resize(length);
         if (length > 1) {
-            for(i=0;i<length;i++) {
+            for(int i=0; i<length; ++i) {
                 this->strip_byte_count_[i] = CharPointerToUnsignedInt(actualValue + TIFF_BYTES(TIFF_LONG)*i);
             }
         } else {
@@ -1116,7 +1106,7 @@ int LSMReader::GetChannelColorComponent(int ch, int component)
     if (ch < 0 ||
         component < 0 ||
         component > 2 ||
-        unsigned(ch) > this->GetNumberOfChannels()-1 ||
+        unsigned(ch) > this->dimensions_[4]-1 ||
         unsigned(ch) >= this->channel_colors_.size()) return 0;
   return this->channel_colors_[(ch*3) + component];
 }
@@ -1138,7 +1128,7 @@ void LSMReader::PrintSelf(std::ostream& os, const char* indent)
   os << indent << "Scan type: " << this->scan_type_ << "\n";
   os << indent << "Data type: " << this->data_type_ << "\n";
   if(this->data_type_ == 0) {
-     for(int i=0; i < this->GetNumberOfChannels(); i++) {
+     for(int i=0; i < this->dimensions_[4]; i++) {
         os << indent << indent << "Data type of channel "<<i<<": "<< this->channel_data_types_[i]<<"\n";
      }
   }
@@ -1164,7 +1154,6 @@ void LSMReader::PrintSelf(std::ostream& os, const char* indent)
 std::auto_ptr<Image> LSMReader::read(ImageFactory* factory) {
     this->readHeader();
 
-    const int numberOfPixels = this->dimensions_[0]*this->dimensions_[1]*this->dimensions_[2];
     const int dataType = this->GetDataTypeForChannel(0); // This could vary by channel!
 
     std::auto_ptr<Image> output = factory->create(
