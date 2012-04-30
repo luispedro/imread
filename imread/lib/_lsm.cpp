@@ -250,7 +250,6 @@ class LSMReader {
         std::string description_;
         double TimeInterval;
         byte_source* src;
-
 };
 
 int ReadFile(byte_source* s, unsigned long *pos,int size,char *buf,bool swap=false)
@@ -465,7 +464,7 @@ void LSMReader::SetDataByteOrder(int byteOrder)
 
 std::string LSMReader::GetChannelName(int chNum)
 {
-    if (chNum < 0 || chNum >= this->channel_names_.size()) return "";
+    if (chNum < 0 || unsigned(chNum) >= this->channel_names_.size()) return "";
     return this->channel_names_[chNum];
 }
 
@@ -687,7 +686,7 @@ int LSMReader::ReadScanInformation(byte_source* s,  unsigned long pos)
 {
     unsigned int subblocksOpen = 0;
     double wavelength;
-    int chIsOn = 0, trackIsOn = 0, isOn = 0;
+    int isOn = 0;
     do {
         const unsigned int entry = ReadUnsignedInt(s, &pos);
         const unsigned int type =  ReadUnsignedInt(s, &pos);
@@ -727,7 +726,7 @@ int LSMReader::ReadScanInformation(byte_source* s,  unsigned long pos)
                 continue;
                 break;
             case TRACK_ENTRY_ACQUIRE:
-                trackIsOn = ReadInt(s, &pos);
+                (void)ReadInt(s, &pos);
 
                 continue;
                 break;
@@ -740,7 +739,7 @@ int LSMReader::ReadScanInformation(byte_source* s,  unsigned long pos)
                 continue;
                 break;
             case DETCHANNEL_ENTRY_ACQUIRE:
-                chIsOn = ReadInt(s, &pos);
+                (void)ReadInt(s, &pos);
                 continue;
                 break;
 
@@ -914,12 +913,8 @@ int LSMReader::AnalyzeTag(byte_source* s, unsigned long startPos)
 #endif
         this->strip_byte_count_.resize(length);
         if (length > 1) {
-            for(i=0;i<length;i++)
-            {
-                unsigned int* counts = (unsigned int*)actualValue;
-                unsigned int bytecount = CharPointerToUnsignedInt(actualValue + TIFF_BYTES(TIFF_LONG)*i);
-
-                this->strip_byte_count_[i] = bytecount;
+            for(i=0;i<length;i++) {
+                this->strip_byte_count_[i] = CharPointerToUnsignedInt(actualValue + TIFF_BYTES(TIFF_LONG)*i);
             }
         } else {
             this->strip_byte_count_[0] = value;
@@ -966,9 +961,7 @@ unsigned int LSMReader::GetSliceOffset(unsigned int timepoint, unsigned int slic
     return this->image_offsets_[timepoint * this->dimensions_[2] + slice];
 }
 
-void LSMReader::ConstructSliceOffsets()
-{
-    unsigned long int startPos = 2;
+void LSMReader::ConstructSliceOffsets() {
     this->image_offsets_.resize(this->dimensions_[2] * this->dimensions_[3]);
     this->read_sizes_.resize(this->dimensions_[2] * this->dimensions_[3]);
     int channel = this->GetUpdateChannel();
@@ -990,8 +983,7 @@ unsigned long LSMReader::GetOffsetToImage(int slice, int timepoint)
 unsigned long LSMReader::SeekFile(int image)
 {
   unsigned long offset = 4, finalOffset;
-  int readSize = 4,i=0;
-  unsigned short numberOfTags = 0;
+  int i=0;
   int imageCount = image+1;
 
   if(this->OffsetToLastAccessedImage && (this->NumberOfLastAccessedImage < image))
@@ -1153,8 +1145,8 @@ int LSMReader::GetChannelColorComponent(int ch, int component)
     if (ch < 0 ||
         component < 0 ||
         component > 2 ||
-        ch > this->GetNumberOfChannels()-1 ||
-        ch >= this->channel_colors_.size()) return 0;
+        unsigned(ch) > this->GetNumberOfChannels()-1 ||
+        unsigned(ch) >= this->channel_colors_.size()) return 0;
   return this->channel_colors_[(ch*3) + component];
 }
 
@@ -1214,7 +1206,7 @@ void LSMReader::PrintSelf(std::ostream& os, const char* indent)
     }
 }
 
-void LSMReader::read() {
+std::auto_ptr<Image> LSMReader::read() {
     this->readHeader();
     unsigned char *buf, *tempBuf;
     int size,readSize,numberOfPixels,timepoint,channel;
@@ -1226,7 +1218,6 @@ void LSMReader::read() {
     // we use maximum
     timepoint = (this->update_timepoint_ >this->GetNumberOfTimePoints()-1?this->GetNumberOfTimePoints()-1:this->update_timepoint_);
     channel = this->GetUpdateChannel();
-    int nSlices = (outExtent[5]-outExtent[4])+1;
     numberOfPixels = this->dimensions_[0]*this->dimensions_[1]*(outExtent[5]-outExtent[4]+1 );
     int dataType = this->GetDataTypeForChannel(channel);
     size = numberOfPixels * BYTES_BY_DATA_TYPE(dataType);
@@ -1284,5 +1275,5 @@ void LSMReader::read() {
 
 std::auto_ptr<Image> LSMFormat::read(byte_source* s, ImageFactory* factory) {
     LSMReader reader(s);
-    reader.read();
+    return reader.read();
 }
