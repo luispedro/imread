@@ -143,15 +143,6 @@
 
 #define LSM_COMPRESSED 5
 
-#define VTK_FILE_BYTE_ORDER_BIG_ENDIAN 0
-#define VTK_FILE_BYTE_ORDER_LITTLE_ENDIAN 1
-
-#define PRT_EXT(ext) ext[0],ext[1],ext[2],ext[3],ext[4],ext[5]
-#define PRT_EXT2(ext) ext[0]<<","<<ext[1]<<","<<ext[2]<<","<<ext[3]<<","<<ext[4]<<","<<ext[5]
-
-#define CLEAR_CODE 256
-#define EOI_CODE 257
-
 namespace {
 class LSMReader {
     public:
@@ -167,7 +158,6 @@ class LSMReader {
 
         void SetDataByteOrderToBigEndian();
         void SetDataByteOrderToLittleEndian();
-        void SetDataByteOrder(int);
 
         int GetDataTypeForChannel(unsigned int channel);
 
@@ -434,17 +424,6 @@ void LSMReader::SetDataByteOrderToLittleEndian()
 #endif
 }
 
-void LSMReader::SetDataByteOrder(int byteOrder)
-{
-  if ( byteOrder == VTK_FILE_BYTE_ORDER_BIG_ENDIAN )
-    {
-    this->SetDataByteOrderToBigEndian();
-    }
-  else
-    {
-    this->SetDataByteOrderToLittleEndian();
-    }
-}
 
 
 std::string LSMReader::GetChannelName(int chNum)
