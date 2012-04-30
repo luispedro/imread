@@ -53,12 +53,18 @@ class NumpyImage : public Image {
 
 class NumpyFactory : public ImageFactory {
     protected:
-        std::auto_ptr<Image> create(int nbits, int h, int w, int d) {
-            npy_intp dims[3];
-            dims[0] = h;
-            dims[1] = w;
-            dims[2] = d;
-            const npy_intp nd = 2 + (d != -1);
+        std::auto_ptr<Image> create(int nbits, int d0, int d1, int d2, int d3, int d4) {
+            npy_intp dims[5];
+            dims[0] = d0;
+            dims[1] = d1;
+            dims[2] = d2;
+            dims[3] = d3;
+            dims[4] = d4;
+            npy_intp nd = 5;
+
+            if (d2 == -1) nd = 2;
+            else if (d3 == -1) nd = 3;
+            else if (d4 == -1) nd = 4;
             int dtype = -1;
             switch (nbits) {
                 case 1: dtype = NPY_BOOL; break;

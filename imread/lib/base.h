@@ -63,18 +63,10 @@ class Image {
 };
 
 class ImageFactory {
-    // This might seem a bit of over-engineering, but it is actually a very
-    // clean interface.
-    //
-    // When calling the read method, it is not yet known what the type and the
-    // dimensions of the image are going to have to be.
-    //
-    // The trick with the protected method makes the public interface a bit
-    // cleaner and simulates virtual template functions.
     public:
         virtual ~ImageFactory() { }
         virtual std::auto_ptr<Image>
-            create(int nbits, int w, int h, int d) = 0;
+            create(int nbits, int d0, int d1, int d2, int d3=-1, int d4=-1) = 0;
 
     protected:
 };
