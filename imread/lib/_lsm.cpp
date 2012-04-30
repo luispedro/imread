@@ -164,7 +164,6 @@ class LSMReader {
 
         int GetNumberOfTimePoints() { return dimensions_[3]; }
         int GetNumberOfChannels() { return dimensions_[4]; }
-        int OpenFile();
 
         int GetChannelColorComponent(int,int);
         std::string GetChannelName(int);
@@ -176,7 +175,6 @@ class LSMReader {
         const char *GetDataByteOrderAsString();
 
         int GetDataTypeForChannel(unsigned int channel);
-        unsigned int GetUpdateChannel();
 
     protected:
 
@@ -190,16 +188,14 @@ class LSMReader {
         int ReadLSMSpecificInfo(byte_source *,unsigned long);
         int AnalyzeTag(byte_source *,unsigned long);
         int ReadScanInformation(byte_source*, unsigned long);
-        unsigned long SeekFile(int);
         unsigned long GetOffsetToImage(int, int);
 
 
-        //void ExecuteData(vtkDataObject *out);
         void CalculateExtentAndSpacing(int extent[6],double spacing[3]);
         void DecodeHorizontalDifferencing(unsigned char *,int);
         void DecodeHorizontalDifferencingUnsignedShort(unsigned short*, int);
-        void DecodeLZWCompression(unsigned  char *,int);
-        void ConstructSliceOffsets();
+        void DecodeLZWCompression(unsigned  char *,int, int);
+        void ConstructSliceOffsets(int channel);
         unsigned int GetStripByteCount(unsigned int timepoint, unsigned int slice);
         unsigned int GetSliceOffset(unsigned int timepoint, unsigned int slice);
 
@@ -228,7 +224,6 @@ class LSMReader {
         unsigned short PlanarConfiguration;
         unsigned short Predictor;
         unsigned short scan_type_;
-        int data_scalar_type_;
 
         std::vector<unsigned int> image_offsets_;
         std::vector<unsigned int> read_sizes_;
@@ -238,7 +233,6 @@ class LSMReader {
 
         double DataSpacing[3];
         int DataExtent[6];
-        int NumberOfScalarComponents;
         int data_type_;
         unsigned long ChannelInfoOffset;
         unsigned long ChannelDataTypesOffset;
@@ -507,7 +501,7 @@ int LSMReader::ReadChannelColorsAndNames(byte_source* s, unsigned long start)
 {
     int colNum,nameNum,sizeOfStructure,sizeOfNames,nameLength, nameSkip;
     unsigned long colorOffset,nameOffset,pos;
-    char *nameBuff,*colorBuff,*name,*tempBuff;
+    char *nameBuff,*name,*tempBuff;
     unsigned char component;
 
     pos = start;
@@ -960,10 +954,9 @@ unsigned int LSMReader::GetSliceOffset(unsigned int timepoint, unsigned int slic
     return this->image_offsets_[timepoint * this->dimensions_[2] + slice];
 }
 
-void LSMReader::ConstructSliceOffsets() {
+void LSMReader::ConstructSliceOffsets(int channel) {
     this->image_offsets_.resize(this->dimensions_[2] * this->dimensions_[3]);
     this->read_sizes_.resize(this->dimensions_[2] * this->dimensions_[3]);
-    int channel = this->GetUpdateChannel();
 
     for(int tp = 0; tp < this->dimensions_[3]; tp++) {
         for(int slice = 0; slice < this->dimensions_[2]; slice++) {
@@ -976,11 +969,7 @@ void LSMReader::ConstructSliceOffsets() {
 
 unsigned long LSMReader::GetOffsetToImage(int slice, int timepoint)
 {
-  return this->SeekFile(slice+(timepoint*this->dimensions_[2]));
-}
-
-unsigned long LSMReader::SeekFile(int image)
-{
+  const int image = slice+(timepoint*this->dimensions_[2]);
   unsigned long offset = 4, finalOffset;
   int i=0;
   int imageCount = image+1;
@@ -1050,13 +1039,12 @@ void LSMReader::DecodeHorizontalDifferencingUnsignedShort(unsigned short *buffer
     }
 }
 
-void LSMReader::DecodeLZWCompression(unsigned char* buffer, int size) {
+void LSMReader::DecodeLZWCompression(unsigned char* buffer, int size, int bytes) {
+    throw "Not tested";
     std::vector<unsigned char> decoded = lzw_decode(buffer, size);
     unsigned char* outbufp = &decoded[0];
 
     int width = this->dimensions_[0];
-    int channel = this->GetUpdateChannel();
-    int bytes = BYTES_BY_DATA_TYPE(this->GetDataTypeForChannel(channel));
     int lines = size / (width*bytes);
 
     for(int line = 0; line < lines; line++) {
@@ -1105,14 +1093,7 @@ void LSMReader::readHeader() {
        throw ("Sorry! Your LSM-file must be of type 6 LSM-file (time series x-y-z) or type 0 (normal x-y-z) or type 3 (2D + time) or type 1 (x-z scan). Type of this File is " /* % this->scan_type_ */);
     }
 
-
     this->CalculateExtentAndSpacing(this->DataExtent,this->DataSpacing);
-
-
-    this->NumberOfScalarComponents = 1;
-
-    const int channel = this->GetUpdateChannel();
-    this->data_scalar_type_ = this->GetDataTypeForChannel(channel);
 }
 
 void LSMReader::CalculateExtentAndSpacing(int extent[6],double spacing[3])
@@ -1138,11 +1119,6 @@ int LSMReader::GetChannelColorComponent(int ch, int component)
         unsigned(ch) > this->GetNumberOfChannels()-1 ||
         unsigned(ch) >= this->channel_colors_.size()) return 0;
   return this->channel_colors_[(ch*3) + component];
-}
-
-unsigned int LSMReader::GetUpdateChannel() {
-   return (this->update_channel_ > this->GetNumberOfChannels()-1?this->GetNumberOfChannels()-1:this->update_channel_);
-
 }
 
 void LSMReader::PrintSelf(std::ostream& os, const char* indent)
@@ -1187,11 +1163,9 @@ void LSMReader::PrintSelf(std::ostream& os, const char* indent)
 
 std::auto_ptr<Image> LSMReader::read(ImageFactory* factory) {
     this->readHeader();
-    this->ConstructSliceOffsets();
 
     const int numberOfPixels = this->dimensions_[0]*this->dimensions_[1]*this->dimensions_[2];
     const int dataType = this->GetDataTypeForChannel(0); // This could vary by channel!
-    const int size = numberOfPixels * BYTES_BY_DATA_TYPE(dataType);
 
     std::auto_ptr<Image> output = factory->create(
                             BYTES_BY_DATA_TYPE(dataType)*8,
@@ -1206,6 +1180,7 @@ std::auto_ptr<Image> LSMReader::read(ImageFactory* factory) {
     for (int z = 0; z < this->dimensions_[2]; ++z) {
         for (int timepoint = 0; timepoint < this->dimensions_[3]; ++timepoint) {
             for (int ch = 0; ch < this->dimensions_[4]; ++ch) {
+                this->ConstructSliceOffsets(ch);
                 byte* imdata = imstart + (z*(this->dimensions_[3]*this->dimensions_[4] + timepoint*this->dimensions_[4] + ch)
                                     * this->dimensions_[0]*this->dimensions_[1]* BYTES_BY_DATA_TYPE(dataType));
                 unsigned long offset = this->GetSliceOffset(timepoint, z);
@@ -1218,7 +1193,7 @@ std::auto_ptr<Image> LSMReader::read(ImageFactory* factory) {
                     throw "oops";
                 }
                 if (this->compression_ == LSM_COMPRESSED) {
-                    this->DecodeLZWCompression(imdata, readSize);
+                    this->DecodeLZWCompression(imdata, readSize, BYTES_BY_DATA_TYPE(dataType));
                 }
             }
         }
