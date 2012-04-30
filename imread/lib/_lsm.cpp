@@ -204,6 +204,7 @@ class LSMReader {
         unsigned int GetSliceOffset(unsigned int timepoint, unsigned int slice);
 
 
+        byte_source* src;
         bool swap_bytes_;
 
         int update_timepoint_;
@@ -247,7 +248,6 @@ class LSMReader {
         std::string objective_;
         std::string description_;
         double TimeInterval;
-        byte_source* src;
 
 };
 
@@ -1051,21 +1051,14 @@ void LSMReader::DecodeHorizontalDifferencingUnsignedShort(unsigned short *buffer
 }
 
 void LSMReader::DecodeLZWCompression(unsigned char* buffer, int size) {
-    LZWState *s = new LZWState;
-
-    unsigned char *outbuf = new unsigned char[size];
-
-    unsigned char *outbufp = outbuf;
-    unsigned char *bufp = buffer;
+    std::vector<unsigned char> decoded = lzw_decode(buffer, size);
+    unsigned char* outbufp = &decoded[0];
 
     int width = this->dimensions_[0];
     int channel = this->GetUpdateChannel();
     int bytes = BYTES_BY_DATA_TYPE(this->GetDataTypeForChannel(channel));
     int lines = size / (width*bytes);
-    lzw_decode_init(s, 8, bufp, size);
 
-    int decoded = lzw_decode(s, outbufp, size);
-    outbufp = outbuf;
     for(int line = 0; line < lines; line++) {
         if(this->Predictor == 2) {
             if(bytes == 1)
@@ -1077,10 +1070,8 @@ void LSMReader::DecodeLZWCompression(unsigned char* buffer, int size) {
         outbufp += width*bytes;
     }
     for(int i=0;i < size;i++) {
-        buffer[i] = outbuf[i];
+        buffer[i] = decoded[i];
     }
-    delete s;
-    delete []outbuf;
 
 }
 
@@ -1198,37 +1189,39 @@ std::auto_ptr<Image> LSMReader::read(ImageFactory* factory) {
     this->readHeader();
     this->ConstructSliceOffsets();
 
-
-    // if given time point or channel index is bigger than maximum,
-    // we use maximum
-    const int timepoint = (this->update_timepoint_ >this->GetNumberOfTimePoints()-1?this->GetNumberOfTimePoints()-1:this->update_timepoint_);
-    const int channel = this->GetUpdateChannel();
     const int numberOfPixels = this->dimensions_[0]*this->dimensions_[1]*this->dimensions_[2];
-    const int dataType = this->GetDataTypeForChannel(channel);
+    const int dataType = this->GetDataTypeForChannel(0); // This could vary by channel!
     const int size = numberOfPixels * BYTES_BY_DATA_TYPE(dataType);
 
-    const int h = this->dimensions_[0];
-    const int w = this->dimensions_[1];
-    const int depth = this->dimensions_[4];
+    std::auto_ptr<Image> output = factory->create(
+                            BYTES_BY_DATA_TYPE(dataType)*8,
+                            this->dimensions_[2],
+                            this->dimensions_[3],
+                            this->dimensions_[4],
+                            this->dimensions_[0],
+                            this->dimensions_[1]
+                            );
 
-    std::auto_ptr<Image> output = factory->create(BYTES_BY_DATA_TYPE(dataType)*8, h, w, depth);
+    byte* imstart = output->rowp_as<byte>(0);
+    for (int z = 0; z < this->dimensions_[2]; ++z) {
+        for (int timepoint = 0; timepoint < this->dimensions_[3]; ++timepoint) {
+            for (int ch = 0; ch < this->dimensions_[4]; ++ch) {
+                byte* imdata = imstart + (z*(this->dimensions_[3]*this->dimensions_[4] + timepoint*this->dimensions_[4] + ch)
+                                    * this->dimensions_[0]*this->dimensions_[1]* BYTES_BY_DATA_TYPE(dataType));
+                unsigned long offset = this->GetSliceOffset(timepoint, z);
+                const int readSize = this->GetStripByteCount(timepoint, z);
+                std::fill(imdata, imdata + readSize, 0);
 
-    byte* imdata = output->rowp_as<byte>(0);
+                int bytes = ReadFile(this->src, &offset, readSize, imdata, true);
 
-    for(int i=0; i < this->dimensions_[2]; ++i) {
-        unsigned long offset = this->GetSliceOffset(timepoint, i);
-        const int readSize = this->GetStripByteCount(timepoint, i);
-        std::fill(imdata, imdata + readSize, 0);
-
-        int bytes = ReadFile(this->src, &offset, readSize, imdata, true);
-
-        if (bytes != readSize) {
-            throw "oops";
+                if (bytes != readSize) {
+                    throw "oops";
+                }
+                if (this->compression_ == LSM_COMPRESSED) {
+                    this->DecodeLZWCompression(imdata, readSize);
+                }
+            }
         }
-        if (this->compression_ == LSM_COMPRESSED) {
-            this->DecodeLZWCompression(imdata, readSize);
-        }
-        imdata += readSize;
     }
     return output;
 }
