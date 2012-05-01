@@ -11,6 +11,7 @@
  #include <fcntl.h>
 #endif
 
+#include <sstream>
 
 #include "lib/base.h"
 #include "lib/formats.h"
@@ -45,17 +46,25 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi) {
     try {
         std::auto_ptr<ImageFormat> format(get_format(formatstr));
         if (!format.get()) {
-            throw CannotReadError("This format is unknown to imread");
+            std::stringstream ss;
+            ss << "This format (" << formatstr << ") is unknown to imread";
+            throw CannotReadError(ss.str());
         }
         if (is_multi && !format->can_read_multi()) {
-            throw CannotReadError("imread cannot read_multi in this format");
+            std::stringstream ss;
+            ss << "imread cannot read_multi in this format (" << formatstr << ")";
+            if (format->can_read()) {
+                ss << " but read() will work.";
+            }
+            throw CannotReadError(ss.str());
         }
         if (!is_multi && !format->can_read()) {
+            std::stringstream ss;
+            ss << "imread cannot read_in this format (" << formatstr << ")";
             if (format->can_read_multi()) {
-                throw CannotReadError("imread cannot read in this format (but can read_multi!)");
-            } else {
-                throw CannotReadError("imread cannot read in this format");
+                ss << "(but can read_multi!)";
             }
+            throw CannotReadError(ss.str());
         }
 
         NumpyFactory factory;
@@ -96,7 +105,9 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
     }
     int fd = ::open(filename, O_CREAT|O_WRONLY, 0644);
     if (fd < 0) {
-        PyErr_SetString(PyExc_OSError, "File does not exist");
+        std::stringstream ss;
+        ss << "Cannot open file '" << filename << "' for writing";
+        PyErr_SetString(PyExc_OSError, ss.str().c_str());
         return 0;
     }
 
@@ -106,7 +117,9 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
         std::auto_ptr<byte_sink> output(new fd_source_sink(fd));
         std::auto_ptr<ImageFormat> format(get_format(formatstr));
         if (!format->can_write()) {
-            throw CannotWriteError("Cannot write this format");
+            std::stringstream ss;
+            ss << "Cannot write this format (" << formatstr << ")";
+            throw CannotWriteError(ss.str());
         }
         format->write(&input, output.get());
         Py_RETURN_NONE;
