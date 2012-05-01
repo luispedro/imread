@@ -5,6 +5,7 @@
 
  This is an open-source copyright as follows:
  Copyright (c) 2004-2008 BioImageXD Development Team
+ Copyright (C) 2012 Luis Pedro Coelho
 
  All rights reserved.
 
