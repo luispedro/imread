@@ -7,6 +7,7 @@
 import numpy as np
 import _imread
 
+from special import special
 
 def imread(filename, as_grey=False, formatstr=None):
     '''
@@ -40,7 +41,8 @@ def imread(filename, as_grey=False, formatstr=None):
         else:
             raise ValueError('imread.imread: Could not identify format from filename: `%s`' % filename)
 
-    im = _imread.imread(filename, formatstr)
+    reader = special.get(formatstr, _imread.imread)
+    im = reader(filename, formatstr)
     if as_grey and len(im.shape) == 3:
         # these are the values that wikipedia says are typical
         transform = np.array([ 0.30,  0.59,  0.11])
