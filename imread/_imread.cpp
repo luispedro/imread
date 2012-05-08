@@ -37,7 +37,7 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi) {
         return NULL;
     }
 
-    int fd = ::open(filename, O_RDONLY);
+    int fd = ::open(filename, O_RDONLY|O_BINARY);
     if (fd < 0) {
         PyErr_SetString(PyExc_OSError, "File does not exist");
         return 0;
@@ -103,7 +103,7 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
         PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
         return NULL;
     }
-    int fd = ::open(filename, O_CREAT|O_WRONLY, 0644);
+    int fd = ::open(filename, O_CREAT|O_WRONLY|O_BINARY|O_TRUNC, 0644);
     if (fd < 0) {
         std::stringstream ss;
         ss << "Cannot open file '" << filename << "' for writing";
