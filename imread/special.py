@@ -32,7 +32,9 @@ def readxcf(xcf_filename, formatstr):
         raise ValueError('imread.imread.readxcf: Format string must be \'xcf\'')
 
     N = NamedTemporaryFile(suffix='.png')
-    system('xcf2png %s >%s' % (xcf_filename,N.name))
+    output = system('xcf2png %s >%s' % (xcf_filename,N.name))
+    if output:
+        raise OSError('imread.readxcf: xcf format is only supported through the xcf2png utility, which imread could not run')
     return imread.imread(N.name)
 
 special = {
