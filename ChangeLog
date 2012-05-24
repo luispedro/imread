@@ -1,5 +1,6 @@
 Version 0.2.1+
 	* Add `formatstr` argument to imread
+	* Open files in binary mode on Windows (patch by Christoph Gohlke)
 	* Read-only support for LSM files
 	* Read-only support for XCF files (through `xcf2png`)
 
