@@ -9,6 +9,7 @@
  #include <sys/types.h>
  #include <sys/stat.h>
  #include <fcntl.h>
+ const int O_BINARY = 0;
 #endif
 
 #include <sstream>
