@@ -40,7 +40,9 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi) {
 
     int fd = ::open(filename, O_RDONLY|O_BINARY);
     if (fd < 0) {
-        PyErr_SetString(PyExc_OSError, "File does not exist");
+        std::stringstream ss;
+        ss << "File `" << filename << "` does not exist";
+        PyErr_SetString(PyExc_OSError, ss.str().c_str());
         return 0;
     }
 
