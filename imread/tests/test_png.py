@@ -29,6 +29,19 @@ def test_asym():
     back = imread(_filename)
     assert np.all(simple == back)
 
+@with_setup(teardown=_remove_file)
+def test_random():
+    np.random.seed(23)
+    for i in xrange(8):
+        simple = np.random.random_sample((64,64,3))
+        simple *= 255
+        simple = simple.astype(np.uint8)
+        if i < 3:
+            simple[:,:,i] = 0
+        _imread.imsave(_filename, 'png', simple)
+        back = imread(_filename)
+        assert np.all(simple == back)
+
 
 @raises(RuntimeError)
 def test_error():
