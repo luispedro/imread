@@ -82,7 +82,7 @@ def imsave(filename, array, formatstr=None):
     formatstr: str, optional
         format string
     '''
-    array = np.asanyarray(array)
+    array = np.ascontiguousarray(array)
     if formatstr is None:
         dot = filename.rfind('.')
         if dot < 0:
