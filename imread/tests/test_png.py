@@ -1,6 +1,6 @@
 from nose.tools import with_setup, raises
 import numpy as np
-from imread import imread
+from imread import imread, imsave
 from imread import _imread
 import numpy as np
 
@@ -41,6 +41,18 @@ def test_random():
         _imread.imsave(_filename, 'png', simple)
         back = imread(_filename)
         assert np.all(simple == back)
+
+
+@with_setup(teardown=_remove_file)
+def test_non_carray():
+    np.random.seed(87)
+    simple = np.random.random_sample((128,128,3))
+    simple *= 255
+    simple = simple.astype(np.uint8)
+    simple = simple[32:64,32::2]
+    imsave(_filename, simple, 'png')
+    back = imread(_filename)
+    assert np.all(simple == back)
 
 
 @raises(RuntimeError)
