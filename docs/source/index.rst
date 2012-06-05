@@ -7,6 +7,7 @@ Contents:
    :maxdepth: 2
 
    readme
+   formats
    non-python
 
 Indices and tables
