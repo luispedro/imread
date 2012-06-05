@@ -46,6 +46,15 @@ If at all possible, include a small image as a test case.
 History
 ~~~~~~~
 
+Version 0.2.2 (2012-06-5)
+--------------------------
+- Add `formatstr` argument to imread
+- Open files in binary mode on Windows (patch by Christoph Gohlke)
+- Read-only support for LSM files
+- Read-only support for XCF files (through `xcf2png`)
+- Fix writing of non-contiguous images (at least PNG was affected)
+
+
 Version 0.2.1 (2012-02-11)
 --------------------------
 - Add missing files to distribution
