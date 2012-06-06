@@ -1,6 +1,6 @@
 from nose.tools import with_setup, raises
 import numpy as np
-from imread import imread, imsave
+from imread import imread, imsave, imread_multi
 import numpy as np
 
 _filename = 'imread_testing_file.tiff'
@@ -31,3 +31,6 @@ def test_monochrome():
     z.flat[::3] = 1
     assert np.all(z == mono)
 
+
+def test_multi():
+    assert len(imread_multi('imread/tests/data/stack.tiff')) == 2

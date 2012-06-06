@@ -9,6 +9,15 @@ import _imread
 
 from special import special
 
+def _parse_formatstr(filename, formatstr, funcname):
+    if formatstr is not None:
+        return formatstr
+    from os import path
+    _,ext = path.splitext(filename)
+    if len(ext) and ext[0] == '.':
+        return ext[1:]
+    raise ValueError('imread.%s: Could not identify format from filename: `%s`' % (funcname,filename))
+
 def imread(filename, as_grey=False, formatstr=None):
     '''
     im = imread(filename, as_grey=False, formatstr={filename extension})
@@ -33,14 +42,7 @@ def imread(filename, as_grey=False, formatstr=None):
         `as_grey`. Conversion from colour to grayscale will return a floating
         point image.
     '''
-    if formatstr is None:
-        from os import path
-        _,ext = path.splitext(filename)
-        if len(ext) and ext[0] == '.':
-            formatstr = ext[1:]
-        else:
-            raise ValueError('imread.imread: Could not identify format from filename: `%s`' % filename)
-
+    formatstr = _parse_formatstr(filename, formatstr, 'imread')
     reader = special.get(formatstr, _imread.imread)
     im = reader(filename, formatstr)
     if as_grey and len(im.shape) == 3:
@@ -50,9 +52,9 @@ def imread(filename, as_grey=False, formatstr=None):
     return im
 
 
-def imread_multi(filename):
+def imread_multi(filename, formatstr=None):
     '''
-    images = imread_multi(filename)
+    images = imread_multi(filename, formatstr={from filename})
 
     The file type is guessed from `filename`.
 
@@ -61,11 +63,15 @@ def imread_multi(filename):
     filename : str
         filename
 
+    formatstr : str, optional
+        file format. If ``None``, then it is derived from the filename.
+
     Returns
     -------
     images : list
     '''
-    return _imread.imread_multi(filename)
+    formatstr = _parse_formatstr(filename, formatstr, 'imread')
+    return _imread.imread_multi(filename, formatstr)
 
 
 def imsave(filename, array, formatstr=None):

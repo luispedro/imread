@@ -1,3 +1,6 @@
+Version 0.2.2+
+	* Fix imread_multi
+
 Version 0.2.2 2012-06-05 by luispedro
 	* Add `formatstr` argument to imread
 	* Open files in binary mode on Windows (patch by Christoph Gohlke)
