@@ -46,8 +46,12 @@ If at all possible, include a small image as a test case.
 History
 ~~~~~~~
 
+Version 0.2.3 (2012-06-8)
+-------------------------
+- Fix imread_multi
+
 Version 0.2.2 (2012-06-5)
---------------------------
+-------------------------
 - Add `formatstr` argument to imread
 - Open files in binary mode on Windows (patch by Christoph Gohlke)
 - Read-only support for LSM files
