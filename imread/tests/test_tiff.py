@@ -20,6 +20,16 @@ def test_read_back():
     back = imread(_filename)
     assert np.all(simple == back)
 
+@with_setup(teardown=_remove_file)
+def test_read_back_16():
+    np.random.seed(21)
+    simple = np.random.random_sample((128,128))
+    simple *= 8192
+    simple = simple.astype(np.uint16)
+    imsave(_filename, simple)
+    back = imread(_filename)
+    assert np.all(simple == back)
+
 @raises(RuntimeError)
 def test_error():
     imread('imread/tests/data/error.tif')

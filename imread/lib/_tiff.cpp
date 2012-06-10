@@ -219,7 +219,7 @@ void TIFFFormat::write(Image* input, byte_sink* output) {
     TIFFSetField(t.tif, TIFFTAG_IMAGELENGTH, uint32(h));
     TIFFSetField(t.tif, TIFFTAG_IMAGEWIDTH, uint32(input->dim(1)));
 
-    TIFFSetField(t.tif, TIFFTAG_BITSPERSAMPLE, uint16(8));
+    TIFFSetField(t.tif, TIFFTAG_BITSPERSAMPLE, uint16(input->nbits()));
     TIFFSetField(t.tif, TIFFTAG_SAMPLESPERPIXEL, uint16(input->dim_or(2, 1)));
 
     TIFFSetField(t.tif, TIFFTAG_COMPRESSION, COMPRESSION_LZW);

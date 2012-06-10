@@ -32,6 +32,22 @@ class NumpyImage : public Image {
             return reinterpret_cast<PyObject*>(this->release());
         }
 
+        virtual int nbits() const {
+            if (!array_) throw ProgrammingError();
+            switch (PyArray_TYPE(array_)) {
+                case NPY_UINT8:
+                case NPY_INT8:
+                    return 8;
+                case NPY_UINT16:
+                case NPY_INT16:
+                    return 16;
+                case NPY_UINT32:
+                case NPY_INT32:
+                    return 32;
+                default:
+                    throw ProgrammingError();
+            }
+        }
 
         virtual int ndims() const {
             if (!array_) throw ProgrammingError();

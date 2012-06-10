@@ -48,6 +48,8 @@ class Image {
 
         virtual void* rowp(int r) = 0;
 
+        virtual int nbits() const = 0;
+
         virtual int ndims() const = 0;
         virtual int dim(int) const = 0;
 
