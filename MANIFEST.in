@@ -1,5 +1,6 @@
 include README.rst
-include docs/source/*.rst
 include ChangeLog
 include COPYING.MIT
-include imread/lib/lzw.cpp
+include imread/lib/*cpp
+include docs/source/*.rst
+include imread/tests/data/*
