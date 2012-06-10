@@ -59,8 +59,9 @@ void flush_source(png_structp png_ptr) {
 }
 
 int color_type_of(Image* im) {
+    if (im->nbits() != 8) throw CannotWriteError("Image must be 8 bits for PNG saving");
     if (im->ndims() == 2) return PNG_COLOR_TYPE_GRAY;
-    if (im->ndims() != 3) throw CannotWriteError();
+    if (im->ndims() != 3) throw CannotWriteError("Image must be either 2 or 3 dimensional");
     if (im->dim(2) == 3) return PNG_COLOR_TYPE_RGB;
     if (im->dim(2) == 4) return PNG_COLOR_TYPE_RGBA;
     throw CannotWriteError();
