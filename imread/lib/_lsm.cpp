@@ -38,7 +38,9 @@
 =========================================================================*/
 
 #include "_lsm.h"
+namespace {
 #include "lzw.cpp"
+}
 
 #define TIF_NEWSUBFILETYPE 254
 #define TIF_IMAGEWIDTH 256
@@ -145,6 +147,7 @@
 #define LSM_COMPRESSED 5
 
 namespace {
+
 class LSMReader {
     public:
         LSMReader(byte_source* s);
