@@ -1,3 +1,7 @@
+// Copyright 2012 Luis Pedro Coelho
+// This is an implementation of TIFF LZW compression coded from the spec.
+// License: MIT
+
 #include <vector>
 
 struct code_stream {
