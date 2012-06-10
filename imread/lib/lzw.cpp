@@ -20,7 +20,7 @@ struct code_stream {
                 bit_pos_ = 0;
                 ++byte_pos_;
                 if (byte_pos_ > len_) {
-                    throw "overboard";
+                    throw CannotReadError("Unexpected End of File");
                 }
             }
             return res;
