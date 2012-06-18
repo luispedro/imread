@@ -24,6 +24,17 @@ undef_macros=[]
 if os.environ.get('DEBUG'):
     undef_macros=['NDEBUG']
 
+include_dirs = []
+library_dirs = []
+
+for pth in ('/usr/local/include', '/usr/X11/include')
+    if os.path.isdir(pth):
+        include_dirs.append(pth)
+
+for pth in ('/usr/local/lib', '/usr/X11/lib')
+    if os.path.isdir(pth):
+        library_dirs.append(pth)
+
 extensions = {
     'imread._imread': [
         'imread/_imread.cpp',
@@ -41,6 +52,8 @@ ext_modules = [
     numpyutils.Extension(
         key,
         libraries=['png', 'jpeg', 'tiff', 'webp'],
+        library_dirs=library_dirs,
+        include_dirs=include_dirs,
         sources=sources,
         undef_macros=undef_macros
         ) for key,sources in extensions.iteritems()]
