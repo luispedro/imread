@@ -1,6 +1,7 @@
 Version 0.2.3+
 	* Add lzw.cpp to source distribution
 	* Support saving 16-bit TIFF
+	* Better Mac OS support (patch from Alexander Bohn)
 
 Version 0.2.3 2012-06-08 by luispedro
 	* Fix imread_multi
