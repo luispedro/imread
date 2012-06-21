@@ -12,6 +12,18 @@ imread_multi
 imsave
     Writes an image file
 
+Example (which uses `mahotas <http://luispedro.org/software/mahotas>`__ for
+Gaussian filtering)::
+
+
+    from imread import imread, imsave
+    from mahotas import gaussian_filter
+    lena = imread('lena.jpeg')
+
+    lena = gaussian_filter(lena.astype(float), 4.)
+    imsave('lena-filtered.jpeg', lena)
+
+
 This grew out of frustration at current image loading solutions in Python, in
 either my packages [mahotas] or packages from others [scikits.image, for
 example].
