@@ -27,11 +27,11 @@ if os.environ.get('DEBUG'):
 include_dirs = []
 library_dirs = []
 
-for pth in ('/usr/local/include', '/usr/X11/include')
+for pth in ('/usr/local/include', '/usr/X11/include'):
     if os.path.isdir(pth):
         include_dirs.append(pth)
 
-for pth in ('/usr/local/lib', '/usr/X11/lib')
+for pth in ('/usr/local/lib', '/usr/X11/lib'):
     if os.path.isdir(pth):
         library_dirs.append(pth)
 
