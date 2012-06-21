@@ -174,6 +174,8 @@ std::auto_ptr<Image> JPEGFormat::read(byte_source* src, ImageFactory* factory) {
 
 
 void JPEGFormat::write(Image* input, byte_sink* output) {
+    if (input->nbits() != 8) throw CannotWriteError("Image must be 8 bits for JPEG saving");
+
     jpeg_dst_adaptor adaptor(output);
     jpeg_compress_holder c;
 
