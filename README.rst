@@ -57,6 +57,11 @@ If at all possible, include a small image as a test case.
 
 History
 ~~~~~~~
+Version 0.2.4 (2012-06-26)
+-------------------------
+- Add lzw.cpp to source distribution
+- Support saving 16-bit TIFF
+- Better Mac OS support (patch from Alexander Bohn)
 
 Version 0.2.3 (2012-06-8)
 -------------------------
