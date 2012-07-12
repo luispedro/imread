@@ -15,7 +15,7 @@ def _parse_formatstr(filename, formatstr, funcname):
     from os import path
     _,ext = path.splitext(filename)
     if len(ext) and ext[0] == '.':
-        return ext[1:]
+        return ext[1:].lower()
     raise ValueError('imread.%s: Could not identify format from filename: `%s`' % (funcname,filename))
 
 def imread(filename, as_grey=False, formatstr=None):
