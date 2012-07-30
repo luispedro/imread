@@ -3,26 +3,28 @@
 # Copyright (C) 2012, Luis Pedro Coelho <luis@luispedro.org>
 # License: MIT
 
-from __future__ import division
+from __future__ import division, print_function
+
 try:
     import setuptools
 except:
-    print '''
+    print('''
 setuptools not found.
 
-On linux, the package is often called python-setuptools'''
+On linux, the package is often called python-setuptools''')
     from sys import exit
     exit(1)
 import os
 import numpy.distutils.core as numpyutils
 
 
-execfile('imread/imread_version.py')
-long_description = file('README.rst').read()
+exec(compile(open('imread/imread_version.py').read(), 
+             'imread/imread_version.py', 'exec'))
+long_description = open('README.rst').read()
 
-undef_macros=[]
+undef_macros = []
 if os.environ.get('DEBUG'):
-    undef_macros=['NDEBUG']
+    undef_macros = ['NDEBUG']
 
 include_dirs = []
 library_dirs = []
@@ -51,12 +53,12 @@ extensions = {
 ext_modules = [
     numpyutils.Extension(
         key,
-        libraries=['png', 'jpeg', 'tiff', 'webp'],
+        libraries=['png', 'jpeg', 'tiff', 'webp', 'zlib'],
         library_dirs=library_dirs,
         include_dirs=include_dirs,
         sources=sources,
         undef_macros=undef_macros
-        ) for key,sources in extensions.iteritems()]
+        ) for key, sources in extensions.items()]
 
 packages = setuptools.find_packages()
 
@@ -75,6 +77,7 @@ classifiers = [
 'Topic :: Scientific/Engineering :: Image Recognition',
 'Topic :: Software Development :: Libraries',
 'Programming Language :: Python',
+'Programming Language :: Python :: 3',
 'Programming Language :: C++',
 'License :: OSI Approved :: MIT License',
 ]
@@ -95,4 +98,3 @@ numpyutils.setup(name = 'imread',
       package_data = package_data,
       test_suite = 'nose.collector',
       )
-
