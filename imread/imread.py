@@ -5,9 +5,10 @@
 # License: MIT (see COPYING.MIT file)
 
 import numpy as np
-import _imread
 
-from special import special
+from . import _imread
+
+from .special import special
 
 def _parse_formatstr(filename, formatstr, funcname):
     if formatstr is not None:
