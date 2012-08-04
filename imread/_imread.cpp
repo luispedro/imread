@@ -144,10 +144,33 @@ PyMethodDef methods[] = {
 };
 
 } // namespace
-extern "C"
-void init_imread()
+
+#if PY_MAJOR_VERSION < 3
+PyMODINIT_FUNC
+init_imread()
   {
     import_array();
     (void)Py_InitModule("_imread", methods);
   }
+#else
 
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "_imread",
+        NULL,
+        -1,
+        methods,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+};
+
+PyMODINIT_FUNC
+PyInit__imread()
+  {
+    import_array();
+    PyObject *module = PyModule_Create(&moduledef);
+    return module;
+  }
+#endif

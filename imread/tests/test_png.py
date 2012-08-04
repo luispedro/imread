@@ -32,7 +32,7 @@ def test_asym():
 @with_setup(teardown=_remove_file)
 def test_random():
     np.random.seed(23)
-    for i in xrange(8):
+    for i in range(8):
         simple = np.random.random_sample((64,64,3))
         simple *= 255
         simple = simple.astype(np.uint8)
