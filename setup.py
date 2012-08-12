@@ -4,6 +4,7 @@
 # License: MIT
 
 from __future__ import division, print_function
+import sys
 
 try:
     import setuptools
@@ -12,8 +13,8 @@ except:
 setuptools not found.
 
 On linux, the package is often called python-setuptools''')
-    from sys import exit
-    exit(1)
+    sys.exit(1)
+
 import os
 import numpy.distutils.core as numpyutils
 
@@ -50,10 +51,14 @@ extensions = {
         ],
 }
 
+libraries = ['png', 'jpeg', 'tiff', 'webp']
+if 'linux' not in sys.platform:
+    libraries.append('zlib')
+
 ext_modules = [
     numpyutils.Extension(
         key,
-        libraries=['png', 'jpeg', 'tiff', 'webp', 'zlib'],
+        libraries = libraries,
         library_dirs=library_dirs,
         include_dirs=include_dirs,
         sources=sources,
