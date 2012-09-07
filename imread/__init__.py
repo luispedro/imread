@@ -4,5 +4,19 @@
 #
 # License: MIT (see COPYING.MIT file)
 
-from .imread import imread, imsave, imread_multi
+from __future__ import print_function
+try:
+    from .imread import imread, imsave, imread_multi
+except ImportError as e:
+    import sys
+    print('''\
+Could not import submodules (exact error was: {0}).
+
+There are many reasons for this error the most common one is that you have
+either not built the packages or have built (using `python setup.py build`) or
+installed them (using `python setup.py install`) and then proceeded to test
+mahotas **without changing the current directory**.
+
+Try installing and then changing to another directory before importing mahotas.
+'''.format(e), file=sys.stderr)
 
