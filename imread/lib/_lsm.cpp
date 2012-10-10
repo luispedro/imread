@@ -153,7 +153,7 @@ class LSMReader {
         LSMReader(byte_source* s);
         ~LSMReader();
 
-        virtual void PrintSelf(std::ostream& os, const char* indent="");
+        void PrintSelf(std::ostream& os, const char* indent="");
         std::auto_ptr<Image> read(ImageFactory* factory);
         void readHeader();
 
