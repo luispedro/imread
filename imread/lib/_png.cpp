@@ -9,6 +9,7 @@
 
 #include <cstring>
 #include <vector>
+#include <sstream>
 
 namespace {
 
@@ -76,13 +77,17 @@ std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory) {
     const int w = png_get_image_width (p.png_ptr, p.png_info);
     const int h = png_get_image_height(p.png_ptr, p.png_info);
     int bit_depth = png_get_bit_depth(p.png_ptr, p.png_info);
-    if (bit_depth != 8 && bit_depth != 16) {
-        throw CannotReadError("Cannot read this bit depth and color combination");
+    if (bit_depth != 1 && bit_depth != 8 && bit_depth != 16) {
+        std::ostringstream out;
+        out << "imread.png: Cannot read this bit depth ("
+                << bit_depth
+                << "). Only bit depths ∈ {1,8,16} are supported.";
+        throw CannotReadError(out.str());
     }
     int d = -1;
     switch (png_get_color_type(p.png_ptr, p.png_info)) {
         case PNG_COLOR_TYPE_PALETTE:
-        png_set_palette_to_rgb(p.png_ptr);
+            png_set_palette_to_rgb(p.png_ptr);
         case PNG_COLOR_TYPE_RGB:
             d = 3;
             break;
@@ -90,14 +95,15 @@ std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory) {
             d = 4;
             break;
         case PNG_COLOR_TYPE_GRAY:
-            if (bit_depth < 8) {
-                png_set_expand_gray_1_2_4_to_8(p.png_ptr);
-                bit_depth = 8;
-            }
             d = -1;
             break;
-        default:
-            throw CannotReadError("Unhandled color type");
+        default: {
+            std::ostringstream out;
+            out << "imread.png: Color type ("
+                << int(png_get_color_type(p.png_ptr, p.png_info))
+                << ") cannot be handled";
+            throw CannotReadError(out.str());
+        }
     }
 
     std::auto_ptr<Image> output(factory->create(bit_depth, h, w, d));

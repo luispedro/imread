@@ -55,6 +55,10 @@ def test_non_carray():
     assert np.all(simple == back)
 
 
+def test_binary():
+    f = imread('imread/tests/data/bit1.png')
+    assert f.dtype == np.bool_
+
 @raises(RuntimeError)
 def test_error():
     imread('imread/tests/data/error.png')

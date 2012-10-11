@@ -1,6 +1,7 @@
 Version 0.2.4+
 	* Correctly accept uppercase extensions
 	* Python 3 support (patch by Christoph Gohlke [pull request 8 on github])
+	* Read 1-Bit PNGs
 
 Version 0.2.4 2012-06-26 by luispedro
 	* Add lzw.cpp to source distribution
