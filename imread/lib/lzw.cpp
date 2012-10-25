@@ -72,7 +72,7 @@ std::vector<unsigned char> lzw_decode(void* buf, unsigned long len) {
             if (next_code == EoiCode) break;
             write_string(output, table[next_code]);
             old_code = next_code;
-        } else if (code < 256 || (code - 258) < table.size()) {
+        } else if (code < 256 || (code - 258) < short(table.size())) {
             write_string(output, table_at(table,code));
             table.push_back(
                     table_at(table,old_code) + table_at(table,code)[0]
