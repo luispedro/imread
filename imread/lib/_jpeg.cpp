@@ -61,7 +61,7 @@ void skip_input_data(j_decompress_ptr cinfo, long num_bytes) {
 
 boolean empty_output_buffer(j_compress_ptr cinfo) {
     jpeg_dst_adaptor* adaptor = reinterpret_cast<jpeg_dst_adaptor*>(cinfo->dest);
-    adaptor->s->write(adaptor->buf, buffer_size);
+    adaptor->s->write_check(adaptor->buf, buffer_size);
     adaptor->mgr.next_output_byte = adaptor->buf;
     adaptor->mgr.free_in_buffer = buffer_size;
     return TRUE;
@@ -69,7 +69,7 @@ boolean empty_output_buffer(j_compress_ptr cinfo) {
 
 void flush_output_buffer(j_compress_ptr cinfo) {
     jpeg_dst_adaptor* adaptor = reinterpret_cast<jpeg_dst_adaptor*>(cinfo->dest);
-    adaptor->s->write(adaptor->buf, adaptor->mgr.next_output_byte - adaptor->buf);
+    adaptor->s->write_check(adaptor->buf, adaptor->mgr.next_output_byte - adaptor->buf);
 }
 
 

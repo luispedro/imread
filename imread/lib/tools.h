@@ -28,7 +28,9 @@ inline std::vector<byte> full_data(byte_source& s) {
 
 inline uint8_t read8(byte_source& s) {
     byte out;
-    s.read(&out, 1);
+    if (s.read(&out, 1) != 1) {
+        throw CannotReadError("File ended prematurely");
+    }
     return out;
 }
 

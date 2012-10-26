@@ -24,8 +24,11 @@ exec(compile(open('imread/imread_version.py').read(),
 long_description = open('README.rst').read()
 
 undef_macros = []
+define_macros = []
 if os.environ.get('DEBUG'):
     undef_macros = ['NDEBUG']
+    if os.environ.get('DEBUG') == '2':
+        define_macros = [('_GLIBCXX_DEBUG','1')]
 
 include_dirs = []
 library_dirs = []
@@ -63,7 +66,8 @@ ext_modules = [
         library_dirs=library_dirs,
         include_dirs=include_dirs,
         sources=sources,
-        undef_macros=undef_macros
+        undef_macros=undef_macros,
+        define_macros=define_macros,
         ) for key, sources in extensions.items()]
 
 packages = setuptools.find_packages()

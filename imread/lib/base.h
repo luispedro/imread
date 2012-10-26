@@ -7,6 +7,7 @@
 #include <inttypes.h>
 #include <memory>
 #include <vector>
+#include <assert.h>
 
 #if defined(_MSC_VER)
  #include <io.h>
@@ -16,6 +17,15 @@
 #endif
 
 #include "errors.h"
+
+#ifdef __GNUC__
+#define warn_if_return_not_used __attribute__ ((__warn_unused_result__))
+#endif
+
+#ifndef warn_if_return_not_used
+# define warn_if_return_not_used
+#endif
+
 
 typedef uint8_t byte;
 
@@ -31,14 +41,35 @@ struct seekable {
 class byte_source : virtual public seekable {
     public:
         virtual ~byte_source() { }
-        virtual size_t read(byte* buffer, size_t) = 0;
+        virtual size_t read(byte* buffer, size_t) warn_if_return_not_used = 0;
+#ifdef _GLIBCXX_DEBUG
+        template <size_t Nelems>
+        size_t read(byte (&arr)[Nelems], size_t n) {
+            assert(n <= Nelems);
+            byte* p = arr;
+            return this->read(p, n);
+        }
+#endif
 };
 
 class byte_sink : virtual public seekable {
     public:
         virtual ~byte_sink() { }
 
-        virtual size_t write(const byte* buffer, size_t n) = 0;
+        virtual size_t write(const byte* buffer, size_t n) warn_if_return_not_used = 0;
+#ifdef _GLIBCXX_DEBUG
+        template <size_t Nelems>
+        size_t write(byte (&arr)[Nelems], size_t n) {
+            assert(n <= Nelems);
+            byte* p = arr;
+            return this->write(p, n);
+        }
+#endif
+        void write_check(const byte* buffer, size_t n) {
+            if (this->write(buffer, n) != n) {
+                throw CannotWriteError("Writing failed");
+            }
+        }
         virtual void flush() { }
 };
 

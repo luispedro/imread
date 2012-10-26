@@ -20,9 +20,11 @@ void flippixels(byte* row, const int n) {
 
 std::auto_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory) {
     char magick[2];
-    src->read(reinterpret_cast<byte*>(magick), 2);
+    if (src->read(reinterpret_cast<byte*>(magick), 2) != 2) {
+        throw CannotReadError("imread.bmp: File is empty");
+    }
     if (magick[0] != 'B' || magick[1] != 'M') {
-        throw 123;
+        throw CannotReadError("imread.bmp: Magick number not matched (this might not be a BMP file)");
     }
     const uint32_t size = read32_le(*src);
     (void)read16_le(*src);
@@ -65,7 +67,7 @@ std::auto_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory) {
 
         if (bitsppixel == 24) flippixels(rowp, width);
 
-        src->read(buf, padding);
+        (void)src->read(buf, padding);
     }
     return output;
 }

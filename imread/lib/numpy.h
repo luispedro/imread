@@ -4,6 +4,7 @@
 #ifndef LPC_NUMPY_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012
 #define LPC_NUMPY_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012
 #include <memory>
+#include <sstream>
 #include "base.h"
 
 extern "C" {
@@ -87,8 +88,11 @@ class NumpyFactory : public ImageFactory {
                 case 8: dtype = NPY_UINT8; break;
                 case 16: dtype = NPY_UINT16; break;
                 case 32: dtype = NPY_UINT32; break;
-                default:
-                    throw ProgrammingError("Cannot handle this number of bits");
+                default: {
+                    std::ostringstream out;
+                    out << "numpy.factory: Cannot handle " << nbits << "-bit images.";
+                    throw ProgrammingError(out.str());
+                }
             }
 
             PyArrayObject* array = reinterpret_cast<PyArrayObject*>(PyArray_SimpleNew(nd, dims, dtype));

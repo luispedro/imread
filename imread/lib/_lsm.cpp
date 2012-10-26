@@ -1089,7 +1089,7 @@ int LSMReader::GetChannelColorComponent(int ch, int component)
     if (ch < 0 ||
         component < 0 ||
         component > 2 ||
-        unsigned(ch) > this->dimensions_[4]-1 ||
+        unsigned(ch) > unsigned(this->dimensions_[4]-1) ||
         unsigned(ch) >= this->channel_colors_.size()) return 0;
   return this->channel_colors_[(ch*3) + component];
 }
