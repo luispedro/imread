@@ -25,4 +25,23 @@ inline std::vector<byte> full_data(byte_source& s) {
     }
     return res;
 }
+
+inline uint8_t read8(byte_source& s) {
+    byte out;
+    s.read(&out, 1);
+    return out;
+}
+
+inline uint16_t read16_le(byte_source& s) {
+    uint8_t b0 = read8(s);
+    uint8_t b1 = read8(s);
+    return (uint16_t(b1) << 8)|uint16_t(b0);
+}
+
+inline uint32_t read32_le(byte_source& s) {
+    uint16_t s0 = read16_le(s);
+    uint16_t s1 = read16_le(s);
+    return (uint32_t(s1) << 16)|uint32_t(s0);
+}
+
 #endif // LPC_TOOLS_H_INCLUDE_GUARD_WED_FEB__8_17_05_13_WET_2012

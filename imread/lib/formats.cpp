@@ -2,6 +2,7 @@
 // License: MIT (see COPYING.MIT file)
 
 #include "formats.h"
+#include "_bmp.h"
 #include "_jpeg.h"
 #include "_lsm.h"
 #include "_png.h"
@@ -18,5 +19,6 @@ std::auto_ptr<ImageFormat> get_format(const char* format) {
     if (!strcmp(format, "tiff") || !strcmp(format, "tif")) return std::auto_ptr<ImageFormat>(new TIFFFormat);
     if (!strcmp(format, "webp")) return std::auto_ptr<ImageFormat>(new WebPFormat);
     if (!strcmp(format, "stk")) return std::auto_ptr<ImageFormat>(new STKFormat);
+    if (!strcmp(format, "bmp")) return std::auto_ptr<ImageFormat>(new BMPFormat);
     return std::auto_ptr<ImageFormat>(0);
 }

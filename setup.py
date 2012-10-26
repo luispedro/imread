@@ -43,6 +43,7 @@ extensions = {
         'imread/_imread.cpp',
         'imread/lib/formats.cpp',
         'imread/lib/numpy.cpp',
+        'imread/lib/_bmp.cpp',
         'imread/lib/_jpeg.cpp',
         'imread/lib/_lsm.cpp',
         'imread/lib/_png.cpp',
