@@ -32,6 +32,7 @@ The relationship with numpy is very contained and this could be easily
 repurposed to load images in other frameworks, even other programming
 languages.
 
+`Online documentation <http://packages.python.org/imread/>`__
 
 Dependencies
 ~~~~~~~~~~~~
