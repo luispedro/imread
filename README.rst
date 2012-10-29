@@ -57,6 +57,14 @@ If at all possible, include a small image as a test case.
 
 History
 ~~~~~~~
+Version 0.2.5 (2012-10-29)
+--------------------------
+- Correctly accept uppercase extensions
+- Python 3 support (patch by Christoph Gohlke [pull request 8 on github])
+- Read 1-Bit PNGs
+- Read simple BMPs (compression and many bit types not supported)
+- More complete debug mode (export DEBUG=2 when building), more checks
+
 Version 0.2.4 (2012-06-26)
 -------------------------
 - Add lzw.cpp to source distribution
