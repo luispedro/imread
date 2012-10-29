@@ -16,6 +16,21 @@ void flippixels(byte* row, const int n) {
         row[2] = b;
     }
 }
+
+void color_expand(const std::vector<byte>& color_table, byte* row, const int w) {
+    // We are expanding in-place
+    // This means that we must process the row backwards, which is slightly
+    // awkward, but works correctly
+    std::vector<byte>::const_iterator pbegin = color_table.begin();
+    for (int i = w-1; i >= 0; --i) {
+        std::copy(pbegin + 4*row[i], pbegin + 4*row[i] + 3, row + 3*i);
+    }
+}
+
+uint32_t pow2(uint32_t n) {
+    if (n <= 0) return 1;
+    return 2*pow2(n-1);
+}
 }
 
 std::auto_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory) {
@@ -53,19 +68,28 @@ std::auto_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory) {
         out << "imread.bmp: Bits per pixel is " << bitsppixel << ". Only 8, 16, or 24 supported.";
         throw CannotReadError(out.str());
     }
-    const int depth = (bitsppixel == 24 ? 3 : -1);
-    const int nbits = (bitsppixel == 24? 8 : bitsppixel);
+    const int depth = (bitsppixel == 16 ? -1 : 3);
+    const int nbits = (bitsppixel == 16 ? 16 : 8);
     std::auto_ptr<Image> output(factory->create(nbits, height, width, depth));
+
+    std::vector<byte> color_table;
+    if (bitsppixel <= 8) {
+        const uint32_t table_size = (n_colours == 0 ? pow2(bitsppixel) : n_colours);
+        color_table.resize(table_size*4);
+        src->read_check(&color_table[0], table_size*4);
+    }
+
+    src->seek_absolute(offset);
     const int bytes_per_row = width * (bitsppixel/8);
     const int padding = (4 - (bytes_per_row % 4)) % 4;
     byte buf[4];
-    src->seek_absolute(header_size);
     for (int r = 0; r != height; ++r) {
         byte* rowp = output->rowp_as<byte>(height-r-1);
-        if (src->read(rowp, bytes_per_row) != bytes_per_row) {
-            throw CannotReadError("File ended prematurely");
-        }
+        src->read_check(rowp, bytes_per_row);
+
         if (bitsppixel == 24) flippixels(rowp, width);
+        else if (!color_table.empty()) color_expand(color_table, rowp, width);
+
         if (src->read(buf, padding) != padding && r != (height - 1)) {
             throw CannotReadError("File ended prematurely");
         }

@@ -42,6 +42,11 @@ class byte_source : virtual public seekable {
     public:
         virtual ~byte_source() { }
         virtual size_t read(byte* buffer, size_t) warn_if_return_not_used = 0;
+        void read_check(byte* buffer, size_t n) {
+            if (this->read(buffer, n) != n) {
+                throw CannotReadError("File ended prematurely");
+            }
+        }
 #ifdef _GLIBCXX_DEBUG
         template <size_t Nelems>
         size_t read(byte (&arr)[Nelems], size_t n) {
