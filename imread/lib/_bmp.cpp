@@ -30,7 +30,7 @@ std::auto_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory) {
     (void)read16_le(*src);
     (void)read16_le(*src);
     const uint32_t offset = read32_le(*src);
-    const uint32_t hsize = read32_le(*src);
+    const uint32_t header_size = read32_le(*src);
     const uint32_t width = read32_le(*src);
     const uint32_t height = read32_le(*src);
     const uint16_t planes = read16_le(*src);
@@ -59,15 +59,17 @@ std::auto_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory) {
     const int bytes_per_row = width * (bitsppixel/8);
     const int padding = (4 - (bytes_per_row % 4)) % 4;
     byte buf[4];
+    src->seek_absolute(header_size);
     for (int r = 0; r != height; ++r) {
         byte* rowp = output->rowp_as<byte>(height-r-1);
         if (src->read(rowp, bytes_per_row) != bytes_per_row) {
             throw CannotReadError("File ended prematurely");
         }
-
         if (bitsppixel == 24) flippixels(rowp, width);
-
-        (void)src->read(buf, padding);
+        if (src->read(buf, padding) != padding && r != (height - 1)) {
+            throw CannotReadError("File ended prematurely");
+        }
     }
     return output;
 }
+
