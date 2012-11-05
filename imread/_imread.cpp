@@ -101,21 +101,39 @@ PyObject* py_imread_multi(PyObject* self, PyObject* args) { return py_imread_may
 PyObject* py_imsave(PyObject* self, PyObject* args) {
     const char* filename;
     const char* formatstr;
+    PyObject* formatstrObject;
     PyArrayObject* array;
-    if (!PyArg_ParseTuple(args, "ssO", &filename, &formatstr, &array) || !PyArray_Check(array)) {
+    PyObject* asUtf8 = NULL;
+    if (!PyArg_ParseTuple(args, "sOO", &filename, &formatstrObject, &array) || !PyArray_Check(array)) {
         PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
         return NULL;
     }
-    int fd = ::open(filename, O_CREAT|O_WRONLY|O_BINARY|O_TRUNC, 0644);
-    if (fd < 0) {
-        std::stringstream ss;
-        ss << "Cannot open file '" << filename << "' for writing";
-        PyErr_SetString(PyExc_OSError, ss.str().c_str());
-        return 0;
-    }
 
+    // This is pretty ugly, mixing if and #if
+#if PY_MAJOR_VERSION < 3
+    if (PyString_Check(formatstrObject)) {
+        formatstr = PyString_AsString(formatstrObject);
+#else
+    if (PyUnicode_Check(formatstrObject)) {
+        // On python 3.3, we can just do
+        //formatstr = PyUnicode_AsUTF8(formatstrObject);
+        asUtf8 = PyUnicode_AsUTF8String(formatstrObject);
+        if (!asUtf8) return NULL;
+        formatstr = PyBytes_AsString(asUtf8);
+#endif
+    } else {
+        PyErr_SetString(PyExc_TypeError, "imread.imsave: Expected a string as formatstr");
+        return NULL;
+    }
     Py_INCREF(array);
     try {
+        const int fd = ::open(filename, O_CREAT|O_WRONLY|O_BINARY|O_TRUNC, 0644);
+        if (fd < 0) {
+            std::stringstream ss;
+            ss << "Cannot open file '" << filename << "' for writing";
+            throw CannotWriteError(ss.str());
+        }
+
         NumpyImage input(array);
         std::auto_ptr<byte_sink> output(new fd_source_sink(fd));
         std::auto_ptr<ImageFormat> format(get_format(formatstr));
@@ -125,12 +143,15 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
             throw CannotWriteError(ss.str());
         }
         format->write(&input, output.get());
+        Py_XDECREF(asUtf8);
         Py_RETURN_NONE;
     } catch (const std::exception& e) {
         PyErr_SetString(PyExc_RuntimeError, e.what());
+        Py_XDECREF(asUtf8);
         return 0;
     } catch (...) {
         PyErr_SetString(PyExc_RuntimeError, "Mysterious error");
+        Py_XDECREF(asUtf8);
         return 0;
     }
 }

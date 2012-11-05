@@ -8,3 +8,10 @@ def test_non_existing():
     arr = np.arange(64,dtype=np.uint8).reshape((8,8))
     imsave('/tmp/test-me.png', arr, 'some format which does not exist')
 
+
+@raises(TypeError)
+def test_bad_args():
+    arr = np.arange(64,dtype=np.uint8).reshape((8,8))
+    imsave('/tmp/test-me.png', arr, arr)
+
+
