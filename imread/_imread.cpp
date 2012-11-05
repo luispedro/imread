@@ -119,7 +119,7 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
         NumpyImage input(array);
         std::auto_ptr<byte_sink> output(new fd_source_sink(fd));
         std::auto_ptr<ImageFormat> format(get_format(formatstr));
-        if (!format->can_write()) {
+        if (!format.get() || !format->can_write()) {
             std::stringstream ss;
             ss << "Cannot write this format (" << formatstr << ")";
             throw CannotWriteError(ss.str());

@@ -1,3 +1,6 @@
+Version 0.2.5+
+	* Fix hard crash when saving with non-existing file type
+
 Version 0.2.5 2012-10-29 by luispedro
 	* Correctly accept uppercase extensions
 	* Python 3 support (patch by Christoph Gohlke [pull request 8 on github])

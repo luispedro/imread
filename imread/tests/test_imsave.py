@@ -1,0 +1,10 @@
+from imread import imsave
+import numpy as np
+from nose.tools import raises
+
+@raises(Exception)
+def test_non_existing():
+    # in 0.2.5 this led to a hard crash!
+    arr = np.arange(64,dtype=np.uint8).reshape((8,8))
+    imsave('/tmp/test-me.png', arr, 'some format which does not exist')
+
