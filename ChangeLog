@@ -1,5 +1,6 @@
 Version 0.2.5+
 	* Fix hard crash when saving with non-existing file type
+	* Fix compilation on MacOS (patch by Alexander Bohn)
 
 Version 0.2.5 2012-10-29 by luispedro
 	* Correctly accept uppercase extensions

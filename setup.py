@@ -56,7 +56,7 @@ extensions = {
 }
 
 libraries = ['png', 'jpeg', 'tiff', 'webp']
-if 'linux' not in sys.platform:
+if sys.platform.startswith('win'):
     libraries.append('zlib')
 
 ext_modules = [
