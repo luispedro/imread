@@ -56,8 +56,6 @@ extensions = {
 }
 
 libraries = ['png', 'jpeg', 'tiff', 'webp']
-if 'linux' not in sys.platform:
-    libraries.append('zlib')
 
 ext_modules = [
     numpyutils.Extension(
