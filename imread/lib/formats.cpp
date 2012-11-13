@@ -8,6 +8,7 @@
 #include "_png.h"
 #include "_tiff.h"
 #include "_webp.h"
+#include "_pvrtc.h"
 
 #include <cstring>
 
@@ -18,6 +19,8 @@ std::auto_ptr<ImageFormat> get_format(const char* format) {
     if (!strcmp(format, "lsm")) return std::auto_ptr<ImageFormat>(new LSMFormat);
     if (!strcmp(format, "tiff") || !strcmp(format, "tif")) return std::auto_ptr<ImageFormat>(new TIFFFormat);
     if (!strcmp(format, "webp")) return std::auto_ptr<ImageFormat>(new WebPFormat);
+    if (!strcmp(format, "pvr")) return std::auto_ptr<ImageFormat>(new PVRTCFormat);
+    if (!strcmp(format, "pvrtc")) return std::auto_ptr<ImageFormat>(new PVRTCFormat);
     if (!strcmp(format, "stk")) return std::auto_ptr<ImageFormat>(new STKFormat);
     if (!strcmp(format, "bmp")) return std::auto_ptr<ImageFormat>(new BMPFormat);
     return std::auto_ptr<ImageFormat>(0);
