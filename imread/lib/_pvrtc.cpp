@@ -6,6 +6,7 @@
 #include "tools.h"
 
 #include "pvr.h"
+#include <cstring>
 
 std::auto_ptr<Image> PVRTCFormat::read(byte_source* src, ImageFactory* factory) {
     std::vector<byte> data = full_data(*src);
@@ -20,7 +21,7 @@ std::auto_ptr<Image> PVRTCFormat::read(byte_source* src, ImageFactory* factory) 
     if (pvr.data) {
         /* clearly this is not the best approach */
         uint8_t* rowp = output->rowp_as<uint8_t>(0);
-        memcpy(&pvr.data[0], &rowp, pvr.width*pvr.height*4);
+        std::memcpy(rowp, pvr.data, pvr.width*pvr.height*4);
     } else {
         throw CannotReadError("imread.imread._pvrtc: Error reading PVRTC file.");
     }
