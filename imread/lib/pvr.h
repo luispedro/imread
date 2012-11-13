@@ -62,7 +62,8 @@ struct PVRTexture
     ~PVRTexture();
     ePVRLoadResult load(const char *const path);
 
-    bool loadApplePVRTC(uint8_t* data, int size);
+    // Returns an error message or NULL if no error
+    const char* loadApplePVRTC(uint8_t* data, int size);
 
     unsigned int width;
     unsigned int height;

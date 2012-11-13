@@ -99,16 +99,15 @@ PVRTexture::~PVRTexture()
         free(this->data);
 }
 
-bool PVRTexture::loadApplePVRTC(uint8_t* data, int size)
+const char* PVRTexture::loadApplePVRTC(uint8_t* data, int size)
 {
     // additional heuristic
     if(size>sizeof(PVRHeader))
     {
         PVRHeader *header = (PVRHeader *)data;
-        if( header->size == sizeof( PVRHeader )
-        &&( header->magic == 0x21525650 ) )
+        if (header->size == sizeof( PVRHeader ) &&( header->magic == 0x21525650 ) )
             // this looks more like a PowerVR file.
-            return false;
+            return "Magic number matches PowerVR not ApplePVRTC";
     }
 
     // default to 2bpp, 8x8
@@ -154,7 +153,7 @@ bool PVRTexture::loadApplePVRTC(uint8_t* data, int size)
 
         if(shift==10)
             // no mode could be found.
-            return false;
+            return "No mode could be found";
         printf("detected apple %ix%i %i bpp pvrtc\n", res, res, mode*2+2);
     }
 
@@ -182,7 +181,7 @@ bool PVRTexture::loadApplePVRTC(uint8_t* data, int size)
         }
     }
 
-    return true;
+    return 0;
 }
 
 ePVRLoadResult PVRTexture::load(const char *const path)

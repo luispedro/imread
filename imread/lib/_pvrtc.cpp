@@ -7,14 +7,17 @@
 
 #include "pvr.h"
 #include <cstring>
+#include <sstream>
 
 std::auto_ptr<Image> PVRTCFormat::read(byte_source* src, ImageFactory* factory) {
     std::vector<byte> data = full_data(*src);
     PVRTexture pvr;
 
-    bool res = pvr.loadApplePVRTC(&data[0], data.size());
-    if (!res) {
-        throw CannotReadError("imread.imread._pvrtc: File isn't a valid PVRTC texture.");
+    const char* err = pvr.loadApplePVRTC(&data[0], data.size());
+    if (err) {
+        std::stringstream out;
+        out << "imread.imread._pvrtc: File isn't a valid PVRTC texture. [error was: " << err << "]";
+        throw CannotReadError(out.str());
     }
 
     std::auto_ptr<Image> output(factory->create(8, pvr.height, pvr.width, 4));
