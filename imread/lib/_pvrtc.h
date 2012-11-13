@@ -3,6 +3,9 @@
 
 #ifndef LPC_PVRTC_H_INCLUDE_GUARD_
 #define LPC_PVRTC_H_INCLUDE_GUARD_
+
+#include "base.h"
+
 class PVRTCFormat : public ImageFormat {
     public:
         bool can_read() const { return true; }

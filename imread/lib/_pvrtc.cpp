@@ -11,8 +11,8 @@ std::auto_ptr<Image> PVRTCFormat::read(byte_source* src, ImageFactory* factory) 
     std::vector<byte> data = full_data(*src);
     PVRTexture pvr;
 
-    int res = pvr.loadApplePVRTC(&data[0], data.size());
-    if (res != PVR_LOAD_OKAY && res != PVR_LOAD_UNKNOWN_TYPE) {
+    bool res = pvr.loadApplePVRTC(&data[0], data.size());
+    if (!res) {
         throw CannotReadError("imread.imread._pvrtc: File isn't a valid PVRTC texture.");
     }
 

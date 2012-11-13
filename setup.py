@@ -46,6 +46,8 @@ extensions = {
         'imread/_imread.cpp',
         'imread/lib/formats.cpp',
         'imread/lib/numpy.cpp',
+        'imread/lib/pvrtc.cc',
+        'imread/lib/pvr.cc',
         'imread/lib/_bmp.cpp',
         'imread/lib/_jpeg.cpp',
         'imread/lib/_lsm.cpp',
@@ -76,9 +78,6 @@ packages = setuptools.find_packages()
 package_dir = {
     'imread.tests': 'imread/tests',
     }
-package_data = {
-    'imread.tests': ['data/*'],
-    }
 
 classifiers = [
 'Development Status :: 4 - Beta',
@@ -106,6 +105,6 @@ numpyutils.setup(name = 'imread',
       packages = packages,
       ext_modules = ext_modules,
       package_dir = package_dir,
-      package_data = package_data,
+      include_package_data = True,
       test_suite = 'nose.collector',
       )

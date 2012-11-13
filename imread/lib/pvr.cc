@@ -1,7 +1,7 @@
 /*******************************************************************************
   Copyright (c) 2009, Limbic Software, Inc.
   All rights reserved.
-  
+
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
       * Redistributions of source code must retain the above copyright
@@ -12,7 +12,7 @@
       * Neither the name of the Limbic Software, Inc. nor the
         names of its contributors may be used to endorse or promote products
         derived from this software without specific prior written permission.
-  
+
   THIS SOFTWARE IS PROVIDED BY LIMBIC SOFTWARE, INC. ''AS IS'' AND ANY
   EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
   WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -40,17 +40,17 @@ unsigned int countBits(unsigned int x)
 
 typedef struct
 {
-	uint32_t PackedData[2];
+    uint32_t PackedData[2];
 }AMTC_BLOCK_STRUCT;
 
 const unsigned int PVRTEX_CUBEMAP               = (1<<12);
 
 extern void Decompress(AMTC_BLOCK_STRUCT *pCompressedData,
-					   const int Do2bitMode,
-					   const int XDim,
-					   const int YDim,
-					   const int AssumeImageTiles,
-					   unsigned char* pResultImage);
+                       const int Do2bitMode,
+                       const int XDim,
+                       const int YDim,
+                       const int AssumeImageTiles,
+                       unsigned char* pResultImage);
 
 /*******************************************************************************
   This PVR code is loosely based on Wolfgang Engel's Oolong Engine:
@@ -233,12 +233,12 @@ ePVRLoadResult PVRTexture::load(const char *const path)
         free( data );
         return PVR_LOAD_INVALID_FILE;
     }
-    
+
     if(header->numtex<1)
     {
         header->numtex = (header->flags & PVRTEX_CUBEMAP)?6:1;
     }
-    
+
     if( header->numtex != 1 )
     {
         free( data );
@@ -337,7 +337,7 @@ ePVRLoadResult PVRTexture::load(const char *const path)
             {
                 short v = *(short*)in;
                 in += 2;
-                
+
 
                 uint8_t b = (v&0x001f)<<3;
                 uint8_t g = (v&0x07e0)>>3;
@@ -349,7 +349,7 @@ ePVRLoadResult PVRTexture::load(const char *const path)
                     printf("%04x\n", v);
                     printf("%i %i %i\n", r, g, b);
                 }
-                
+
                 *out++ = r;
                 *out++ = g;
                 *out++ = b;
