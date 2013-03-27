@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012, Luis Pedro Coelho <luis@luispedro.org>
+# Copyright (C) 2012-2013, Luis Pedro Coelho <luis@luispedro.org>
 # vim: set ts=4 sts=4 sw=4 expandtab smartindent:
 #
 # License: MIT (see COPYING.MIT file)
@@ -89,6 +89,8 @@ def imsave(filename, array, formatstr=None):
     formatstr: str, optional
         format string
     '''
+    if not np.issubdtype(array.dtype, np.int):
+        raise TypeError('imread:imsave: only integer images are supported')
     array = np.ascontiguousarray(array)
     if formatstr is None:
         dot = filename.rfind('.')
