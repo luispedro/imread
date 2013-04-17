@@ -47,6 +47,8 @@ def imread(filename, as_grey=False, formatstr=None):
     reader = special.get(formatstr, _imread.imread)
     im = reader(filename, formatstr)
     if as_grey and len(im.shape) == 3:
+        if im.shape[2] == 1:
+            return im.squeeze()
         # these are the values that wikipedia says are typical
         transform = np.array([ 0.30,  0.59,  0.11])
         return np.dot(im, transform)
@@ -89,7 +91,7 @@ def imsave(filename, array, formatstr=None):
     formatstr: str, optional
         format string
     '''
-    if not np.issubdtype(array.dtype, np.int):
+    if not np.issubdtype(array.dtype, np.integer):
         raise TypeError('imread:imsave: only integer images are supported')
     array = np.ascontiguousarray(array)
     if formatstr is None:
