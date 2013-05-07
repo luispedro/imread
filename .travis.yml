@@ -10,6 +10,7 @@ before_install:
     - sudo apt-get install -qq python-scipy python-matplotlib python-imaging
     - sudo apt-get install -qq python3-numpy python3-scipy
     - sudo apt-get install -qq libpng12-dev libtiff4-dev libwebp-dev
+    - sudo apt-get install -qq xcftools
 install:
   - "pip install nose"
   - "make debug"
