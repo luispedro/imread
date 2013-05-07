@@ -40,6 +40,7 @@ Dependencies
 To install on debian/ubuntu::
 
     sudo apt-get install libpng12-dev libtiff4-dev libwebp-dev
+    sudo apt-get install xcftools
 
 To install on Mac::
 
