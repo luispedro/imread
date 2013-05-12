@@ -57,6 +57,14 @@ this on the
 
 If at all possible, include a small image as a test case.
 
+Travis Build Status
+~~~~~~~~~~~~~~~~~~~
+
+.. image:: https://travis-ci.org/luispedro/imread.png
+       :target: https://travis-ci.org/luispedro/imread
+
+
+
 History
 ~~~~~~~
 Version 0.2.5 (2012-10-29)
