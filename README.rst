@@ -67,6 +67,14 @@ Travis Build Status
 
 History
 ~~~~~~~
+
+Version 0.2.6 (2013-06-19)
+--------------------------
+- Fix hard crash when saving with non-existing file type
+- Fix compilation on MacOS (patch by Alexander Bohn)
+- Add ``verbose`` argument to tests.run()
+- Better error when attempting to save floating point images
+
 Version 0.2.5 (2012-10-29)
 --------------------------
 - Correctly accept uppercase extensions
