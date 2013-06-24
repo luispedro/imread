@@ -1,3 +1,6 @@
+Version 0.2.6+
+	* Initial support for reading TIFF metadata
+
 Version 0.2.6 2012-06-19 by luispedro
 	* Fix hard crash when saving with non-existing file type
 	* Fix compilation on MacOS (patch by Alexander Bohn)

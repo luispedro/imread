@@ -12,7 +12,7 @@ extern "C" {
     #include <numpy/ndarrayobject.h>
 }
 
-class NumpyImage : public Image {
+class NumpyImage : public Image, public ImageWithMetadata {
     public:
         NumpyImage(PyArrayObject* array = 0)
             :array_(array)
@@ -31,6 +31,12 @@ class NumpyImage : public Image {
         PyObject* releasePyObject() {
             this->finalize();
             return reinterpret_cast<PyObject*>(this->release());
+        }
+
+        PyObject* metadataPyObject() {
+            std::string* s =  this->get_meta();
+            if (s) return PyString_FromString(s->c_str());
+            Py_RETURN_NONE;
         }
 
         virtual int nbits() const {

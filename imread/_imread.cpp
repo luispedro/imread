@@ -33,11 +33,11 @@ const char TypeErrorMsg[] =
 PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi) {
     const char* filename;
     const char* formatstr;
-    if (!PyArg_ParseTuple(args, "ss", &filename, &formatstr)) {
+    const char* flags;
+    if (!PyArg_ParseTuple(args, "sss", &filename, &formatstr, &flags)) {
         PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
         return NULL;
     }
-
     int fd = ::open(filename, O_RDONLY|O_BINARY);
     if (fd < 0) {
         std::stringstream ss;
@@ -84,7 +84,11 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi) {
             return output;
         } else {
             std::auto_ptr<Image> output = format->read(input.get(), &factory);
-            return static_cast<NumpyImage&>(*output).releasePyObject();
+            PyObject* final = PyTuple_New(2);
+            if (!final) return NULL;
+            PyTuple_SET_ITEM(final, 0, static_cast<NumpyImage&>(*output).releasePyObject());
+            PyTuple_SET_ITEM(final, 1, static_cast<NumpyImage&>(*output).metadataPyObject());
+            return final;
         }
     } catch (const std::exception& e) {
         PyErr_SetString(PyExc_RuntimeError, e.what());

@@ -19,9 +19,10 @@ def _parse_formatstr(filename, formatstr, funcname):
         return ext[1:].lower()
     raise ValueError('imread.%s: Could not identify format from filename: `%s`' % (funcname,filename))
 
-def imread(filename, as_grey=False, formatstr=None):
+def imread(filename, as_grey=False, formatstr=None, return_metadata=False):
     '''
-    im = imread(filename, as_grey=False, formatstr={filename extension})
+    im = imread(filename, as_grey=False, formatstr={filename extension}, return_metadata=False)
+    im,meta = imread(filename, as_grey=False, formatstr={filename extension}, return_metadata=True)
 
     Read an image into a ndarray.
 
@@ -35,6 +36,8 @@ def imread(filename, as_grey=False, formatstr=None):
         Format name. This is typically the same as the extension of the file
         and inferred from there. However, if you have a file whose extension
         does not correspond to the format, you can pass it explicitly.
+    return_metadata : bool, optional
+        Whether to return metadata (default: False)
 
     Returns
     -------
@@ -45,14 +48,17 @@ def imread(filename, as_grey=False, formatstr=None):
     '''
     formatstr = _parse_formatstr(filename, formatstr, 'imread')
     reader = special.get(formatstr, _imread.imread)
-    im = reader(filename, formatstr)
+    flags = ('m' if return_metadata else '')
+    imdata,meta = reader(filename, formatstr, flags)
     if as_grey and len(im.shape) == 3:
         if im.shape[2] == 1:
             return im.squeeze()
         # these are the values that wikipedia says are typical
         transform = np.array([ 0.30,  0.59,  0.11])
-        return np.dot(im, transform)
-    return im
+        imdata = np.dot(im, transform)
+    if return_metadata:
+        return imdata, meta
+    return imdata
 
 
 def imread_multi(filename, formatstr=None):
@@ -74,7 +80,7 @@ def imread_multi(filename, formatstr=None):
     images : list
     '''
     formatstr = _parse_formatstr(filename, formatstr, 'imread')
-    return _imread.imread_multi(filename, formatstr)
+    return _imread.imread_multi(filename, formatstr, '')
 
 
 def imsave(filename, array, formatstr=None):

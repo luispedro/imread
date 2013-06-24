@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012, Luis Pedro Coelho <luis@luispedro.org>
+# Copyright (C) 2012-2013, Luis Pedro Coelho <luis@luispedro.org>
 # vim: set ts=4 sts=4 sw=4 expandtab smartindent:
 #
 # License: MIT (see COPYING.MIT file)
 
 import imread
 
-def readxcf(xcf_filename, formatstr):
+def readxcf(xcf_filename, formatstr, _flags):
     '''
     im = readxcf(xcf_filename, formatstr)
 
@@ -35,7 +35,7 @@ def readxcf(xcf_filename, formatstr):
     output = system('xcf2png %s >%s' % (xcf_filename,N.name))
     if output:
         raise OSError('imread.readxcf: xcf format is only supported through the xcf2png utility, which imread could not run')
-    return imread.imread(N.name)
+    return imread.imread(N.name, return_metadata=True)
 
 special = {
     'xcf' : readxcf,

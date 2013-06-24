@@ -1,4 +1,4 @@
-// Copyright 2012 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2013 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #include "base.h"
@@ -6,6 +6,7 @@
 #include "tools.h"
 
 #include <sstream>
+#include <iostream>
 
 extern "C" {
    #include <tiffio.h>
@@ -66,6 +67,19 @@ T tiff_get(const tif_holder& t, const int tag) {
     }
     return val;
 }
+
+template <>
+inline
+std::string tiff_get<std::string>(const tif_holder& t, const int tag) {
+    char* val;
+    if (!TIFFGetField(t.tif, tag, &val)) {
+        std::stringstream out;
+        out << "imread.imread._tiff: Cannot find necessary tag (" << tag << ")";
+        throw CannotReadError(out.str());
+    }
+    return val;
+}
+
 template <typename T>
 inline
 T tiff_get(const tif_holder& t, const int tag, const T def) {
@@ -73,6 +87,16 @@ T tiff_get(const tif_holder& t, const int tag, const T def) {
     if (!TIFFGetField(t.tif, tag, &val)) return def;
     return val;
 }
+
+
+template <>
+inline
+std::string tiff_get<std::string>(const tif_holder& t, const int tag, const std::string def) {
+    char* val;
+    if (!TIFFGetField(t.tif, tag, &val)) return def;
+    return val;
+}
+
 TIFF* read_client(byte_source* src) {
     return TIFFClientOpen(
                     "internal",
@@ -190,8 +214,11 @@ std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* fa
         const uint16 bits_per_sample = tiff_get<uint16>(t, TIFFTAG_BITSPERSAMPLE);
         const int depth = nr_samples > 1 ? nr_samples : -1;
 
-        std::auto_ptr<Image> output(factory->create(bits_per_sample, h, w, depth));
-
+        std::auto_ptr<Image> output = factory->create(bits_per_sample, h, w, depth);
+        if (ImageWithMetadata* metaout = dynamic_cast<ImageWithMetadata*>(output.get())) {
+            std::string description = tiff_get<std::string>(t, TIFFTAG_IMAGEDESCRIPTION, "");
+            metaout->set_meta(description);
+        }
         for (uint32 r = 0; r != h; ++r) {
             if(TIFFReadScanline(t.tif, output->rowp_as<byte>(r), r) == -1) {
                 throw CannotReadError("imread.imread._tiff: Error reading scanline");

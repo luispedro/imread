@@ -1,4 +1,4 @@
-// Copyright 2012 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2013 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #ifndef LPC_IMREAD_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012
@@ -105,10 +105,18 @@ class ImageFactory {
         virtual ~ImageFactory() { }
         virtual std::auto_ptr<Image>
             create(int nbits, int d0, int d1, int d2, int d3=-1, int d4=-1) = 0;
-
     protected:
 };
 
+class ImageWithMetadata {
+    public:
+        ImageWithMetadata():meta_(0) { }
+        virtual ~ImageWithMetadata() { delete meta_; };
+        std::string* get_meta() { return meta_; }
+        void set_meta(const std::string& m) { if (meta_) delete meta_; meta_ = new std::string(m); }
+    private:
+        std::string* meta_;
+};
 
 /// This class *owns* its members and will delete them if destroyed
 struct image_list {
