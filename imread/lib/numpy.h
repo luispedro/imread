@@ -35,7 +35,11 @@ class NumpyImage : public Image, public ImageWithMetadata {
 
         PyObject* metadataPyObject() {
             std::string* s =  this->get_meta();
+#if PY_MAJOR_VERSION < 3
             if (s) return PyString_FromString(s->c_str());
+#else
+            if (s) return PyBytes_FromString(s->c_str());
+#endif
             Py_RETURN_NONE;
         }
 
