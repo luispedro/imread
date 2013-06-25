@@ -105,10 +105,12 @@ PyObject* py_imread_multi(PyObject* self, PyObject* args) { return py_imread_may
 PyObject* py_imsave(PyObject* self, PyObject* args) {
     const char* filename;
     const char* formatstr;
+    const char* meta = 0;
     PyObject* formatstrObject;
     PyArrayObject* array;
+    PyObject* metaObject;
     PyObject* asUtf8 = NULL;
-    if (!PyArg_ParseTuple(args, "sOO", &filename, &formatstrObject, &array) || !PyArray_Check(array)) {
+    if (!PyArg_ParseTuple(args, "sOOO", &filename, &formatstrObject, &array, &metaObject) || !PyArray_Check(array)) {
         PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
         return NULL;
     }
@@ -117,6 +119,13 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
 #if PY_MAJOR_VERSION < 3
     if (PyString_Check(formatstrObject)) {
         formatstr = PyString_AsString(formatstrObject);
+        if (metaObject != Py_None) {
+            if (!PyString_Check(metaObject)) {
+                PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
+                return NULL;
+            }
+            meta = PyString_AsString(metaObject);
+        }
 #else
     if (PyUnicode_Check(formatstrObject)) {
         // On python 3.3, we can just do
@@ -124,6 +133,13 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
         asUtf8 = PyUnicode_AsUTF8String(formatstrObject);
         if (!asUtf8) return NULL;
         formatstr = PyBytes_AsString(asUtf8);
+        if (metaObject != Py_None) {
+            if (!PyBytes_Check(metaObject)) {
+                PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
+                return NULL;
+            }
+            meta = PyBytes_AsString(metaObject);
+        }
 #endif
     } else {
         PyErr_SetString(PyExc_TypeError, "imread.imsave: Expected a string as formatstr");
@@ -146,7 +162,8 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
             ss << "Cannot write this format (" << formatstr << ")";
             throw CannotWriteError(ss.str());
         }
-        format->write(&input, output.get());
+        if (meta && format->can_write_metadata()) format->write_with_metadata(&input, output.get(), meta);
+        else format->write(&input, output.get());
         Py_XDECREF(asUtf8);
         Py_RETURN_NONE;
     } catch (const std::exception& e) {

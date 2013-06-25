@@ -83,9 +83,9 @@ def imread_multi(filename, formatstr=None):
     return _imread.imread_multi(filename, formatstr, '')
 
 
-def imsave(filename, array, formatstr=None):
+def imsave(filename, array, formatstr=None, metadata=None):
     '''
-    imsave(filename, array, formatstr={auto-detect})
+    imsave(filename, array, formatstr={auto-detect}, metadata={None})
 
     Writes `array` into file `filename`
 
@@ -96,6 +96,9 @@ def imsave(filename, array, formatstr=None):
     array : ndarray-like
     formatstr: str, optional
         format string
+    metadata: bytes, optional
+        metadata to write to file. Note that not all formats support writing
+        metadata.
     '''
     if not np.issubdtype(array.dtype, np.integer):
         raise TypeError('imread:imsave: only integer images are supported')
@@ -105,4 +108,4 @@ def imsave(filename, array, formatstr=None):
         if dot < 0:
             raise ValueError('imread.imsave: dot not found in filename (%s)' % filename)
         formatstr = filename[dot+1:]
-    _imread.imsave(filename, formatstr, array)
+    _imread.imsave(filename, formatstr, array, metadata)

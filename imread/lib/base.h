@@ -149,6 +149,7 @@ class ImageFormat {
         virtual bool can_read() const { return false; }
         virtual bool can_read_multi() const { return false; }
         virtual bool can_write() const { return false; }
+        virtual bool can_write_metadata() const { return false; }
 
         virtual std::auto_ptr<Image> read(byte_source* src, ImageFactory* factory) {
             throw NotImplementedError();
@@ -158,6 +159,9 @@ class ImageFormat {
         }
         virtual void write(Image* input, byte_sink* output) {
             throw NotImplementedError();
+        }
+        virtual void write_with_metadata(Image* input, byte_sink* output, const char*) {
+            this->write(input, output);
         }
 };
 

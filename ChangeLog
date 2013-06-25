@@ -1,5 +1,5 @@
 Version 0.2.6+
-	* Initial support for reading TIFF metadata
+	* Initial support for reading & writing TIFF metadata
 
 Version 0.2.6 2012-06-19 by luispedro
 	* Fix hard crash when saving with non-existing file type

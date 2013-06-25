@@ -229,7 +229,7 @@ std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* fa
     return images;
 }
 
-void TIFFFormat::write(Image* input, byte_sink* output) {
+void TIFFFormat::write_with_metadata(Image* input, byte_sink* output, const char* meta) {
     tif_holder t = TIFFClientOpen(
                     "internal",
                     "w",
@@ -251,6 +251,9 @@ void TIFFFormat::write(Image* input, byte_sink* output) {
 
     TIFFSetField(t.tif, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
     TIFFSetField(t.tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+    if (meta) {
+        TIFFSetField(t.tif, TIFFTAG_IMAGEDESCRIPTION, meta);
+    }
 
     for (uint32 r = 0; r != h; ++r) {
         if (TIFFWriteScanline(t.tif, input->rowp(r), r) == -1) {
