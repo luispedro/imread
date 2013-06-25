@@ -1,7 +1,6 @@
 from nose.tools import with_setup, raises
 import numpy as np
 from imread import imread, imsave
-from imread import _imread
 import numpy as np
 
 _filename = 'imread_testing_file.png'
@@ -17,7 +16,7 @@ def _remove_file():
 def test_png_raw():
     simple = np.arange(16*16).reshape((16,16))
     simple = simple.astype(np.uint8)
-    _imread.imsave(_filename, 'png', simple)
+    imsave(_filename, simple, 'png')
     back = imread(_filename)
     assert np.all(simple == back)
 
@@ -25,7 +24,7 @@ def test_png_raw():
 def test_asym():
     simple = np.arange(16*16).reshape((32,8))
     simple = simple.astype(np.uint8)
-    _imread.imsave(_filename, 'png', simple)
+    imsave(_filename, simple, 'png')
     back = imread(_filename)
     assert np.all(simple == back)
 
@@ -38,7 +37,7 @@ def test_random():
         simple = simple.astype(np.uint8)
         if i < 3:
             simple[:,:,i] = 0
-        _imread.imsave(_filename, 'png', simple)
+        imsave(_filename, simple, 'png')
         back = imread(_filename)
         assert np.all(simple == back)
 

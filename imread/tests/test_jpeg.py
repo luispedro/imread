@@ -1,7 +1,6 @@
 from nose.tools import with_setup, raises
 import numpy as np
-from imread import _imread
-from imread import imread
+from imread import imread, imsave
 _filename = 'imread_testing_file.jpg'
 
 def _remove_file():
@@ -16,7 +15,7 @@ def test_jpeg():
     f = np.arange(64*16).reshape((64,16))
     f %= 16
     f = f.astype(np.uint8)
-    _imread.imsave(_filename, 'jpeg', f)
+    imsave(_filename, f, 'jpeg')
     g = imread(_filename).squeeze()
     assert np.mean(np.abs(f.astype(float)-g)) < 1.
 
