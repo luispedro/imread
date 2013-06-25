@@ -44,3 +44,14 @@ def test_monochrome():
 
 def test_multi():
     assert len(imread_multi('imread/tests/data/stack.tiff')) == 2
+
+@with_setup(teardown=_remove_file)
+def test_read_back_with_metadata():
+    simple = np.arange(16*16).reshape((16,16))
+    simple = simple.astype(np.uint8)
+    meta = '123qwe'
+    imsave(_filename, simple, metadata=meta)
+    back,meta_read = imread(_filename, return_metadata=True)
+    assert np.all(simple == back)
+    assert meta == meta_read
+
