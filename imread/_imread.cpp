@@ -135,7 +135,7 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
         formatstr = PyBytes_AsString(asUtf8);
         if (metaObject != Py_None) {
             if (!PyBytes_Check(metaObject)) {
-                PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
+                PyErr_SetString(PyExc_RuntimeError, "imread._imread: metadata is not Bytes");
                 return NULL;
             }
             meta = PyBytes_AsString(metaObject);
