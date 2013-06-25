@@ -34,6 +34,7 @@ languages.
 
 `Online documentation <http://packages.python.org/imread/>`__
 
+
 Dependencies
 ~~~~~~~~~~~~
 
@@ -45,6 +46,7 @@ To install on debian/ubuntu::
 To install on Mac::
 
     sudo port install libpng tiff webp
+
 
 Bug Reports
 ~~~~~~~~~~~
@@ -63,7 +65,10 @@ Travis Build Status
 .. image:: https://travis-ci.org/luispedro/imread.png
        :target: https://travis-ci.org/luispedro/imread
 
+Python versions 2.6, 2.7 and 3.3 are officially supported.
 
+Python 3.4 should also work (submit a bug report if it does not). Python 3.2
+(and earlier versions in the Python 3 series) are officially **not supported**.
 
 History
 ~~~~~~~
