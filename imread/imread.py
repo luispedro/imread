@@ -61,6 +61,14 @@ def imread(filename, as_grey=False, formatstr=None, return_metadata=False):
     return imdata
 
 
+def imread_from_blob(blob, formatstr, return_metadata=False):
+    reader = _imread.imread_from_blob
+    flags = ('m' if return_metadata else '')
+    imdata,meta = reader(blob, formatstr, flags)
+    if return_metadata:
+        return imdata,meta
+    return imdata
+
 def imread_multi(filename, formatstr=None):
     '''
     images = imread_multi(filename, formatstr={from filename})

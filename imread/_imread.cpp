@@ -1,4 +1,4 @@
-// Copyright 2012 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2013 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 
@@ -17,33 +17,47 @@
 #include "lib/base.h"
 #include "lib/formats.h"
 #include "lib/file.h"
+#include "lib/memory.h"
 #include "lib/numpy.h"
-
-extern "C" {
-    #include <Python.h>
-    #include <numpy/ndarrayobject.h>
-}
+#include <Python.h>
+#include <numpy/ndarrayobject.h>
 
 namespace{
+
+const char* get_blob(PyObject* data, size_t& len) {
+#if PY_MAJOR_VERSION < 3
+    if (!PyString_Check(data)) return 0;
+    len = PyString_Size(data);
+    return PyString_AsString(data);
+#else
+    len = PyBytes_Size(data);
+    if (!PyBytes_Check(data)) return 0;
+    return PyBytes_AsString(data);
+#endif
+}
+
+
+const char* get_cstring(PyObject* stro) {
+#if PY_MAJOR_VERSION < 3
+    if (!PyString_Check(stro)) return 0;
+    return PyString_AsString(stro);
+#else
+    if (!PyUnicode_Check(stro)) return 0;
+    return PyUnicode_AsUTF8(stro);
+#endif
+}
 
 const char TypeErrorMsg[] =
     "Type not understood. "
     "This is caused by either a direct call to _imread (which is dangerous: types are not checked!) or a bug in imread.py.\n";
 
-PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi) {
-    const char* filename;
+PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, bool is_blob) {
+    PyObject* filename_or_blob_object;
     const char* formatstr;
     const char* flags;
-    if (!PyArg_ParseTuple(args, "sss", &filename, &formatstr, &flags)) {
+    if (!PyArg_ParseTuple(args, "Oss", &filename_or_blob_object, &formatstr, &flags)) {
         PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
         return NULL;
-    }
-    int fd = ::open(filename, O_RDONLY|O_BINARY);
-    if (fd < 0) {
-        std::stringstream ss;
-        ss << "File `" << filename << "` does not exist";
-        PyErr_SetString(PyExc_OSError, ss.str().c_str());
-        return 0;
     }
 
     try {
@@ -71,7 +85,24 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi) {
         }
 
         NumpyFactory factory;
-        std::auto_ptr<byte_source> input(new fd_source_sink(fd));
+        std::auto_ptr<byte_source> input;
+        if (is_blob) {
+            size_t len;
+            const char* data = get_blob(filename_or_blob_object, len);
+            if (!data) return 0;
+            input = std::auto_ptr<byte_source>(new memory_source(reinterpret_cast<const byte*>(data), len));
+        } else {
+            const char* filename = get_cstring(filename_or_blob_object);
+            if (!filename) return 0;
+            int fd = ::open(filename, O_RDONLY|O_BINARY);
+            if (fd < 0) {
+                std::stringstream ss;
+                ss << "File `" << filename << "` does not exist";
+                PyErr_SetString(PyExc_OSError, ss.str().c_str());
+                return 0;
+            }
+            input = std::auto_ptr<byte_source>(new fd_source_sink(fd));
+        }
         if (is_multi) {
             std::auto_ptr<image_list> images = format->read_multi(input.get(), &factory);
             PyObject* output = PyList_New(images->size());
@@ -99,8 +130,9 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi) {
     }
 }
 
-PyObject* py_imread      (PyObject* self, PyObject* args) { return py_imread_may_multi(self, args, false); }
-PyObject* py_imread_multi(PyObject* self, PyObject* args) { return py_imread_may_multi(self, args, true); }
+PyObject* py_imread             (PyObject* self, PyObject* args) { return py_imread_may_multi(self, args, false, false); }
+PyObject* py_imread_multi       (PyObject* self, PyObject* args) { return py_imread_may_multi(self, args,  true, false); }
+PyObject* py_imread_from_blob   (PyObject* self, PyObject* args) { return py_imread_may_multi(self, args, false, true); }
 
 PyObject* py_imsave(PyObject* self, PyObject* args) {
     const char* filename;
@@ -181,6 +213,7 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
 PyMethodDef methods[] = {
   {"imread",(PyCFunction)py_imread, METH_VARARGS, NULL},
   {"imread_multi",(PyCFunction)py_imread_multi, METH_VARARGS, NULL},
+  {"imread_from_blob",(PyCFunction)py_imread_from_blob, METH_VARARGS, NULL},
   {"imsave",(PyCFunction)py_imsave, METH_VARARGS, NULL},
   {NULL, NULL,0,NULL},
 };

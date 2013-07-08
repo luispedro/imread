@@ -1,4 +1,5 @@
 Version 0.2.6+
+	* Support for reading from in-memory blobs
 	* Initial support for reading & writing TIFF metadata
 
 Version 0.2.6 2012-06-19 by luispedro
