@@ -9,7 +9,7 @@ def test_imread_from_blob():
                         'data',
                         filename)
         fromfile= imread.imread(filename)
-        fromblob = imread_from_blob(open(filename).read(), formatstr)
+        fromblob = imread_from_blob(open(filename, 'br').read(), formatstr)
         assert np.all(fromblob == fromfile)
     yield compare_with_blob, 'good.png', 'png'
     yield compare_with_blob, 'GOOD.PNG', 'png'
