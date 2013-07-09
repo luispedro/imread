@@ -32,7 +32,7 @@ def imread(filename, as_grey=False, formatstr=None, return_metadata=False):
     im = imread(filename, as_grey=False, formatstr={filename extension}, return_metadata=False)
     im,meta = imread(filename, as_grey=False, formatstr={filename extension}, return_metadata=True)
 
-    Read an image into a ndarray.
+    Read an image into a ndarray from a file.
 
     Parameters
     ----------
@@ -53,6 +53,13 @@ def imread(filename, as_grey=False, formatstr=None, return_metadata=False):
         The type of this array will depend on the contents of the file and of
         `as_grey`. Conversion from colour to grayscale will return a floating
         point image.
+    meta: str
+        Metadata. The metadata in the file Only returned if ``return_metadata``.
+
+    See Also
+    --------
+    imread_from_blob : function
+        Read from a in-memory string
     '''
     formatstr = _parse_formatstr(filename, formatstr, 'imread')
     reader = special.get(formatstr, _imread.imread)
@@ -65,6 +72,41 @@ def imread(filename, as_grey=False, formatstr=None, return_metadata=False):
 
 
 def imread_from_blob(blob, formatstr, as_grey=False, return_metadata=False):
+    '''
+    imdata = imread_from_blob(blob, formatstr, as_grey=False, return_metadata={True})
+    imdata,metadata = imread_from_blob(blob, formatstr, as_grey={False}, return_metadata=True)
+
+    Read an image into a ndarray from an in-memory blob.
+
+    Note that the parameter order is changed wrt. ``imread`` because
+    **formatstr** is a mandatory parameter to this function!
+
+    Parameters
+    ----------
+    blob : str (bytes in Py3)
+        input data
+    formatstr : str
+        Format name. This is the file extension typically associated with this
+        format.
+    as_grey : boolean, optional
+        Whether to convert to grey scale image (default: no)
+    return_metadata : bool, optional
+        Whether to return metadata (default: False)
+
+    Returns
+    -------
+    im : ndarray
+        The type of this array will depend on the contents of the file and of
+        `as_grey`. Conversion from colour to grayscale will return a floating
+        point image.
+    meta: str
+        Metadata. The metadata in the file Only returned if ``return_metadata``.
+
+    See Also
+    --------
+    imread : function
+        Read from a file on disk
+    '''
     reader = _imread.imread_from_blob
     flags = ('m' if return_metadata else '')
     imdata,meta = reader(blob, formatstr, flags)
