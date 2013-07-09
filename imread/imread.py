@@ -19,6 +19,14 @@ def _parse_formatstr(filename, formatstr, funcname):
         return ext[1:].lower()
     raise ValueError('imread.%s: Could not identify format from filename: `%s`' % (funcname,filename))
 
+def _as_grey(im, as_grey):
+    if not as_grey or len(im.shape) != 3: return im
+    if im.shape[2] == 1:
+        return im.squeeze()
+    # these are the values that wikipedia says are typical
+    transform = np.array([ 0.30,  0.59,  0.11])
+    return np.dot(im, transform)
+
 def imread(filename, as_grey=False, formatstr=None, return_metadata=False):
     '''
     im = imread(filename, as_grey=False, formatstr={filename extension}, return_metadata=False)
@@ -50,21 +58,17 @@ def imread(filename, as_grey=False, formatstr=None, return_metadata=False):
     reader = special.get(formatstr, _imread.imread)
     flags = ('m' if return_metadata else '')
     imdata,meta = reader(filename, formatstr, flags)
-    if as_grey and len(im.shape) == 3:
-        if im.shape[2] == 1:
-            return im.squeeze()
-        # these are the values that wikipedia says are typical
-        transform = np.array([ 0.30,  0.59,  0.11])
-        imdata = np.dot(im, transform)
+    imdata = _as_grey(imdata, as_grey)
     if return_metadata:
         return imdata, meta
     return imdata
 
 
-def imread_from_blob(blob, formatstr, return_metadata=False):
+def imread_from_blob(blob, formatstr, as_grey=False, return_metadata=False):
     reader = _imread.imread_from_blob
     flags = ('m' if return_metadata else '')
     imdata,meta = reader(blob, formatstr, flags)
+    imdata = _as_grey(imdata, as_grey)
     if return_metadata:
         return imdata,meta
     return imdata
