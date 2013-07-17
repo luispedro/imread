@@ -254,6 +254,7 @@ void TIFFFormat::write_with_metadata(Image* input, byte_sink* output, const char
     TIFFSetField(t.tif, TIFFTAG_SAMPLESPERPIXEL, uint16(input->dim_or(2, 1)));
 
     TIFFSetField(t.tif, TIFFTAG_PHOTOMETRIC, uint16(photometric));
+    TIFFSetField(t.tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
 
     TIFFSetField(t.tif, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
     TIFFSetField(t.tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);

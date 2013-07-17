@@ -55,3 +55,12 @@ def test_read_back_with_metadata():
     assert np.all(simple == back)
     assert meta == meta_read
 
+
+@with_setup(teardown=_remove_file)
+def test_read_back_colour():
+    im = np.arange(256).astype(np.uint8).reshape((32,-1))
+    im = np.dstack([im, im*0, 255-im])
+    imsave(_filename, im)
+    im2 = imread(_filename)
+    assert im.shape == im2.shape
+    assert np.all(im == im2)

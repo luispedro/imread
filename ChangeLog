@@ -2,6 +2,7 @@ Version 0.2.6+
 	* Support for reading from in-memory blobs
 	* Initial support for reading & writing TIFF metadata
 	* Add PHOTOMETRIC tag to TIFF (reported by Volker Hilsenstein)
+	* Support writing RGB TIFFs
 
 Version 0.2.6 2012-06-19 by luispedro
 	* Fix hard crash when saving with non-existing file type
