@@ -1,8 +1,8 @@
-========================
-imread: Read Image Files
-========================
+================================
+mahotas-imread: Read Image Files
+================================
 
-Simple module with a small number of functions:
+Mahotas-imread is a simple module with a small number of functions:
 
 imread
     Reads an image file
@@ -25,14 +25,40 @@ Gaussian filtering)::
 
 
 This grew out of frustration at current image loading solutions in Python, in
-either my packages [mahotas] or packages from others [scikits.image, for
-example].
+either my packages [`mahotas <http://mahotas.rtfd.org>`__] or packages from
+others [`scikit-image <http://scikit-image.org/>`__, for example].
 
 The relationship with numpy is very contained and this could be easily
 repurposed to load images in other frameworks, even other programming
 languages.
 
 `Online documentation <http://packages.python.org/imread/>`__
+
+
+Citation
+--------
+
+.. _Citation:
+
+If you use imread on a published publication, please cite the main `mahotas
+<http://mahotas.rtfd.org>`__ paper (imread is a spin-off of mahotas):
+
+    **Luis Pedro Coelho** Mahotas: Open source software for scriptable computer
+    vision in Journal of Open Research Software, vol 1, 2013. [`DOI
+    <http://dx.doi.org/10.5334/jors.ac>`__]
+
+
+In Bibtex format::
+
+    @article{mahotas,
+        author = {Luis Pedro Coelho},
+        title = {Mahotas: Open source software for scriptable computer vision},
+        journal = {Journal of Open Research Software},
+        year = {2013},
+        doi = {http://dx.doi.org/10.5334/jors.ac},
+        month = {July},
+        volume = {1}
+    }
 
 
 Dependencies
@@ -72,6 +98,13 @@ Python 3.4 should also work (submit a bug report if it does not). Python 3.2
 
 History
 ~~~~~~~
+
+Version 0.3.0 (2013-07-29)
+--------------------------
+- Support for reading from in-memory blobs
+- Support for reading & writing TIFF metadata
+- Add PHOTOMETRIC tag to TIFF (reported by Volker Hilsenstein)
+- Support writing RGB TIFFs
 
 Version 0.2.6 (2013-06-19)
 --------------------------
