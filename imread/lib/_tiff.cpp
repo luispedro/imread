@@ -21,6 +21,15 @@ tsize_t tiff_write(thandle_t handle, void* data, tsize_t n) {
     byte_sink* s = static_cast<byte_sink*>(handle);
     return s->write(static_cast<byte*>(data), n);
 }
+
+tsize_t tiff_no_read(thandle_t, void*, tsize_t) {
+    throw ProgrammingError("imread._tiff: tiff_read called when saving");
+}
+
+tsize_t tiff_no_write(thandle_t, void*, tsize_t) {
+    throw ProgrammingError("imread._tiff: tiff_write called when reading");
+}
+
 template<typename T>
 toff_t tiff_seek(thandle_t handle, toff_t off, int whence) {
     T* s = static_cast<T*>(handle);
@@ -104,7 +113,7 @@ TIFF* read_client(byte_source* src) {
                     "r",
                     src,
                     tiff_read,
-                    tiff_write,
+                    tiff_no_write,
                     tiff_seek<byte_source>,
                     tiff_close,
                     tiff_size<byte_source>,
@@ -236,7 +245,7 @@ void TIFFFormat::write_with_metadata(Image* input, byte_sink* output, const char
                     "internal",
                     "w",
                     output,
-                    tiff_read,
+                    tiff_no_read,
                     tiff_write,
                     tiff_seek<byte_sink>,
                     tiff_close,
