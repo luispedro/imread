@@ -1,3 +1,6 @@
+Version 0.3.0+
+	* Fix possible crash on error with TIFF
+
 Version 0.3.0 2013-07-29 by luispedro
 	* Support for reading from in-memory blobs
 	* Initial support for reading & writing TIFF metadata

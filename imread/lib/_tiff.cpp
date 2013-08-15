@@ -51,7 +51,7 @@ void tiff_error(const char* module, const char* fmt, va_list ap) {
 struct tif_holder {
     tif_holder(TIFF* tif)
         :tif(tif)
-        { TIFFSetErrorHandler(tiff_error); }
+        { }
     ~tif_holder() { TIFFClose(tif); }
     TIFF* tif;
 };
@@ -98,6 +98,7 @@ std::string tiff_get<std::string>(const tif_holder& t, const int tag, const std:
 }
 
 TIFF* read_client(byte_source* src) {
+    TIFFSetErrorHandler(tiff_error);
     return TIFFClientOpen(
                     "internal",
                     "r",
@@ -230,6 +231,7 @@ std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* fa
 }
 
 void TIFFFormat::write_with_metadata(Image* input, byte_sink* output, const char* meta) {
+    TIFFSetErrorHandler(tiff_error);
     tif_holder t = TIFFClientOpen(
                     "internal",
                     "w",

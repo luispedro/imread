@@ -12,6 +12,11 @@ def _remove_file():
     except:
         pass
 
+@raises(RuntimeError)
+def test_error():
+    imread('imread/tests/data/error.tif')
+
+
 @with_setup(teardown=_remove_file)
 def test_read_back():
     simple = np.arange(16*16).reshape((16,16))
@@ -29,10 +34,6 @@ def test_read_back_16():
     imsave(_filename, simple)
     back = imread(_filename)
     assert np.all(simple == back)
-
-@raises(RuntimeError)
-def test_error():
-    imread('imread/tests/data/error.tif')
 
 def test_monochrome():
     mono = imread('imread/tests/data/mono.tif')
