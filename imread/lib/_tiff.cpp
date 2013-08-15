@@ -45,7 +45,7 @@ void tiff_error(const char* module, const char* fmt, va_list ap) {
     char buffer[4096];
     vsnprintf(buffer, sizeof(buffer), fmt, ap);
     std::string error_message(buffer);
-    throw CannotReadError(std::string("imread.imread._tiff: libtiff error: `") + buffer + std::string("`"));
+    throw CannotReadError(std::string("imread._tiff: libtiff error: `") + buffer + std::string("`"));
 }
 
 struct tif_holder {
