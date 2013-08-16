@@ -23,7 +23,7 @@ tsize_t tiff_write(thandle_t handle, void* data, tsize_t n) {
 }
 
 tsize_t tiff_no_read(thandle_t, void*, tsize_t) {
-    throw ProgrammingError("imread._tiff: tiff_read called when saving");
+    return 0;
 }
 
 tsize_t tiff_no_write(thandle_t, void*, tsize_t) {
