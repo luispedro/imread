@@ -1,6 +1,7 @@
 Version 0.3.0+
 	* Fix possible crash on error with TIFF
 	* Fix compilation on Windows (reported by Volker Hilsenstein)
+	* Make it easy to compile without WebP
 
 Version 0.3.0 2013-07-29 by luispedro
 	* Support for reading from in-memory blobs

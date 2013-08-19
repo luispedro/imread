@@ -28,7 +28,12 @@ define_macros = []
 if os.environ.get('DEBUG'):
     undef_macros = ['NDEBUG']
     if os.environ.get('DEBUG') == '2':
-        define_macros = [('_GLIBCXX_DEBUG','1')]
+        define_macros.append( ('_GLIBCXX_DEBUG','1') )
+
+EXCLUDE_WEBP = os.environ.get('EXCLUDE_WEBP', False)
+
+if EXCLUDE_WEBP:
+    define_macros.append( ('IMREAD_EXCLUDE_WEBP', '1') )
 
 include_dirs = []
 library_dirs = []
@@ -51,13 +56,17 @@ extensions = {
         'imread/lib/_lsm.cpp',
         'imread/lib/_png.cpp',
         'imread/lib/_tiff.cpp',
-        'imread/lib/_webp.cpp',
         ],
 }
 
-libraries = ['png', 'jpeg', 'tiff', 'webp']
+
+libraries = ['png', 'jpeg', 'tiff']
 if sys.platform.startswith('win'):
     libraries.append('zlib')
+
+if not EXCLUDE_WEBP:
+    extensions['imread._imread'].append('imread/lib/_webp.cpp')
+    libraries.append('webp')
 
 ext_modules = [
     numpyutils.Extension(
