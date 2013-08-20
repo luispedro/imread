@@ -99,6 +99,12 @@ Python 3.4 should also work (submit a bug report if it does not). Python 3.2
 History
 ~~~~~~~
 
+Version 0.3.1 (2013-06-20)
+--------------------------
+- Fix possible crash on error with TIFF
+- Fix compilation on Windows (reported by Volker Hilsenstein)
+- Make it easy to compile without WebP
+
 Version 0.3.0 (2013-07-29)
 --------------------------
 - Support for reading from in-memory blobs
