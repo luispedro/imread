@@ -83,7 +83,7 @@ std::auto_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory) {
     const int bytes_per_row = width * (bitsppixel/8);
     const int padding = (4 - (bytes_per_row % 4)) % 4;
     byte buf[4];
-    for (int r = 0; r != height; ++r) {
+    for (unsigned int r = 0; r != height; ++r) {
         byte* rowp = output->rowp_as<byte>(height-r-1);
         src->read_check(rowp, bytes_per_row);
 
