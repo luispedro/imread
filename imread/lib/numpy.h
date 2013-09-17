@@ -55,6 +55,9 @@ class NumpyImage : public Image, public ImageWithMetadata {
                 case NPY_UINT32:
                 case NPY_INT32:
                     return 32;
+                case NPY_UINT64:
+                case NPY_INT64:
+                    return 64;
                 default:
                     throw ProgrammingError();
             }
