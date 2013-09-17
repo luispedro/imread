@@ -23,6 +23,7 @@
 #include "lib/numpy.h"
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
+#include <errno.h>
 
 namespace{
 
@@ -99,7 +100,13 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, boo
             int fd = ::open(filename, O_RDONLY|O_BINARY);
             if (fd < 0) {
                 std::stringstream ss;
-                ss << "File `" << filename << "` does not exist";
+                if (errno == EACCES) {
+                    ss << "Permission error when opening `" << filename << "`";
+                } else if (errno == ENOENT) {
+                    ss << "File `" << filename << "` does not exist";
+                } else {
+                    ss << "Unknown error opening `" << filename << "`.";
+                }
                 PyErr_SetString(PyExc_OSError, ss.str().c_str());
                 return 0;
             }
