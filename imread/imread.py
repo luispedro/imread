@@ -70,6 +70,8 @@ def imread(filename, as_grey=False, formatstr=None, return_metadata=False):
         return imdata, meta
     return imdata
 
+imload = imread
+
 
 def imread_from_blob(blob, formatstr, as_grey=False, return_metadata=False):
     '''
@@ -115,6 +117,8 @@ def imread_from_blob(blob, formatstr, as_grey=False, return_metadata=False):
         return imdata,meta
     return imdata
 
+imload_from_blob = imread_from_blob
+
 def imread_multi(filename, formatstr=None):
     '''
     images = imread_multi(filename, formatstr={from filename})
@@ -135,6 +139,8 @@ def imread_multi(filename, formatstr=None):
     '''
     formatstr = _parse_formatstr(filename, formatstr, 'imread')
     return _imread.imread_multi(filename, formatstr, '')
+
+imload_multi = imread_multi
 
 
 def imsave(filename, array, formatstr=None, metadata=None):
@@ -163,3 +169,6 @@ def imsave(filename, array, formatstr=None, metadata=None):
             raise ValueError('imread.imsave: dot not found in filename (%s)' % filename)
         formatstr = filename[dot+1:]
     _imread.imsave(filename, formatstr, array, metadata)
+
+imwrite = imsave
+
