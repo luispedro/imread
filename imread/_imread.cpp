@@ -27,6 +27,7 @@
 
 namespace{
 
+
 const char* get_blob(PyObject* data, size_t& len) {
 #if PY_MAJOR_VERSION < 3
     if (!PyString_Check(data)) return 0;
@@ -48,6 +49,36 @@ const char* get_cstring(PyObject* stro) {
     if (!PyUnicode_Check(stro)) return 0;
     return PyUnicode_AsUTF8(stro);
 #endif
+}
+
+
+options_map parse_options(PyObject* dict) {
+    options_map res;
+    if (!PyDict_Check(dict)) return res;
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+
+    while (PyDict_Next(dict, &pos, &key, &value)) {
+        std::string k = get_cstring(key);
+        if (PyLong_Check(value)) {
+            res[k] = number_or_string(int(PyLong_AsLong(value)));
+#if PY_MAJOR_VERSION < 3
+        } else if (PyInt_Check(value)) {
+            res[k] = number_or_string(int(PyInt_AS_LONG(value)));
+#endif
+        } else if (PyFloat_Check(value)) {
+            res[k] = number_or_string(PyFloat_AS_DOUBLE(value));
+        } else {
+            const char* c = get_cstring(value);
+            if (!c) {
+                std::stringstream ss;
+                ss << "Error while parsing option value for '" << k << "': type was not understood.";
+                throw OptionsError(ss.str());
+            }
+            res[k] = number_or_string(std::string(c));
+        }
+    }
+    return res;
 }
 
 const char TypeErrorMsg[] =
@@ -152,12 +183,13 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
     PyArrayObject* array;
     PyObject* metaObject;
     PyObject* asUtf8 = NULL;
-    if (!PyArg_ParseTuple(args, "sOOO", &filename, &formatstrObject, &array, &metaObject) || !PyArray_Check(array)) {
+    PyObject* optsDict;
+    if (!PyArg_ParseTuple(args, "sOOOO", &filename, &formatstrObject, &array, &metaObject, &optsDict)) return NULL;
+    if (!PyArray_Check(array)) {
         PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
         return NULL;
     }
 
-    options_map opts;
 
     // This is pretty ugly, mixing if and #if
 #if PY_MAJOR_VERSION < 3
@@ -190,6 +222,7 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
         return NULL;
     }
     try {
+        options_map opts = parse_options(optsDict);
         std::auto_ptr<ImageFormat> format(get_format(formatstr));
         if (!format.get() || !format->can_write()) {
             std::stringstream ss;

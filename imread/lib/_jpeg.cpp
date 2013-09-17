@@ -194,6 +194,17 @@ void JPEGFormat::write(Image* input, byte_sink* output, const options_map& opts)
     c.info.in_color_space = color_space(c.info.input_components);
 
     jpeg_set_defaults(&c.info);
+    options_map::const_iterator qiter = opts.find("jpeg:quality");
+    if (qiter != opts.end()) {
+        int q;
+        if (qiter->second.get_int(q)) {
+            if (q > 100) { q = 100; }
+            if (q <   0) { q =   0; }
+            jpeg_set_quality(&c.info, q, FALSE);
+        } else {
+            throw WriteOptionsError("jpeg:quality must be an integer");
+        }
+    }
     jpeg_start_compress(&c.info, TRUE);
 
     while (c.info.next_scanline < c.info.image_height) {

@@ -148,6 +148,10 @@ struct image_list {
 /// We could have used boost::any here, but that would have brought in a big
 /// dependency, which would otherwise not be used.
 struct number_or_string {
+    number_or_string()
+        :holds_(ns_empty)
+        { }
+
     explicit number_or_string(std::string s)
         :str_(s)
         ,holds_(ns_string)
@@ -166,12 +170,10 @@ struct number_or_string {
     bool get_str(std::string& s) const { if (holds_ != ns_string) return false; s = str_; return true; }
 
     private:
-        const std::string str_;
-        union {
-            const int int_;
-            const double double_;
-        };
-        const enum { ns_string, ns_int, ns_double } holds_;
+        std::string str_;
+        int int_;
+        double double_;
+        enum { ns_empty, ns_string, ns_int, ns_double } holds_;
 };
 
 

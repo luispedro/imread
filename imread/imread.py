@@ -143,9 +143,9 @@ def imread_multi(filename, formatstr=None):
 imload_multi = imread_multi
 
 
-def imsave(filename, array, formatstr=None, metadata=None):
+def imsave(filename, array, formatstr=None, metadata=None, opts=None):
     '''
-    imsave(filename, array, formatstr={auto-detect}, metadata={None})
+    imsave(filename, array, formatstr={auto-detect}, metadata={None}, opts={})
 
     Writes `array` into file `filename`
 
@@ -159,7 +159,16 @@ def imsave(filename, array, formatstr=None, metadata=None):
     metadata: bytes, optional
         metadata to write to file. Note that not all formats support writing
         metadata.
+    opts: dict, optional
+        This is a dictionary of options. Any non-applicable option is typically
+        just ignored. Currently, the following options are accepted:
+        
+        jpeg:quality
+            An integer 1-100 determining the quality
+
     '''
+    if opts is None:
+        opts = {}
     if not np.issubdtype(array.dtype, np.integer):
         raise TypeError('imread.imsave: only integer images are supported')
     array = np.ascontiguousarray(array)
@@ -168,7 +177,7 @@ def imsave(filename, array, formatstr=None, metadata=None):
         if dot < 0:
             raise ValueError('imread.imsave: dot not found in filename (%s)' % filename)
         formatstr = filename[dot+1:]
-    _imread.imsave(filename, formatstr, array, metadata)
+    _imread.imsave(filename, formatstr, array, metadata, opts)
 
 imwrite = imsave
 
