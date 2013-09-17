@@ -189,8 +189,14 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
         PyErr_SetString(PyExc_TypeError, "imread.imsave: Expected a string as formatstr");
         return NULL;
     }
-    Py_INCREF(array);
     try {
+        std::auto_ptr<ImageFormat> format(get_format(formatstr));
+        if (!format.get() || !format->can_write()) {
+            std::stringstream ss;
+            ss << "Cannot write this format (" << formatstr << ")";
+            throw CannotWriteError(ss.str());
+        }
+
         const int fd = ::open(filename, O_CREAT|O_WRONLY|O_BINARY|O_TRUNC, 0644);
         if (fd < 0) {
             std::stringstream ss;
@@ -198,14 +204,11 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
             throw CannotWriteError(ss.str());
         }
 
-        NumpyImage input(array);
         std::auto_ptr<byte_sink> output(new fd_source_sink(fd));
-        std::auto_ptr<ImageFormat> format(get_format(formatstr));
-        if (!format.get() || !format->can_write()) {
-            std::stringstream ss;
-            ss << "Cannot write this format (" << formatstr << ")";
-            throw CannotWriteError(ss.str());
-        }
+
+        // ~NumpyImage() will decrease the count
+        Py_INCREF(array);
+        NumpyImage input(array);
         if (meta && format->can_write_metadata()) format->write_with_metadata(&input, output.get(), meta, opts);
         else format->write(&input, output.get(), opts);
         Py_XDECREF(asUtf8);
