@@ -154,7 +154,7 @@ class LSMReader {
         ~LSMReader();
 
         void PrintSelf(std::ostream& os, const char* indent="");
-        std::auto_ptr<Image> read(ImageFactory* factory);
+        std::auto_ptr<Image> read(ImageFactory* factory, const options_map&);
         void readHeader();
 
         int GetChannelColorComponent(int,int);
@@ -1134,7 +1134,7 @@ void LSMReader::PrintSelf(std::ostream& os, const char* indent)
     }
 }
 
-std::auto_ptr<Image> LSMReader::read(ImageFactory* factory) {
+std::auto_ptr<Image> LSMReader::read(ImageFactory* factory, const options_map&) {
     this->readHeader();
 
     const int dataType = this->GetDataTypeForChannel(0); // This could vary by channel!
@@ -1176,7 +1176,8 @@ std::auto_ptr<Image> LSMReader::read(ImageFactory* factory) {
 
 } // namespace
 
-std::auto_ptr<Image> LSMFormat::read(byte_source* s, ImageFactory* factory) {
+std::auto_ptr<Image> LSMFormat::read(byte_source* s, ImageFactory* factory, const options_map& opts) {
     LSMReader reader(s);
-    return reader.read(factory);
+    return reader.read(factory, opts);
 }
+

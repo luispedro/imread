@@ -62,6 +62,7 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, boo
         PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
         return NULL;
     }
+    options_map opts;
 
     try {
         std::auto_ptr<ImageFormat> format(get_format(formatstr));
@@ -113,7 +114,7 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, boo
             input = std::auto_ptr<byte_source>(new fd_source_sink(fd));
         }
         if (is_multi) {
-            std::auto_ptr<image_list> images = format->read_multi(input.get(), &factory);
+            std::auto_ptr<image_list> images = format->read_multi(input.get(), &factory, opts);
             PyObject* output = PyList_New(images->size());
             if (!output) return NULL;
             std::vector<Image*> pages = images->release();
@@ -123,7 +124,7 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, boo
             }
             return output;
         } else {
-            std::auto_ptr<Image> output = format->read(input.get(), &factory);
+            std::auto_ptr<Image> output = format->read(input.get(), &factory, opts);
             PyObject* final = PyTuple_New(2);
             if (!final) return NULL;
             PyTuple_SET_ITEM(final, 0, static_cast<NumpyImage&>(*output).releasePyObject());
@@ -155,6 +156,8 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
         PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
         return NULL;
     }
+
+    options_map opts;
 
     // This is pretty ugly, mixing if and #if
 #if PY_MAJOR_VERSION < 3
@@ -203,8 +206,8 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
             ss << "Cannot write this format (" << formatstr << ")";
             throw CannotWriteError(ss.str());
         }
-        if (meta && format->can_write_metadata()) format->write_with_metadata(&input, output.get(), meta);
-        else format->write(&input, output.get());
+        if (meta && format->can_write_metadata()) format->write_with_metadata(&input, output.get(), meta, opts);
+        else format->write(&input, output.get(), opts);
         Py_XDECREF(asUtf8);
         Py_RETURN_NONE;
     } catch (const std::exception& e) {

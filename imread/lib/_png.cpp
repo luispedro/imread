@@ -68,7 +68,7 @@ int color_type_of(Image* im) {
     throw CannotWriteError();
 }
 }
-std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory) {
+std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory, const options_map& opts) {
     png_holder p(png_holder::read_mode);
     png_set_read_fn(p.png_ptr, src, read_from_source);
     p.create_info();
@@ -113,7 +113,7 @@ std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory) {
     return output;
 }
 
-void PNGFormat::write(Image* input, byte_sink* output) {
+void PNGFormat::write(Image* input, byte_sink* output, const options_map& opts) {
     png_holder p(png_holder::write_mode);
     p.create_info();
     png_set_write_fn(p.png_ptr, output, write_to_source, flush_source);

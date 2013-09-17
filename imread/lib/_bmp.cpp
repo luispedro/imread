@@ -33,7 +33,7 @@ uint32_t pow2(uint32_t n) {
 }
 }
 
-std::auto_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory) {
+std::auto_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory, const options_map&) {
     char magick[2];
     if (src->read(reinterpret_cast<byte*>(magick), 2) != 2) {
         throw CannotReadError("imread.bmp: File is empty");

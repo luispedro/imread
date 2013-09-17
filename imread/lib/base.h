@@ -7,6 +7,8 @@
 #include <inttypes.h>
 #include <memory>
 #include <vector>
+#include <string>
+#include <map>
 #include <assert.h>
 
 #if defined(_MSC_VER)
@@ -142,6 +144,39 @@ struct image_list {
 };
 
 
+/// number_or_string is a sort of typed union.
+/// We could have used boost::any here, but that would have brought in a big
+/// dependency, which would otherwise not be used.
+struct number_or_string {
+    explicit number_or_string(std::string s)
+        :str_(s)
+        ,holds_(ns_string)
+        { }
+    explicit number_or_string(int i)
+        :int_(i)
+        ,holds_(ns_int)
+        { }
+    explicit number_or_string(double v)
+        :double_(v)
+        ,holds_(ns_double)
+        { }
+
+    bool get_int(int& n) const { if (holds_ != ns_int) return false; n = int_; return true; }
+    bool get_double(double& n) const { if (holds_ != ns_double) return false; n = double_; return true; }
+    bool get_str(std::string& s) const { if (holds_ != ns_string) return false; s = str_; return true; }
+
+    private:
+        const std::string str_;
+        union {
+            const int int_;
+            const double double_;
+        };
+        const enum { ns_string, ns_int, ns_double } holds_;
+};
+
+
+typedef std::map<std::string, number_or_string> options_map;
+
 class ImageFormat {
     public:
         virtual ~ImageFormat() { }
@@ -151,17 +186,17 @@ class ImageFormat {
         virtual bool can_write() const { return false; }
         virtual bool can_write_metadata() const { return false; }
 
-        virtual std::auto_ptr<Image> read(byte_source* src, ImageFactory* factory) {
+        virtual std::auto_ptr<Image> read(byte_source* src, ImageFactory* factory, const options_map&) {
             throw NotImplementedError();
         }
-        virtual std::auto_ptr<image_list> read_multi(byte_source* src, ImageFactory* factory) {
+        virtual std::auto_ptr<image_list> read_multi(byte_source* src, ImageFactory* factory, const options_map&) {
             throw NotImplementedError();
         }
-        virtual void write(Image* input, byte_sink* output) {
+        virtual void write(Image* input, byte_sink* output, const options_map&) {
             throw NotImplementedError();
         }
-        virtual void write_with_metadata(Image* input, byte_sink* output, const char*) {
-            this->write(input, output);
+        virtual void write_with_metadata(Image* input, byte_sink* output, const char*, const options_map& opts) {
+            this->write(input, output, opts);
         }
 };
 

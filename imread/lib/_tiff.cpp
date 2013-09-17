@@ -239,7 +239,7 @@ std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* fa
     return images;
 }
 
-void TIFFFormat::write_with_metadata(Image* input, byte_sink* output, const char* meta) {
+void TIFFFormat::write_with_metadata(Image* input, byte_sink* output, const char* meta, const options_map&) {
     TIFFSetErrorHandler(tiff_error);
     tif_holder t = TIFFClientOpen(
                     "internal",
