@@ -191,35 +191,18 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
     }
 
 
-    // This is pretty ugly, mixing if and #if
-#if PY_MAJOR_VERSION < 3
-    if (PyString_Check(formatstrObject)) {
-        formatstr = PyString_AsString(formatstrObject);
-        if (metaObject != Py_None) {
-            if (!PyString_Check(metaObject)) {
-                PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
-                return NULL;
-            }
-            meta = PyString_AsString(metaObject);
-        }
-#else
-    if (PyUnicode_Check(formatstrObject)) {
-        // On python 3.3, we can just do
-        //formatstr = PyUnicode_AsUTF8(formatstrObject);
-        asUtf8 = PyUnicode_AsUTF8String(formatstrObject);
-        if (!asUtf8) return NULL;
-        formatstr = PyBytes_AsString(asUtf8);
-        if (metaObject != Py_None) {
-            if (!PyBytes_Check(metaObject)) {
-                PyErr_SetString(PyExc_RuntimeError, "imread._imread: metadata is not Bytes");
-                return NULL;
-            }
-            meta = PyBytes_AsString(metaObject);
-        }
-#endif
-    } else {
+    formatstr = get_cstring(formatstrObject);
+    if (!formatstr) {
         PyErr_SetString(PyExc_TypeError, "imread.imsave: Expected a string as formatstr");
         return NULL;
+    }
+    if (metaObject != Py_None) {
+        size_t len;
+        meta = get_blob(metaObject, len);
+        if (!meta) {
+            PyErr_SetString(PyExc_RuntimeError, "imread._imread: metadata is not Bytes");
+            return NULL;
+        }
     }
     try {
         options_map opts = parse_options(optsDict);
