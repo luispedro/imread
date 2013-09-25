@@ -177,7 +177,9 @@ def imsave(filename, array, formatstr=None, metadata=None, opts=None):
         if dot < 0:
             raise ValueError('imread.imsave: dot not found in filename (%s)' % filename)
         formatstr = filename[dot+1:]
-    _imread.imsave(filename, formatstr, array, metadata, opts)
+    if metadata is not None:
+        opts['metadata'] = metadata
+    _imread.imsave(filename, formatstr, array, opts)
 
 imwrite = imsave
 

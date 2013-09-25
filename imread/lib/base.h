@@ -168,6 +168,10 @@ struct number_or_string {
     bool get_int(int& n) const { if (holds_ != ns_int) return false; n = int_; return true; }
     bool get_double(double& n) const { if (holds_ != ns_double) return false; n = double_; return true; }
     bool get_str(std::string& s) const { if (holds_ != ns_string) return false; s = str_; return true; }
+    const char* maybe_c_str() const {
+        if (holds_ == ns_string) return str_.c_str();
+        return 0;
+    }
 
     private:
         std::string str_;
@@ -178,6 +182,14 @@ struct number_or_string {
 
 
 typedef std::map<std::string, number_or_string> options_map;
+
+inline
+const char* get_optional_cstring(const options_map& opts, const std::string key) {
+    options_map::const_iterator iter = opts.find(key);
+    if (iter == opts.end()) return 0;
+    return iter->second.maybe_c_str();
+
+}
 
 class ImageFormat {
     public:
@@ -196,9 +208,6 @@ class ImageFormat {
         }
         virtual void write(Image* input, byte_sink* output, const options_map&) {
             throw NotImplementedError();
-        }
-        virtual void write_with_metadata(Image* input, byte_sink* output, const char*, const options_map& opts) {
-            this->write(input, output, opts);
         }
 };
 

@@ -239,7 +239,7 @@ std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* fa
     return images;
 }
 
-void TIFFFormat::write_with_metadata(Image* input, byte_sink* output, const char* meta, const options_map&) {
+void TIFFFormat::write(Image* input, byte_sink* output, const options_map& opts) {
     TIFFSetErrorHandler(tiff_error);
     tif_holder t = TIFFClientOpen(
                     "internal",
@@ -269,6 +269,7 @@ void TIFFFormat::write_with_metadata(Image* input, byte_sink* output, const char
 
     TIFFSetField(t.tif, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
     TIFFSetField(t.tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+    const char* meta = get_optional_cstring(opts, "metadata");
     if (meta) {
         TIFFSetField(t.tif, TIFFTAG_IMAGEDESCRIPTION, meta);
     }

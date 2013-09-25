@@ -23,8 +23,7 @@ class TIFFFormat : public ImageFormat {
         std::auto_ptr<image_list> read_multi(byte_source* s, ImageFactory* f, const options_map& opts) {
             return this->do_read(s, f, true);
         }
-        void write(Image* input, byte_sink* output, const options_map& opts) { this->write_with_metadata(input, output, 0, opts); }
-        void write_with_metadata(Image* input, byte_sink* output, const char*, const options_map& opts);
+        void write(Image* input, byte_sink* output, const options_map& opts);
     private:
         std::auto_ptr<image_list> do_read(byte_source* s, ImageFactory* f, bool is_multi);
 };

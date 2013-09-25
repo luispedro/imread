@@ -68,6 +68,12 @@ options_map parse_options(PyObject* dict) {
 #endif
         } else if (PyFloat_Check(value)) {
             res[k] = number_or_string(PyFloat_AS_DOUBLE(value));
+#if PY_MAJOR_VERSION >= 3
+        } else if (PyBytes_check(value)) {
+            size_t len;
+            const char* blob = get_blob(value, len);
+            res[k] = number_or_string(std::string(blob, len));
+#endif
         } else {
             const char* c = get_cstring(value);
             if (!c) {
@@ -181,10 +187,9 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
     const char* meta = 0;
     PyObject* formatstrObject;
     PyArrayObject* array;
-    PyObject* metaObject;
     PyObject* asUtf8 = NULL;
     PyObject* optsDict;
-    if (!PyArg_ParseTuple(args, "sOOOO", &filename, &formatstrObject, &array, &metaObject, &optsDict)) return NULL;
+    if (!PyArg_ParseTuple(args, "sOOO", &filename, &formatstrObject, &array, &optsDict)) return NULL;
     if (!PyArray_Check(array)) {
         PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
         return NULL;
@@ -195,14 +200,6 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
     if (!formatstr) {
         PyErr_SetString(PyExc_TypeError, "imread.imsave: Expected a string as formatstr");
         return NULL;
-    }
-    if (metaObject != Py_None) {
-        size_t len;
-        meta = get_blob(metaObject, len);
-        if (!meta) {
-            PyErr_SetString(PyExc_RuntimeError, "imread._imread: metadata is not Bytes");
-            return NULL;
-        }
     }
     try {
         options_map opts = parse_options(optsDict);
@@ -225,8 +222,8 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
         // ~NumpyImage() will decrease the count
         Py_INCREF(array);
         NumpyImage input(array);
-        if (meta && format->can_write_metadata()) format->write_with_metadata(&input, output.get(), meta, opts);
-        else format->write(&input, output.get(), opts);
+        format->write(&input, output.get(), opts);
+
         Py_XDECREF(asUtf8);
         Py_RETURN_NONE;
     } catch (const std::exception& e) {
