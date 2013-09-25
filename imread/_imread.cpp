@@ -69,7 +69,7 @@ options_map parse_options(PyObject* dict) {
         } else if (PyFloat_Check(value)) {
             res[k] = number_or_string(PyFloat_AS_DOUBLE(value));
 #if PY_MAJOR_VERSION >= 3
-        } else if (PyBytes_check(value)) {
+        } else if (PyBytes_Check(value)) {
             size_t len;
             const char* blob = get_blob(value, len);
             res[k] = number_or_string(std::string(blob, len));
@@ -184,7 +184,6 @@ PyObject* py_imread_from_blob   (PyObject* self, PyObject* args) { return py_imr
 PyObject* py_imsave(PyObject* self, PyObject* args) {
     const char* filename;
     const char* formatstr;
-    const char* meta = 0;
     PyObject* formatstrObject;
     PyArrayObject* array;
     PyObject* asUtf8 = NULL;
