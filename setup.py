@@ -29,6 +29,7 @@ if os.environ.get('DEBUG'):
     undef_macros = ['NDEBUG']
     if os.environ.get('DEBUG') == '2':
         define_macros.append( ('_GLIBCXX_DEBUG','1') )
+define_macros.append(('NPY_NO_DEPRECATED_API','NPY_1_7_API_VERSION'))
 
 EXCLUDE_WEBP = os.environ.get('EXCLUDE_WEBP', False)
 
