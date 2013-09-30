@@ -188,7 +188,15 @@ const char* get_optional_cstring(const options_map& opts, const std::string key)
     options_map::const_iterator iter = opts.find(key);
     if (iter == opts.end()) return 0;
     return iter->second.maybe_c_str();
+}
 
+inline
+int get_optional_int(const options_map& opts, const std::string key, const int def) {
+    options_map::const_iterator iter = opts.find(key);
+    if (iter == opts.end()) return def;
+    int v;
+    if (iter->second.get_int(v)) { return v; }
+    return def;
 }
 
 class ImageFormat {

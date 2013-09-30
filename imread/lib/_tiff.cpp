@@ -274,6 +274,34 @@ void TIFFFormat::write(Image* input, byte_sink* output, const options_map& opts)
     if (meta) {
         TIFFSetField(t.tif, TIFFTAG_IMAGEDESCRIPTION, meta);
     }
+    options_map::const_iterator x_iter = opts.find("tiff:XResolution");
+    if (x_iter != opts.end()) {
+        double d;
+        int i;
+        float value;
+        if (x_iter->second.get_int(i)) { value = i; }
+        else if (x_iter->second.get_double(d)) { value = d; }
+        else { throw WriteOptionsError("XResolution must be an integer or floating point value."); }
+
+        TIFFSetField(t.tif, TIFFTAG_XRESOLUTION, value);
+    }
+
+    options_map::const_iterator y_iter = opts.find("tiff:YResolution");
+    if (x_iter != opts.end()) {
+        double d;
+        int i;
+        float value;
+        if (x_iter->second.get_int(i)) { value = i; }
+        else if (x_iter->second.get_double(d)) { value = d; }
+        else { throw WriteOptionsError("YResolution must be an integer or floating point value."); }
+
+        TIFFSetField(t.tif, TIFFTAG_YRESOLUTION, value);
+    }
+
+    const uint16_t resolution_unit = get_optional_int(opts, "tiff:XResolutionUnit", uint16_t(-1));
+    if (resolution_unit != uint16_t(-1)) {
+        TIFFSetField(t.tif, TIFFTAG_RESOLUTIONUNIT, resolution_unit);
+    }
 
     for (uint32 r = 0; r != h; ++r) {
         if (TIFFWriteScanline(t.tif, input->rowp(r), r) == -1) {
