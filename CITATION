@@ -1,0 +1,21 @@
+This package is an off-shoot of mahotas. As it, currently, does not have its
+own publication, so you are asked to cite the mother package: If you use
+imread-mahotas on a scientific publication, please cite:
+
+    **Luis Pedro Coelho** Mahotas: Open source software for scriptable computer
+    vision in Journal of Open Research Software, vol 1, 2013. [`DOI
+    <http://dx.doi.org/10.5334/jors.ac>`__]
+
+
+In Bibtex format::
+
+    @article{mahotas,
+        author = {Luis Pedro Coelho},
+        title = {Mahotas: Open source software for scriptable computer vision},
+        journal = {Journal of Open Research Software},
+        year = {2013},
+        doi = {http://dx.doi.org/10.5334/jors.ac},
+        month = {July},
+        volume = {1}
+    }
+
