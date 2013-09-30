@@ -30,6 +30,7 @@ if os.environ.get('DEBUG'):
     if os.environ.get('DEBUG') == '2':
         define_macros.append( ('_GLIBCXX_DEBUG','1') )
 define_macros.append(('NPY_NO_DEPRECATED_API','NPY_1_7_API_VERSION'))
+define_macros.append(('PY_ARRAY_UNIQUE_SYMBOL','MahotasImread_PyArray_API_Symbol'))
 
 EXCLUDE_WEBP = os.environ.get('EXCLUDE_WEBP', False)
 

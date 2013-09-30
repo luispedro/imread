@@ -1,5 +1,7 @@
-// Copyright 2012 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2013 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
+
+#define NO_IMPORT_ARRAY
 #include "base.h"
 #include "tools.h"
 #include "_bmp.h"

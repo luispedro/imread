@@ -1,3 +1,4 @@
+#define NO_IMPORT_ARRAY
 #include <cstring>
 #include <vector>
 #include "numpy.h"
