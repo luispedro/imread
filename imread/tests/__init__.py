@@ -7,3 +7,6 @@ def run(verbose=False):
     if verbose:
         argv.append('--verbose')
     nose.run('imread', argv=argv)
+
+def file_path(fname):
+    return 'imread/tests/data/'+fname

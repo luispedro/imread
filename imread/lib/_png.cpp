@@ -1,4 +1,4 @@
-// Copyright 2012 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2013 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #include "base.h"
@@ -15,6 +15,13 @@ namespace {
 
 void throw_error(png_structp png_ptr, png_const_charp error_msg) {
     throw CannotReadError(error_msg);
+}
+
+// This checks out 16-bit uints are stored in the current platform.
+bool is_big_endian() {
+    uint16_t v = 0xff00;
+    unsigned char* vp = reinterpret_cast<unsigned char*>(&v);
+    return (*vp == 0xff);
 }
 
 class png_holder {
@@ -84,6 +91,10 @@ std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory, co
                 << "). Only bit depths ∈ {1,8,16} are supported.";
         throw CannotReadError(out.str());
     }
+
+    // PNGs are in "network" order (ie., big-endian)
+    if (bit_depth == 16 && !is_big_endian()) png_set_swap(p.png_ptr);
+
     int d = -1;
     switch (png_get_color_type(p.png_ptr, p.png_info)) {
         case PNG_COLOR_TYPE_PALETTE:

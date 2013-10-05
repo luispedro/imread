@@ -1,7 +1,7 @@
 from nose.tools import with_setup, raises
 import numpy as np
+from . import file_path
 from imread import imread, imsave
-import numpy as np
 
 _filename = 'imread_testing_file.png'
 
@@ -66,3 +66,8 @@ def test_regression():
     im = imread('imread/tests/data/palette_zero.png')
     assert im.sum() == 0
     assert im.shape == (128, 64, 3)
+
+
+def test_16bit():
+    f = imread(file_path('arange512_16bit.png'))
+    assert np.all(f.ravel() == np.arange(512))
