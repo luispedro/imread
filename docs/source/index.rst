@@ -51,6 +51,7 @@ Contents:
    readme
    formats
    non-python
+   history
 
 Bug Reports
 ~~~~~~~~~~~
