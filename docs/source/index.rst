@@ -13,8 +13,7 @@ imwrite
 
 That's it.
 
-For actually using these images for anything, checkout computer vision & image
-processing packages:
+This needs to be used with a a computer vision & image processing packages:
 
 - `mahotas <http://luispedro.org/software/mahotas>`__
 - `scikit-image <http://scikit-image.org/>`__
@@ -22,13 +21,12 @@ processing packages:
 
 
 This grew out of frustration at current image loading solutions in Python, in
-either my packages [mahotas] or packages from others [scikits.image, for
-example].
+either my packages [`mahotas <http://mahotas.rtfd.org>`__] or packages from
+others [`scikit-image <http://scikit-image.org>`__, for example].
 
 The relationship with numpy is very contained and this could be easily
 repurposed to load images in other frameworks, even other programming
 languages.
-
 
 Dependencies
 ~~~~~~~~~~~~
@@ -40,7 +38,6 @@ To install on debian/ubuntu::
 To install on Mac::
 
     sudo port install libpng tiff webp
-
 
 
 Contents:
