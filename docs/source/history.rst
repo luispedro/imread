@@ -39,7 +39,7 @@ Version 0.2.5 (2012-10-29)
 - More complete debug mode (export DEBUG=2 when building), more checks
 
 Version 0.2.4 (2012-06-26)
--------------------------
+--------------------------
 - Add lzw.cpp to source distribution
 - Support saving 16-bit TIFF
 - Better Mac OS support (patch from Alexander Bohn)
