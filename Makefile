@@ -1,7 +1,7 @@
 debug: imread/*.cpp imread/lib/*.cpp imread/lib/*.h
 	DEBUG=2 python setup.py build --build-lib=.
 
-fast: imread/*.cpp imread/*.h imread/*.hpp
+fast: imread/*.cpp imread/lib/*.h imread/lib/*.cpp
 	python setup.py build --build-lib=.
 
 clean:
