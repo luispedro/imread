@@ -6,7 +6,8 @@
 
 from __future__ import print_function
 try:
-    from .imread import imread, imsave, imread_multi, imread_from_blob
+    from .imread import imread, imwrite, imread_multi, imread_from_blob
+    from .imread import imload, imsave, imload_multi, imload_from_blob
     from .imread_version import __version__
 except ImportError as e:
     import sys
