@@ -168,6 +168,9 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, boo
             PyTuple_SET_ITEM(final, 1, static_cast<NumpyImage&>(*output).metadataPyObject());
             return final;
         }
+    } catch (const std::bad_alloc& a) {
+        PyErr_SetString(PyExc_MemoryError, a.what());
+        return 0;
     } catch (const std::exception& e) {
         PyErr_SetString(PyExc_RuntimeError, e.what());
         return 0;
@@ -225,6 +228,10 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
 
         Py_XDECREF(asUtf8);
         Py_RETURN_NONE;
+    } catch (const std::bad_alloc& a) {
+        PyErr_SetString(PyExc_MemoryError, a.what());
+        Py_XDECREF(asUtf8);
+        return 0;
     } catch (const std::exception& e) {
         PyErr_SetString(PyExc_RuntimeError, e.what());
         Py_XDECREF(asUtf8);
