@@ -44,10 +44,12 @@ std::auto_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory, co
         throw CannotReadError("imread.bmp: Magick number not matched (this might not be a BMP file)");
     }
     const uint32_t size = read32_le(*src);
+    (void)size;
     (void)read16_le(*src);
     (void)read16_le(*src);
     const uint32_t offset = read32_le(*src);
     const uint32_t header_size = read32_le(*src);
+    (void)header_size;
     const uint32_t width = read32_le(*src);
     const uint32_t height = read32_le(*src);
     const uint16_t planes = read16_le(*src);
@@ -60,10 +62,14 @@ std::auto_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory, co
         throw NotImplementedError("imread.bmp: Only uncompressed bitmaps are supported");
     }
     const uint32_t imsize = read32_le(*src);
+    (void)imsize;
     const uint32_t hres = read32_le(*src);
+    (void)hres;
     const uint32_t vres = read32_le(*src);
+    (void)vres;
     const uint32_t n_colours = read32_le(*src);
     const uint32_t importantcolours = read32_le(*src);
+    (void)importantcolours;
 
     if (bitsppixel != 8 && bitsppixel != 16 && bitsppixel != 24) {
         std::ostringstream out;
@@ -92,7 +98,7 @@ std::auto_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory, co
         if (bitsppixel == 24) flippixels(rowp, width);
         else if (!color_table.empty()) color_expand(color_table, rowp, width);
 
-        if (src->read(buf, padding) != padding && r != (height - 1)) {
+        if (src->read(buf, padding) != unsigned(padding) && r != (height - 1)) {
             throw CannotReadError("File ended prematurely");
         }
     }
