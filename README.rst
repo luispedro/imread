@@ -32,8 +32,7 @@ The relationship with numpy is very contained and this could be easily
 repurposed to load images in other frameworks, even other programming
 languages.
 
-`Online documentation <http://packages.python.org/imread/>`__
-
+`Online documentation <http://imread.rtfd.org/>`__
 
 Citation
 --------
@@ -74,16 +73,20 @@ To install on Mac::
     sudo port install libpng tiff webp
 
 
-Bug Reports
-~~~~~~~~~~~
+Links & Contacts
+----------------
 
-Please report any bugs either on github or by email to luis@luispedro.org
+*Documentation*: `http://imread.readthedocs.org/ <http://imread.readthedocs.org/>`__
 
-If you are not sure of whether this is the correct behaviour, you can discuss
-this on the
-`pythonvision mailing list <https://groups.google.com/forum/?fromgroups#!forum/pythonvision>`__
+*Issue Tracker*: `github imread issues <https://github.com/luispedro/imread`__
 
-If at all possible, include a small image as a test case.
+*Mailing List*: Use the `pythonvision mailing list
+<http://groups.google.com/group/pythonvision?pli=1>`_ for questions, bug
+submissions, etc.
+
+*Main Author & Maintainer*: `Luis Pedro Coelho <http://luispedro.org>`__ (follow on `twitter
+<https://twitter.com/luispedrocoelho>`__ or `github
+<https://github.com/luispedro>`__).
 
 Travis Build Status
 ~~~~~~~~~~~~~~~~~~~
