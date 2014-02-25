@@ -8,12 +8,21 @@
 
 #include <sstream>
 #include <iostream>
+#include <cstdio>
+
 
 extern "C" {
    #include <tiffio.h>
 }
 
 namespace {
+
+void show_tiff_warning(const char* module, const char* fmt, va_list ap) {
+    std::fprintf(stderr, "%s: ", module);
+    std::vfprintf(stderr, fmt, ap);
+    std::fprintf(stderr, "\n");
+}
+
 tsize_t tiff_read(thandle_t handle, void* data, tsize_t n) {
     byte_source* s = static_cast<byte_source*>(handle);
     return s->read(static_cast<byte*>(data), n);
@@ -58,12 +67,33 @@ void tiff_error(const char* module, const char* fmt, va_list ap) {
     throw CannotReadError(std::string("imread._tiff: libtiff error: `") + buffer + std::string("`"));
 }
 
+
 struct tif_holder {
     tif_holder(TIFF* tif)
         :tif(tif)
         { }
-    ~tif_holder() { TIFFClose(tif); }
+
+    ~tif_holder() {
+        TIFFClose(tif);
+    }
+
     TIFF* tif;
+};
+
+struct tiff_warn_error {
+    tiff_warn_error()
+        :warning_handler_(TIFFSetWarningHandler(show_tiff_warning))
+        ,error_handler_(TIFFSetErrorHandler(tiff_error))
+    { }
+    ~tiff_warn_error() {
+        TIFFSetWarningHandler(warning_handler_);
+        TIFFSetErrorHandler(error_handler_);
+    }
+
+    // Newer versions of TIFF seem to call this TIFFWarningHandler, but older versions do not have this type
+    typedef void (*tiff_handler_type)(const char* module, const char* fmt, va_list ap);
+    tiff_handler_type warning_handler_;
+    tiff_handler_type error_handler_;
 };
 
 template <typename T>
@@ -108,7 +138,6 @@ std::string tiff_get<std::string>(const tif_holder& t, const int tag, const std:
 }
 
 TIFF* read_client(byte_source* src) {
-    TIFFSetErrorHandler(tiff_error);
     return TIFFClientOpen(
                     "internal",
                     "r",
@@ -179,6 +208,8 @@ struct stk_extend {
 std::auto_ptr<image_list> STKFormat::read_multi(byte_source* src, ImageFactory* factory) {
     shift_source moved(src);
     stk_extend ext;
+    tiff_warn_error twe;
+
     tif_holder t = read_client(&moved);
     std::auto_ptr<image_list> images(new image_list);
     const uint32 h = tiff_get<uint32>(t, TIFFTAG_IMAGELENGTH);
@@ -216,6 +247,7 @@ std::auto_ptr<image_list> STKFormat::read_multi(byte_source* src, ImageFactory* 
 }
 
 std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* factory, bool is_multi) {
+    tiff_warn_error twe;
     tif_holder t = read_client(src);
     std::auto_ptr<image_list> images(new image_list);
     do {
@@ -241,7 +273,7 @@ std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* fa
 }
 
 void TIFFFormat::write(Image* input, byte_sink* output, const options_map& opts) {
-    TIFFSetErrorHandler(tiff_error);
+    tiff_warn_error twe;
     tif_holder t = TIFFClientOpen(
                     "internal",
                     "w",
@@ -310,3 +342,4 @@ void TIFFFormat::write(Image* input, byte_sink* output, const options_map& opts)
     }
     TIFFFlush(t.tif);
 }
+
