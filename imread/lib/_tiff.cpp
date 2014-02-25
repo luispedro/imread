@@ -300,7 +300,13 @@ void TIFFFormat::write(Image* input, byte_sink* output, const options_map& opts)
     TIFFSetField(t.tif, TIFFTAG_PHOTOMETRIC, uint16(photometric));
     TIFFSetField(t.tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
 
-    TIFFSetField(t.tif, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
+    if (get_optional_bool(opts, "tiff:compress", true)) {
+        TIFFSetField(t.tif, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
+        if (get_optional_bool(opts, "tiff:horizontal-predictor", false)) {
+            TIFFSetField(t.tif, TIFFTAG_PREDICTOR, PREDICTOR_HORIZONTAL);
+        }
+    }
+
     TIFFSetField(t.tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
     const char* meta = get_optional_cstring(opts, "metadata");
     if (meta) {

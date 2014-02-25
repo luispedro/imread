@@ -166,6 +166,13 @@ def imsave(filename, array, formatstr=None, metadata=None, opts=None):
         jpeg:quality
             An integer 1-100 determining the quality
 
+        tiff:compress
+            Whether to use compression when saving TIFF (default: True)
+
+        tiff:horizontal-predictor
+            Whether to use horizontal prediction in TIFF (default: False)
+
+
     '''
     if opts is None:
         opts = {}

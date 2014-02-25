@@ -1,3 +1,6 @@
+Version 0.3.2+
+	* Add configuration for TIFF saving
+
 Version 0.3.2 2013-10-06 by luispedro
 	* Added imload*/imwrite synonyms as suggested by Thouis (Ray) Jones
 	* Options framework
