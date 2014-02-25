@@ -199,6 +199,11 @@ int get_optional_int(const options_map& opts, const std::string key, const int d
     return def;
 }
 
+inline
+bool get_optional_bool(const options_map& opts, const std::string key, const bool def) {
+    return get_optional_int(opts, key, def);
+}
+
 class ImageFormat {
     public:
         virtual ~ImageFormat() { }
