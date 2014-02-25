@@ -65,3 +65,14 @@ def test_read_back_colour():
     im2 = imread(_filename)
     assert im.shape == im2.shape
     assert np.all(im == im2)
+
+@with_setup(teardown=_remove_file)
+def test_horizontal_predictor():
+    im = imread('imread/tests/data/arange512_16bit.png')
+    im2 = im.copy()
+    imsave(_filename, im, opts={'tiff:horizontal-predictor': True})
+    assert np.all(im == im2)
+
+    im3 = imread(_filename)
+    assert np.all(im == im3)
+

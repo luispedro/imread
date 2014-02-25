@@ -9,7 +9,7 @@
 #include <sstream>
 #include <iostream>
 #include <cstdio>
-
+#include <cstring>
 
 extern "C" {
    #include <tiffio.h>
@@ -285,7 +285,9 @@ void TIFFFormat::write(Image* input, byte_sink* output, const options_map& opts)
                     tiff_size<byte_sink>,
                     NULL,
                     NULL);
-
+    std::vector<uint8_t> bufdata;
+    void* bufp = 0;
+    bool copy_data = false;
     const uint32 h = input->dim(0);
     const uint16 photometric = ((input->ndims() == 3 && input->dim(2)) ?
                                                     PHOTOMETRIC_RGB :
@@ -304,6 +306,11 @@ void TIFFFormat::write(Image* input, byte_sink* output, const options_map& opts)
         TIFFSetField(t.tif, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
         if (get_optional_bool(opts, "tiff:horizontal-predictor", false)) {
             TIFFSetField(t.tif, TIFFTAG_PREDICTOR, PREDICTOR_HORIZONTAL);
+            if (!copy_data) {
+                bufdata.resize(input->dim(1) * input->nbytes());
+                bufp = &bufdata[0];
+                copy_data = true;
+            }
         }
     }
 
@@ -342,7 +349,12 @@ void TIFFFormat::write(Image* input, byte_sink* output, const options_map& opts)
     }
 
     for (uint32 r = 0; r != h; ++r) {
-        if (TIFFWriteScanline(t.tif, input->rowp(r), r) == -1) {
+        void* rowp = input->rowp(r);
+        if (copy_data) {
+            std::memcpy(bufp, rowp, input->dim(1) * input->nbytes());
+            rowp = bufp;
+        }
+        if (TIFFWriteScanline(t.tif, rowp, r) == -1) {
             throw CannotWriteError("imread.imsave._tiff: Error writing TIFF file");
         }
     }

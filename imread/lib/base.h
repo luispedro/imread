@@ -87,6 +87,10 @@ class Image {
         virtual void* rowp(int r) = 0;
 
         virtual int nbits() const = 0;
+        int nbytes() const {
+            const int bits = this->nbits();
+            return (bits / 8) + bool(bits % 8);
+        }
 
         virtual int ndims() const = 0;
         virtual int dim(int) const = 0;
