@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012-2013, Luis Pedro Coelho <luis@luispedro.org>
+# Copyright (C) 2012-2014, Luis Pedro Coelho <luis@luispedro.org>
 # vim: set ts=4 sts=4 sw=4 expandtab smartindent:
 #
 # License: MIT (see COPYING.MIT file)
@@ -161,10 +161,11 @@ def imsave(filename, array, formatstr=None, metadata=None, opts=None):
         metadata.
     opts: dict, optional
         This is a dictionary of options. Any non-applicable option is typically
-        just ignored. Currently, the following options are accepted:
+        silently ignored. Currently, the following options are accepted:
         
         jpeg:quality
-            An integer 1-100 determining the quality
+            An integer 1-100 determining the quality used by JPEG backend
+            (default is libjpeg default: 75).
 
         tiff:compress
             Whether to use compression when saving TIFF (default: True)
