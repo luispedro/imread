@@ -171,8 +171,10 @@ def imsave(filename, array, formatstr=None, metadata=None, opts=None):
             Whether to use compression when saving TIFF (default: True)
 
         tiff:horizontal-predictor
-            Whether to use horizontal prediction in TIFF (default: False)
-
+            Whether to use horizontal prediction in TIFF. This defaults to True
+            for 16 bit images, and to False for 8 bit images. This is because
+            compressing 16 bit images without horizontal prediction is often
+            counter-productive (see http://www.asmail.be/msg0055176395.html)
 
     '''
     if opts is None:

@@ -304,7 +304,12 @@ void TIFFFormat::write(Image* input, byte_sink* output, const options_map& opts)
 
     if (get_optional_bool(opts, "tiff:compress", true)) {
         TIFFSetField(t.tif, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
-        if (get_optional_bool(opts, "tiff:horizontal-predictor", false)) {
+        // For 8 bit images, prediction defaults to false; for 16 bit images,
+        // it defaults to true. This is because compression of raw 16 bit
+        // images is often counter-productive without this flag. See the
+        // discusssion at http://www.asmail.be/msg0055176395.html
+        const bool prediction_default = input->nbits() != 8;
+        if (get_optional_bool(opts, "tiff:horizontal-predictor", prediction_default)) {
             TIFFSetField(t.tif, TIFFTAG_PREDICTOR, PREDICTOR_HORIZONTAL);
             if (!copy_data) {
                 bufdata.resize(input->dim(1) * input->nbytes());
