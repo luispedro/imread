@@ -53,16 +53,24 @@ In Bibtex format::
     }
 
 
-Dependencies
-~~~~~~~~~~~~
+INSTALL
+~~~~~~~
 
-To install on debian/ubuntu::
+On Windows, you can also just download a pre-built package from `C. Gohlke's
+repository <http://www.lfd.uci.edu/~gohlke/pythonlibs/#imread>`__
+
+To compile on debian/ubuntu::
 
     sudo apt-get install libpng12-dev libtiff4-dev libwebp-dev
+    sudo apt-get install xcftools
 
-To install on Mac::
+To compile on Mac::
 
     sudo port install libpng tiff webp
+
+Either way, you can then install::
+
+    pip install imread
 
 
 Contents:

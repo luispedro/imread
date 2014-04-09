@@ -63,15 +63,25 @@ In Bibtex format::
 Dependencies
 ~~~~~~~~~~~~
 
-To install on debian/ubuntu::
+To compile on debian/ubuntu::
 
     sudo apt-get install libpng12-dev libtiff4-dev libwebp-dev
     sudo apt-get install xcftools
 
-To install on Mac::
+To compile on Mac::
 
     sudo port install libpng tiff webp
 
+Either way, you can then compile with::
+
+    python setup.py build
+
+and install with::
+
+    python setup.py install
+
+On Windows, you can also just download a pre-built package from `C. Gohlke's
+repository <http://www.lfd.uci.edu/~gohlke/pythonlibs/#imread>`__
 
 Links & Contacts
 ----------------
