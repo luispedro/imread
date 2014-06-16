@@ -71,3 +71,12 @@ def test_regression():
 def test_16bit():
     f = imread(file_path('arange512_16bit.png'))
     assert np.all(f.ravel() == np.arange(512))
+
+
+@with_setup(teardown=_remove_file)
+def test_write_16bit():
+    f = np.arange(100000, dtype=np.uint16)*1000
+    f = f.reshape((100,-1))
+    imsave(_filename, f)
+    f2 = imread(_filename)
+    assert np.all(f == f2)

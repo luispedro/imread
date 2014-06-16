@@ -1,4 +1,4 @@
-// Copyright 2012-2013 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2014 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #include "base.h"
@@ -67,20 +67,34 @@ void flush_source(png_structp png_ptr) {
 }
 
 int color_type_of(Image* im) {
-    if (im->nbits() != 8) throw CannotWriteError("Image must be 8 bits for PNG saving");
+    if (im->nbits() != 8 && im->nbits() != 16) throw CannotWriteError("Image must be 8 or 16 bits for saving in PNG format");
     if (im->ndims() == 2) return PNG_COLOR_TYPE_GRAY;
     if (im->ndims() != 3) throw CannotWriteError("Image must be either 2 or 3 dimensional");
     if (im->dim(2) == 3) return PNG_COLOR_TYPE_RGB;
     if (im->dim(2) == 4) return PNG_COLOR_TYPE_RGBA;
     throw CannotWriteError();
 }
+
+
+void swap_bytes_inplace(std::vector<png_bytep>& data, const int ncols, stack_based_memory_pool& mem) {
+    for (unsigned int r = 0; r != data.size(); ++r) {
+        png_bytep row = data[r];
+        png_bytep newbf = mem.allocate_as<png_bytep>(ncols * 2);
+        std::memcpy(newbf, row, ncols*2);
+        for (int c = 0; c != ncols; ++c) {
+            std::swap(newbf[2*c], newbf[2*c + 1]);
+        }
+        data[r] = newbf;
+    }
 }
+}
+
 std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory, const options_map& opts) {
     png_holder p(png_holder::read_mode);
     png_set_read_fn(p.png_ptr, src, read_from_source);
     p.create_info();
     png_read_info(p.png_ptr, p.png_info);
-    
+
     const int w = png_get_image_width (p.png_ptr, p.png_info);
     const int h = png_get_image_height(p.png_ptr, p.png_info);
     int bit_depth = png_get_bit_depth(p.png_ptr, p.png_info);
@@ -126,11 +140,12 @@ std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory, co
 
 void PNGFormat::write(Image* input, byte_sink* output, const options_map& opts) {
     png_holder p(png_holder::write_mode);
+    stack_based_memory_pool alloc;
     p.create_info();
     png_set_write_fn(p.png_ptr, output, write_to_source, flush_source);
     const int height = input->dim(0);
     const int width = input->dim(1);
-    const int bit_depth = 8;
+    const int bit_depth = input->nbits();
     const int color_type = color_type_of(input);
 
     png_set_IHDR(p.png_ptr, p.png_info, width, height,
@@ -139,6 +154,10 @@ void PNGFormat::write(Image* input, byte_sink* output, const options_map& opts) 
     png_write_info(p.png_ptr, p.png_info);
 
     std::vector<png_bytep> rowps = allrows<png_byte>(*input);
+    if (bit_depth == 16 && !is_big_endian()) {
+        swap_bytes_inplace(rowps, width, alloc);
+    }
+
     png_write_image(p.png_ptr, &rowps[0]);
     png_write_end(p.png_ptr, p.png_info);
 }
