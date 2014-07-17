@@ -5,10 +5,10 @@ python:
   - "3.4"
 before_install:
     - sudo apt-get update -qq
-    - sudo apt-get install -qq libatlas-dev liblapack-dev gfortran
+    - sudo apt-get install -qq python-numpy libatlas-dev liblapack-dev gfortran
     - sudo apt-get install -qq libpng12-dev libtiff4-dev libwebp-dev
     - sudo apt-get install -qq xcftools
-install:
     - pip install numpy
+install:
     - make debug
 script: nosetests
