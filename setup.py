@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=4 sts=4 sw=4 expandtab smartindent:
-# Copyright (C) 2012-2013, Luis Pedro Coelho <luis@luispedro.org>
+# Copyright (C) 2012-2014, Luis Pedro Coelho <luis@luispedro.org>
 # License: MIT
 
 from __future__ import division, print_function
@@ -16,10 +16,8 @@ On linux, the package is often called python-setuptools''')
     sys.exit(1)
 
 import os
-import numpy.distutils.core as numpyutils
 
-
-exec(compile(open('imread/imread_version.py').read(), 
+exec(compile(open('imread/imread_version.py').read(),
              'imread/imread_version.py', 'exec'))
 long_description = open('README.rst').read()
 
@@ -71,7 +69,7 @@ if not EXCLUDE_WEBP:
     libraries.append('webp')
 
 ext_modules = [
-    numpyutils.Extension(
+    setuptools.Extension(
         key,
         libraries = libraries,
         library_dirs=library_dirs,
@@ -103,7 +101,7 @@ classifiers = [
 'License :: OSI Approved :: MIT License',
 ]
 
-numpyutils.setup(name = 'imread',
+setuptools.setup(name = 'imread',
       version = __version__,
       description = 'imread: Image reading library',
       long_description = long_description,
