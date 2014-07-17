@@ -1,4 +1,4 @@
-// Copyright 2012 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2014 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 #include "base.h"
 #include "_jpeg.h"
@@ -120,10 +120,12 @@ struct error_mgr {
 
     struct jpeg_error_mgr pub;
     jmp_buf setjmp_buffer;
+    char error_message[JMSG_LENGTH_MAX];
 };
 
 void err_long_jump(j_common_ptr cinfo) {
   error_mgr* err = reinterpret_cast<error_mgr*>(cinfo->err);
+  (*cinfo->err->format_message) (cinfo, err->error_message);
   longjmp(err->setjmp_buffer, 1);
 }
 
@@ -131,6 +133,7 @@ void err_long_jump(j_common_ptr cinfo) {
 error_mgr::error_mgr() {
     jpeg_std_error(&pub);
     pub.error_exit = err_long_jump;
+    error_message[0] = 0;
 }
 
 inline
@@ -154,7 +157,7 @@ std::auto_ptr<Image> JPEGFormat::read(byte_source* src, ImageFactory* factory, c
     c.info.src = &adaptor.mgr;
 
     if (setjmp(jerr.setjmp_buffer)) {
-        throw CannotReadError();
+        throw CannotReadError(jerr.error_message);
     }
     // now read the header & image data
     jpeg_read_header(&c.info, TRUE);
@@ -185,7 +188,7 @@ void JPEGFormat::write(Image* input, byte_sink* output, const options_map& opts)
     c.info.dest = &adaptor.mgr;
 
     if (setjmp(jerr.setjmp_buffer)) {
-        throw CannotWriteError();
+        throw CannotWriteError(jerr.error_message);
     }
 
     c.info.image_height = input->dim(0);
