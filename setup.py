@@ -16,6 +16,7 @@ On linux, the package is often called python-setuptools''')
     sys.exit(1)
 
 import os
+import numpy as np
 
 exec(compile(open('imread/imread_version.py').read(),
              'imread/imread_version.py', 'exec'))
@@ -35,7 +36,7 @@ EXCLUDE_WEBP = os.environ.get('EXCLUDE_WEBP', False)
 if EXCLUDE_WEBP:
     define_macros.append( ('IMREAD_EXCLUDE_WEBP', '1') )
 
-include_dirs = []
+include_dirs = [np.get_include()]
 library_dirs = []
 
 for pth in ('/usr/local/include', '/usr/X11/include'):
