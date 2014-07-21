@@ -79,6 +79,7 @@ Contents:
    :maxdepth: 2
 
    readme
+   install
    formats
    non-python
    history
