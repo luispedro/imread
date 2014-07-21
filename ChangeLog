@@ -1,7 +1,8 @@
-Version 0.3.2+
+Version 0.4 2013-07-21 by luispedro
 	* Add configuration for TIFF saving
 	* Correctly save 16 bit PNG images
 	* Better error messages for JPEG
+	* Better building infrastructure
 
 Version 0.3.2 2013-10-06 by luispedro
 	* Added imload*/imwrite synonyms as suggested by Thouis (Ray) Jones

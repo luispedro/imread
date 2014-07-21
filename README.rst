@@ -112,6 +112,13 @@ Python 3.4 should also work (submit a bug report if it does not). Python 3.2
 History
 ~~~~~~~
 
+Version 0.4 (2014-07-21)
+------------------------
+- Add configuration for TIFF saving
+- Correctly save 16 bit PNG images
+- Better error messages for JPEG
+
+
 Version 0.3.2 (2013-10-06)
 --------------------------
 - Added imload*/imwrite synonyms as suggested by Thouis (Ray) Jones
