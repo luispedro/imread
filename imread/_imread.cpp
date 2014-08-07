@@ -131,7 +131,7 @@ PyObject* py_detect_format(PyObject* self, PyObject* args) {
         if (!input.get()) return 0;
         const char* format = magic_format(&*input);
         if (!format) Py_RETURN_NONE;
-        return PyString_FromString(format);
+        return PyBytes_FromString(format);
     } catch (py_exception_set) {
         return 0;
     } catch (const std::bad_alloc& a) {
