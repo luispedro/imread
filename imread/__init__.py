@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012-2013, Luis Pedro Coelho <luis@luispedro.org>
+# Copyright (C) 2012-2014, Luis Pedro Coelho <luis@luispedro.org>
 # vim: set ts=4 sts=4 sw=4 expandtab smartindent:
 #
 # License: MIT (see COPYING.MIT file)
@@ -7,6 +7,7 @@
 from __future__ import print_function
 try:
     from .imread import imread, imwrite, imread_multi, imread_from_blob
+    from .imread import detect_format
     from .imread import imload, imsave, imload_multi, imload_from_blob
     from .imread_version import __version__
 except ImportError as e:

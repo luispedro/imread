@@ -1,4 +1,4 @@
-// Copyright 2012-2013 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2014 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #include "formats.h"
@@ -30,4 +30,10 @@ std::auto_ptr<ImageFormat> get_format(const char* format) {
     if (!strcmp(format, "stk")) return std::auto_ptr<ImageFormat>(new STKFormat);
     if (!strcmp(format, "bmp")) return std::auto_ptr<ImageFormat>(new BMPFormat);
     return std::auto_ptr<ImageFormat>(0);
+}
+
+const char* magic_format(byte_source* src) {
+    if (PNGFormat::match_format(src)) return "png";
+    if (JPEGFormat::match_format(src)) return "jpeg";
+    return 0;
 }

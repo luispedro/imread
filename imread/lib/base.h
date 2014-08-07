@@ -1,4 +1,4 @@
-// Copyright 2012-2013 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2014 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #ifndef LPC_IMREAD_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012
@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <cstring>
 #include <map>
 #include <assert.h>
 
@@ -208,6 +209,17 @@ bool get_optional_bool(const options_map& opts, const std::string key, const boo
     return get_optional_int(opts, key, def);
 }
 
+inline
+bool match_magic(byte_source* src, const char* magic, const size_t n) {
+    if (!src->can_seek()) return false;
+    std::vector<byte> buf;
+    buf.resize(n);
+    const size_t n_read = src->read(buf.data(), n);
+    src->seek_relative(-n_read);
+
+    return (n_read == n && std::memcmp(buf.data(), magic, n) == 0);
+}
+
 class ImageFormat {
     public:
         virtual ~ImageFormat() { }
@@ -227,5 +239,7 @@ class ImageFormat {
             throw NotImplementedError();
         }
 };
+
+
 
 #endif // LPC_IMREAD_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012

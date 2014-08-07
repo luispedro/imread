@@ -1,4 +1,4 @@
-// Copyright 2012-2013 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2014 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 
@@ -27,6 +27,7 @@
 
 namespace{
 
+struct py_exception_set { };
 
 const char* get_blob(PyObject* data, size_t& len) {
 #if PY_MAJOR_VERSION < 3
@@ -87,10 +88,63 @@ options_map parse_options(PyObject* dict) {
     return res;
 }
 
+std::auto_ptr<byte_source> get_input(PyObject* filename_or_blob_object, const bool is_blob) {
+    if (is_blob) {
+        size_t len;
+        const char* data = get_blob(filename_or_blob_object, len);
+        if (!data) throw py_exception_set();
+        return std::auto_ptr<byte_source>(new memory_source(reinterpret_cast<const byte*>(data), len));
+    } else {
+        const char* filename = get_cstring(filename_or_blob_object);
+        if (!filename) throw py_exception_set();
+        int fd = ::open(filename, O_RDONLY|O_BINARY);
+        if (fd < 0) {
+            std::stringstream ss;
+            if (errno == EACCES) {
+                ss << "Permission error when opening `" << filename << "`";
+            } else if (errno == ENOENT) {
+                ss << "File `" << filename << "` does not exist";
+            } else {
+                ss << "Unknown error opening `" << filename << "`.";
+            }
+            PyErr_SetString(PyExc_OSError, ss.str().c_str());
+            throw py_exception_set();
+        }
+        return std::auto_ptr<byte_source>(new fd_source_sink(fd));
+    }
+}
+
 const char TypeErrorMsg[] =
     "Type not understood. "
     "This is caused by either a direct call to _imread (which is dangerous: types are not checked!) or a bug in imread.py.\n";
 
+PyObject* py_detect_format(PyObject* self, PyObject* args) {
+    PyObject* filename_or_blob_object;
+    int is_blob;
+    if (!PyArg_ParseTuple(args, "Oi", &filename_or_blob_object, &is_blob)) {
+        PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
+        return NULL;
+    }
+
+    try {
+        std::auto_ptr<byte_source> input = get_input(filename_or_blob_object, is_blob);
+        if (!input.get()) return 0;
+        const char* format = magic_format(&*input);
+        if (!format) Py_RETURN_NONE;
+        return PyString_FromString(format);
+    } catch (py_exception_set) {
+        return 0;
+    } catch (const std::bad_alloc& a) {
+        PyErr_SetString(PyExc_MemoryError, a.what());
+        return 0;
+    } catch (const std::exception& e) {
+        PyErr_SetString(PyExc_RuntimeError, e.what());
+        return 0;
+    } catch (...) {
+        PyErr_SetString(PyExc_RuntimeError, "Mysterious error");
+        return 0;
+    }
+}
 PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, bool is_blob) {
     PyObject* filename_or_blob_object;
     const char* formatstr;
@@ -126,30 +180,7 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, boo
         }
 
         NumpyFactory factory;
-        std::auto_ptr<byte_source> input;
-        if (is_blob) {
-            size_t len;
-            const char* data = get_blob(filename_or_blob_object, len);
-            if (!data) return 0;
-            input = std::auto_ptr<byte_source>(new memory_source(reinterpret_cast<const byte*>(data), len));
-        } else {
-            const char* filename = get_cstring(filename_or_blob_object);
-            if (!filename) return 0;
-            int fd = ::open(filename, O_RDONLY|O_BINARY);
-            if (fd < 0) {
-                std::stringstream ss;
-                if (errno == EACCES) {
-                    ss << "Permission error when opening `" << filename << "`";
-                } else if (errno == ENOENT) {
-                    ss << "File `" << filename << "` does not exist";
-                } else {
-                    ss << "Unknown error opening `" << filename << "`.";
-                }
-                PyErr_SetString(PyExc_OSError, ss.str().c_str());
-                return 0;
-            }
-            input = std::auto_ptr<byte_source>(new fd_source_sink(fd));
-        }
+        std::auto_ptr<byte_source> input = get_input(filename_or_blob_object, is_blob);
         if (is_multi) {
             std::auto_ptr<image_list> images = format->read_multi(input.get(), &factory, opts);
             PyObject* output = PyList_New(images->size());
@@ -168,6 +199,8 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, boo
             PyTuple_SET_ITEM(final, 1, static_cast<NumpyImage&>(*output).metadataPyObject());
             return final;
         }
+    } catch (py_exception_set) {
+        return 0;
     } catch (const std::bad_alloc& a) {
         PyErr_SetString(PyExc_MemoryError, a.what());
         return 0;
@@ -228,6 +261,8 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
 
         Py_XDECREF(asUtf8);
         Py_RETURN_NONE;
+    } catch (py_exception_set) {
+        return 0;
     } catch (const std::bad_alloc& a) {
         PyErr_SetString(PyExc_MemoryError, a.what());
         Py_XDECREF(asUtf8);
@@ -245,6 +280,7 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
 
 
 PyMethodDef methods[] = {
+  {"detect_format",(PyCFunction)py_detect_format, METH_VARARGS, NULL},
   {"imread",(PyCFunction)py_imread, METH_VARARGS, NULL},
   {"imread_multi",(PyCFunction)py_imread_multi, METH_VARARGS, NULL},
   {"imread_from_blob",(PyCFunction)py_imread_from_blob, METH_VARARGS, NULL},

@@ -1,4 +1,7 @@
-Version 0.4 2013-07-21 by luispedro
+Version 0.4+
+	* Add magic-number based format auto-detection
+
+Version 0.4 2014-07-21 by luispedro
 	* Add configuration for TIFF saving
 	* Correctly save 16 bit PNG images
 	* Better error messages for JPEG

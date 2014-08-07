@@ -162,7 +162,7 @@ def imsave(filename, array, formatstr=None, metadata=None, opts=None):
     opts: dict, optional
         This is a dictionary of options. Any non-applicable option is typically
         silently ignored. Currently, the following options are accepted:
-        
+
         jpeg:quality
             An integer 1-100 determining the quality used by JPEG backend
             (default is libjpeg default: 75).
@@ -193,3 +193,23 @@ def imsave(filename, array, formatstr=None, metadata=None, opts=None):
 
 imwrite = imsave
 
+def detect_format(filename_or_blob, is_blob=False):
+    '''
+    Detect format using magic numbers
+
+    Note that this function does not perform any checks that the data is OK,
+    just checks magic numbers.
+
+    Parameters
+    ----------
+    filename_or_blob : bytes (str in Python 2)
+    is_blob : boolean, optional
+        If true, then filename_or_blob is interpreted as a blob; otherwise,
+
+    Returns
+    -------
+    format : str or None
+        Representation of the format if detected. When no format matches, None
+        is returned.
+    '''
+    return _imread.detect_format(filename_or_blob, bool(is_blob))
