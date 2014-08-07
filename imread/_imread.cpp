@@ -92,7 +92,10 @@ std::auto_ptr<byte_source> get_input(PyObject* filename_or_blob_object, const bo
     if (is_blob) {
         size_t len;
         const char* data = get_blob(filename_or_blob_object, len);
-        if (!data) throw py_exception_set();
+        if (!data) {
+            PyErr_SetString(PyExc_TypeError, "Expected blob of bytes");
+            throw py_exception_set();
+        }
         return std::auto_ptr<byte_source>(new memory_source(reinterpret_cast<const byte*>(data), len));
     } else {
         const char* filename = get_cstring(filename_or_blob_object);
@@ -128,10 +131,13 @@ PyObject* py_detect_format(PyObject* self, PyObject* args) {
 
     try {
         std::auto_ptr<byte_source> input = get_input(filename_or_blob_object, is_blob);
-        if (!input.get()) return 0;
         const char* format = magic_format(&*input);
         if (!format) Py_RETURN_NONE;
+#if PY_MAJOR_VERSION >= 3
+        return PyUnicode_FromString(format);
+#else
         return PyBytes_FromString(format);
+#endif
     } catch (py_exception_set) {
         return 0;
     } catch (const std::bad_alloc& a) {
