@@ -18,6 +18,9 @@ On linux, the package is often called python-setuptools''')
 import os
 import numpy as np
 
+def has_webp():
+    return os.system("pkg-config --exists libwebp") == 0
+
 exec(compile(open('imread/imread_version.py').read(),
              'imread/imread_version.py', 'exec'))
 long_description = open('README.rst').read()
@@ -31,7 +34,10 @@ if os.environ.get('DEBUG'):
 define_macros.append(('NPY_NO_DEPRECATED_API','NPY_1_7_API_VERSION'))
 define_macros.append(('PY_ARRAY_UNIQUE_SYMBOL','MahotasImread_PyArray_API_Symbol'))
 
-EXCLUDE_WEBP = os.environ.get('EXCLUDE_WEBP', False)
+
+EXCLUDE_WEBP = os.environ.get('EXCLUDE_WEBP')
+if EXCLUDE_WEBP is None:
+    EXCLUDE_WEBP = not has_webp()
 
 if EXCLUDE_WEBP:
     define_macros.append( ('IMREAD_EXCLUDE_WEBP', '1') )
