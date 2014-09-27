@@ -214,7 +214,7 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, boo
         PyErr_SetString(PyExc_RuntimeError, e.what());
         return 0;
     } catch (...) {
-        PyErr_SetString(PyExc_RuntimeError, "Mysterious error");
+        PyErr_SetString(PyExc_RuntimeError, "imread: Unknown error occurred (please report a bug at https://github.com/luispedro/imread/issues).");
         return 0;
     }
 }
@@ -278,7 +278,7 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
         Py_XDECREF(asUtf8);
         return 0;
     } catch (...) {
-        PyErr_SetString(PyExc_RuntimeError, "Mysterious error");
+        PyErr_SetString(PyExc_RuntimeError, "imread: Unknown error occurred (please report a bug at https://github.com/luispedro/imread/issues).");
         Py_XDECREF(asUtf8);
         return 0;
     }
