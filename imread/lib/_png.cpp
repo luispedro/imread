@@ -38,7 +38,7 @@ class png_holder {
         }
         void create_info() {
             png_info = png_create_info_struct(png_ptr);
-            if (!png_info) throw "error";
+            if (!png_info) throw ProgrammingError("Error in png_create_info_struct");
         }
 
         png_structp png_ptr;

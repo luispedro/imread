@@ -792,7 +792,7 @@ int LSMReader::AnalyzeTag(byte_source* s, unsigned long startPos)
     startPos = value;
    if(tag == TIF_STRIPOFFSETS ||tag == TIF_STRIPBYTECOUNTS) {
         if( !ReadFile(s,&startPos,readSize,actualValue) ) {
-            throw "Failed to get strip offsets\n";
+            throw CannotReadError("Failed to get strip offsets\n");
         }
     }
   }
@@ -1013,7 +1013,7 @@ void LSMReader::DecodeHorizontalDifferencingUnsignedShort(unsigned short *buffer
 }
 
 void LSMReader::DecodeLZWCompression(unsigned char* buffer, int size, int bytes) {
-    throw "Not tested";
+    throw ProgrammingError("Not tested");
     std::vector<unsigned char> decoded = lzw_decode(buffer, size);
     unsigned char* outbufp = &decoded[0];
 
@@ -1050,7 +1050,7 @@ void LSMReader::readHeader() {
 
     const unsigned short identifier = ReadUnsignedShort(this->src, &startPos);
     if (identifier != LSM_MAGIC_NUMBER) {
-        throw "Given file is not a valid LSM-file.";
+        throw CannotReadError("Given file is not a valid LSM-file (magic number mismatch).");
     }
 
     const unsigned int imageDirOffset = ReadUnsignedInt(this->src, &startPos);
@@ -1060,10 +1060,12 @@ void LSMReader::readHeader() {
     if (this->LSMSpecificInfoOffset) {
         ReadLSMSpecificInfo(this->src, (unsigned long)this->LSMSpecificInfoOffset);
     } else {
-        throw "Did not found LSM specific info!";
+        throw CannotReadError("Did not found LSM specific info!");
     }
     if (!(this->scan_type_ == 6 || this->scan_type_ == 0 || this->scan_type_ == 3 || this->scan_type_ == 1) ) {
-       throw ("Sorry! Your LSM-file must be of type 6 LSM-file (time series x-y-z) or type 0 (normal x-y-z) or type 3 (2D + time) or type 1 (x-z scan). Type of this File is " /* % this->scan_type_ */);
+       throw CannotReadError("Sorry! Your LSM-file must be of type 6 LSM-file (time series x-y-z) "
+                            "or type 0 (normal x-y-z) or type 3 (2D + time) or type 1 "
+                            "(x-z scan). Type of this File is " /* % this->scan_type_ */);
     }
 
     this->CalculateExtentAndSpacing(this->DataExtent,this->DataSpacing);
@@ -1162,7 +1164,7 @@ std::auto_ptr<Image> LSMReader::read(ImageFactory* factory, const options_map&) 
                 int bytes = ReadFile(this->src, &offset, readSize, imdata, true);
 
                 if (bytes != readSize) {
-                    throw "oops";
+                    throw ProgrammingError("Could not read data");
                 }
                 if (this->compression_ == LSM_COMPRESSED) {
                     this->DecodeLZWCompression(imdata, readSize, BYTES_BY_DATA_TYPE(dataType));
