@@ -73,10 +73,10 @@ def imread(filename, as_grey=False, formatstr=None, return_metadata=False):
 imload = imread
 
 
-def imread_from_blob(blob, formatstr, as_grey=False, return_metadata=False):
+def imread_from_blob(blob, formatstr=None, as_grey=False, return_metadata=False):
     '''
-    imdata = imread_from_blob(blob, formatstr, as_grey=False, return_metadata={True})
-    imdata,metadata = imread_from_blob(blob, formatstr, as_grey={False}, return_metadata=True)
+    imdata = imread_from_blob(blob, formatstr=None, as_grey=False, return_metadata={True})
+    imdata,metadata = imread_from_blob(blob, formatstr=None, as_grey={False}, return_metadata=True)
 
     Read an image into a ndarray from an in-memory blob.
 
@@ -87,9 +87,10 @@ def imread_from_blob(blob, formatstr, as_grey=False, return_metadata=False):
     ----------
     blob : str (bytes in Py3)
         input data
-    formatstr : str
+    formatstr : str, optional
         Format name. This is the file extension typically associated with this
-        format.
+        format. If None is given, then ``detect_format`` is used to auto-detect
+        the format.
     as_grey : boolean, optional
         Whether to convert to grey scale image (default: no)
     return_metadata : bool, optional
@@ -110,6 +111,8 @@ def imread_from_blob(blob, formatstr, as_grey=False, return_metadata=False):
         Read from a file on disk
     '''
     reader = _imread.imread_from_blob
+    if formatstr is None:
+        formatstr = detect_format(blob, is_blob=True)
     flags = ('m' if return_metadata else '')
     imdata,meta = reader(blob, formatstr, flags)
     imdata = _as_grey(imdata, as_grey)
@@ -198,7 +201,7 @@ def detect_format(filename_or_blob, is_blob=False):
     Detect format using magic numbers
 
     Note that this function does not perform any checks that the data is OK,
-    just checks magic numbers.
+    just checks magic numbers. Not all formats can be autodetected.
 
     Parameters
     ----------
