@@ -1,4 +1,4 @@
-// Copyright 2012 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2014 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #include "base.h"
@@ -7,7 +7,7 @@
 
 #include <webp/decode.h>
 
-std::auto_ptr<Image> WebPFormat::read(byte_source* src, ImageFactory* factory) {
+std::auto_ptr<Image> WebPFormat::read(byte_source* src, ImageFactory* factory, const options_map&) {
     std::vector<byte> data = full_data(*src);
     int w, h;
     int ok = WebPGetInfo(&data[0], data.size(), &w, &h);

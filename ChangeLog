@@ -1,6 +1,7 @@
 Version 0.4+
 	* Add magic-number based format auto-detection
 	* Auto detect whether webp is installed
+	* Fix WebP reading (update to newer API)
 
 Version 0.4 2014-07-21 by luispedro
 	* Add configuration for TIFF saving

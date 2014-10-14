@@ -8,7 +8,7 @@ class WebPFormat : public ImageFormat {
         bool can_read() const { return true; }
         bool can_write() const { return false; }
 
-        std::auto_ptr<Image> read(byte_source* src, ImageFactory* factory);
+        std::auto_ptr<Image> read(byte_source* src, ImageFactory* factory, const options_map&);
 };
 
 #endif // LPC_WEBP_H_INCLUDE_GUARD_
