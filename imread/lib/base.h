@@ -214,10 +214,10 @@ bool match_magic(byte_source* src, const char* magic, const size_t n) {
     if (!src->can_seek()) return false;
     std::vector<byte> buf;
     buf.resize(n);
-    const size_t n_read = src->read(buf.data(), n);
+    const size_t n_read = src->read(&buf.front(), n);
     src->seek_relative(-n_read);
 
-    return (n_read == n && std::memcmp(buf.data(), magic, n) == 0);
+    return (n_read == n && std::memcmp(&buf.front(), magic, n) == 0);
 }
 
 class ImageFormat {
