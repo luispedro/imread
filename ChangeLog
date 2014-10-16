@@ -1,4 +1,4 @@
-Version 0.4+
+Version 0.5 2014-10-16 by luispedro
 	* Add magic-number based format auto-detection
 	* Auto detect whether webp is installed
 	* Fix WebP reading (update to newer API)
