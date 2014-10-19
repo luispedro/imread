@@ -30,7 +30,7 @@ def test_error():
     imread('imread/tests/data/error.jpg')
 
 @raises(OSError)
-def test_error():
+def test_error_noent():
     imread('imread/tests/data/this-file-does-not-exist.jpeg')
 
 
