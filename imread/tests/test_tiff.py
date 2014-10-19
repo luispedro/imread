@@ -1,7 +1,7 @@
 from nose.tools import with_setup, raises
 import numpy as np
 from imread import imread, imsave, imread_multi
-import numpy as np
+from . import file_path
 
 _filename = 'imread_testing_file.tiff'
 
@@ -14,7 +14,7 @@ def _remove_file():
 
 @raises(RuntimeError)
 def test_error():
-    imread('imread/tests/data/error.tif')
+    imread(file_path('error.tif'))
 
 
 @with_setup(teardown=_remove_file)
@@ -36,7 +36,7 @@ def test_read_back_16():
     assert np.all(simple == back)
 
 def test_monochrome():
-    mono = imread('imread/tests/data/mono.tif')
+    mono = imread(file_path('mono.tif'))
     assert mono.shape == (8,8)
     z = np.zeros((8,8),np.uint8)
     z.flat[::3] = 1
@@ -44,7 +44,7 @@ def test_monochrome():
 
 
 def test_multi():
-    assert len(imread_multi('imread/tests/data/stack.tiff')) == 2
+    assert len(imread_multi(file_path('stack.tiff'))) == 2
 
 @with_setup(teardown=_remove_file)
 def test_read_back_with_metadata():
@@ -68,7 +68,7 @@ def test_read_back_colour():
 
 @with_setup(teardown=_remove_file)
 def test_horizontal_predictor():
-    im = imread('imread/tests/data/arange512_16bit.png')
+    im = imread(file_path('arange512_16bit.png'))
     im2 = im.copy()
     imsave(_filename, im, opts={'tiff:horizontal-predictor': True})
     assert np.all(im == im2)

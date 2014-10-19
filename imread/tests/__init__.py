@@ -9,4 +9,8 @@ def run(verbose=False):
     nose.run('imread', argv=argv)
 
 def file_path(fname):
-    return 'imread/tests/data/'+fname
+    from os import path
+    return path.join(
+            path.dirname(__file__),
+            'data',
+            fname)

@@ -1,6 +1,7 @@
 from nose.tools import with_setup, raises
 import numpy as np
 from imread import imread, imsave
+from . import file_path
 _filename = 'imread_testing_file.jpg'
 
 def remove_files(filelist):
@@ -27,11 +28,11 @@ def test_jpeg():
 
 @raises(RuntimeError)
 def test_error():
-    imread('imread/tests/data/error.jpg')
+    imread(file_path('error.jpg'))
 
 @raises(OSError)
 def test_error_noent():
-    imread('imread/tests/data/this-file-does-not-exist.jpeg')
+    imread(file_path('this-file-does-not-exist.jpeg'))
 
 
 

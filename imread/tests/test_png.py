@@ -55,15 +55,15 @@ def test_non_carray():
 
 
 def test_binary():
-    f = imread('imread/tests/data/bit1.png')
+    f = imread(file_path('bit1.png'))
     assert f.dtype == np.bool_
 
 @raises(RuntimeError)
 def test_error():
-    imread('imread/tests/data/error.png')
+    imread(file_path('error.png'))
 
 def test_regression():
-    im = imread('imread/tests/data/palette_zero.png')
+    im = imread(file_path('palette_zero.png'))
     assert im.sum() == 0
     assert im.shape == (128, 64, 3)
 
