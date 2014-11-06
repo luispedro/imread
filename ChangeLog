@@ -1,3 +1,7 @@
+Version 0.5.1 2014-11-06 by luispedro
+	* Improve tests to work after installation
+	* Fix compilation in MSVC (patch by Christoph Gohlke)
+
 Version 0.5 2014-10-16 by luispedro
 	* Add magic-number based format auto-detection
 	* Auto detect whether webp is installed

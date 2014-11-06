@@ -2,6 +2,12 @@
 History
 =======
 
+Version 0.5.1 (2014-11-06)
+--------------------------
+- Improve tests to work after installation
+- Fix compilation in MSVC (patch by Christoph Gohlke)
+
+
 Version 0.5 (2014-10-16)
 ------------------------
 - Add magic-number based format auto-detection
