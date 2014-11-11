@@ -8,7 +8,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-imread_version = '0.3.2+git'
+from imread import __version__ as imread_version
 import sys, os
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -45,14 +45,14 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'imread'
-copyright = u'2012-2013, Luis Pedro Coelho'
+copyright = u'2012-2014, Luis Pedro Coelho'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '0.1'
+version = imread_version[:3]
 # The full version, including alpha/beta/rc tags.
 release = imread_version
 
@@ -228,7 +228,7 @@ man_pages = [
 epub_title = u'imread'
 epub_author = u'Luis Pedro Coelho'
 epub_publisher = u'Luis Pedro Coelho'
-epub_copyright = u'2012-2013, Luis Pedro Coelho'
+epub_copyright = u'2012-2014, Luis Pedro Coelho'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
