@@ -1,3 +1,6 @@
+Version 0.5.1+
+	* Make png compression level tunable when calling imsave
+
 Version 0.5.1 2014-11-06 by luispedro
 	* Improve tests to work after installation
 	* Fix compilation in MSVC (patch by Christoph Gohlke)

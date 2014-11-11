@@ -17,7 +17,7 @@ void throw_error(png_structp png_ptr, png_const_charp error_msg) {
     throw CannotReadError(error_msg);
 }
 
-// This checks out 16-bit uints are stored in the current platform.
+// This checks how 16-bit uints are stored in the current platform.
 bool is_big_endian() {
     uint16_t v = 0xff00;
     unsigned char* vp = reinterpret_cast<unsigned char*>(&v);
@@ -151,6 +151,10 @@ void PNGFormat::write(Image* input, byte_sink* output, const options_map& opts) 
     png_set_IHDR(p.png_ptr, p.png_info, width, height,
                      bit_depth, color_type, PNG_INTERLACE_NONE,
                      PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+    int compression_level = get_optional_int(opts, "png:compression_level", -1);
+    if (compression_level != -1) {
+        png_set_compression_level(p.png_ptr, compression_level);
+    }
     png_write_info(p.png_ptr, p.png_info);
 
     std::vector<png_bytep> rowps = allrows<png_byte>(*input);
@@ -161,5 +165,4 @@ void PNGFormat::write(Image* input, byte_sink* output, const options_map& opts) 
     png_write_image(p.png_ptr, &rowps[0]);
     png_write_end(p.png_ptr, p.png_info);
 }
-
 
