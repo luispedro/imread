@@ -179,6 +179,12 @@ def imsave(filename, array, formatstr=None, metadata=None, opts=None):
             compressing 16 bit images without horizontal prediction is often
             counter-productive (see http://www.asmail.be/msg0055176395.html)
 
+
+        png:compression_level
+            Compression level to use, from 0 (no compression) to 9. Setting
+            this parameter to 0 is discouraged as setting it to 1 already
+            provides a modicum of compression at no extra computational cost.
+
     '''
     if opts is None:
         opts = {}
