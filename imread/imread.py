@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2012-2014, Luis Pedro Coelho <luis@luispedro.org>
+# Copyright (C) 2012-2015, Luis Pedro Coelho <luis@luispedro.org>
 # vim: set ts=4 sts=4 sw=4 expandtab smartindent:
 #
 # License: MIT (see COPYING.MIT file)
@@ -200,7 +200,61 @@ def imsave(filename, array, formatstr=None, metadata=None, opts=None):
         opts['metadata'] = metadata
     _imread.imsave(filename, formatstr, array, opts)
 
+def imsave_multi(filename, arrays, formatstr=None, opts=None):
+    '''Saves multiple arrays into a single file
+
+    Only certain formats (in the current version of imread, only TIFF) support
+    writing multiple outputs.
+
+    Parameters
+    ----------
+    filename : str
+        path on file system
+    arrays : list of ndarray-like
+    formatstr: str, optional
+        format string
+    metadata: bytes, optional
+        metadata to write to file. Note that not all formats support writing
+        metadata.
+    opts: dict, optional
+        This is a dictionary of options. Any non-applicable option is typically
+        silently ignored. Currently, the following options are accepted:
+
+        jpeg:quality
+            An integer 1-100 determining the quality used by JPEG backend
+            (default is libjpeg default: 75).
+
+        tiff:compress
+            Whether to use compression when saving TIFF (default: True)
+
+        tiff:horizontal-predictor
+            Whether to use horizontal prediction in TIFF. This defaults to True
+            for 16 bit images, and to False for 8 bit images. This is because
+            compressing 16 bit images without horizontal prediction is often
+            counter-productive (see http://www.asmail.be/msg0055176395.html)
+
+
+        png:compression_level
+            Compression level to use, from 0 (no compression) to 9. Setting
+            this parameter to 0 is discouraged as setting it to 1 already
+            provides a modicum of compression at no extra computational cost.
+    '''
+    if opts is None:
+        opts = {}
+    for array in arrays:
+        if not np.issubdtype(array.dtype, np.integer):
+            raise TypeError('imread.imsave: only integer images are supported')
+    arrays = [np.ascontiguousarray(array) for array in arrays]
+    if formatstr is None:
+        dot = filename.rfind('.')
+        if dot < 0:
+            raise ValueError('imread.imsave_multi: dot not found in filename ({})'.format(filename))
+        formatstr = filename[dot+1:]
+    _imread.imsave_multi(filename, formatstr, arrays, opts)
+
 imwrite = imsave
+imwrite_multi = imsave_multi
+
 
 def detect_format(filename_or_blob, is_blob=False):
     '''

@@ -1,4 +1,4 @@
-// Copyright 2012-2013 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2015 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #define NO_IMPORT_ARRAY
@@ -27,6 +27,16 @@ tsize_t tiff_read(thandle_t handle, void* data, tsize_t n) {
     byte_source* s = static_cast<byte_source*>(handle);
     return s->read(static_cast<byte*>(data), n);
 }
+
+tsize_t tiff_read_from_writer(thandle_t handle, void* data, tsize_t n) {
+    byte_sink* s = static_cast<byte_sink*>(handle);
+    byte_source* src = dynamic_cast<byte_source*>(s);
+    if (!src) {
+        throw ProgrammingError("Could not dynamic_cast<> to byte_source");
+    }
+    return src->read(static_cast<byte*>(data), n);
+}
+
 tsize_t tiff_write(thandle_t handle, void* data, tsize_t n) {
     byte_sink* s = static_cast<byte_sink*>(handle);
     return s->write(static_cast<byte*>(data), n);
@@ -272,13 +282,27 @@ std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* fa
     return images;
 }
 
+
 void TIFFFormat::write(Image* input, byte_sink* output, const options_map& opts) {
+    image_list singleton;
+    singleton.push_back(input->clone());
+    this->do_write(&singleton, output, opts, false);
+}
+void TIFFFormat::write_multi(image_list* input, byte_sink* output, const options_map& opts) {
+    this->do_write(input, output, opts, true);
+}
+
+void TIFFFormat::do_write(image_list* input, byte_sink* output, const options_map& opts, bool is_multi) {
     tiff_warn_error twe;
+    tsize_t (*read_function)(thandle_t, void*, tsize_t) =
+         (dynamic_cast<byte_source*>(output) ?
+                            tiff_read_from_writer :
+                            tiff_no_read);
     tif_holder t = TIFFClientOpen(
                     "internal",
                     "w",
                     output,
-                    tiff_no_read,
+                    read_function,
                     tiff_write,
                     tiff_seek<byte_sink>,
                     tiff_close,
@@ -286,81 +310,92 @@ void TIFFFormat::write(Image* input, byte_sink* output, const options_map& opts)
                     NULL,
                     NULL);
     std::vector<uint8_t> bufdata;
-    void* bufp = 0;
-    bool copy_data = false;
-    const uint32 h = input->dim(0);
-    const uint16 photometric = ((input->ndims() == 3 && input->dim(2)) ?
-                                                    PHOTOMETRIC_RGB :
-                                                    PHOTOMETRIC_MINISBLACK);
+    const unsigned n_pages = input->size();
+    for (unsigned i = 0; i != n_pages; ++i) {
+        Image* im = input->at(i);
+        void* bufp = 0;
+        bool copy_data = false;
+        const uint32 h = im->dim(0);
+        const uint16 photometric = ((im->ndims() == 3 && im->dim(2)) ?
+                                                        PHOTOMETRIC_RGB :
+                                                        PHOTOMETRIC_MINISBLACK);
+        TIFFSetField(t.tif, TIFFTAG_IMAGELENGTH, uint32(h));
+        TIFFSetField(t.tif, TIFFTAG_IMAGEWIDTH, uint32(im->dim(1)));
+        TIFFSetField(t.tif, TIFFTAG_BITSPERSAMPLE, uint16(im->nbits()));
+        TIFFSetField(t.tif, TIFFTAG_SAMPLESPERPIXEL, uint16(im->dim_or(2, 1)));
+        TIFFSetField(t.tif, TIFFTAG_PHOTOMETRIC, uint16(photometric));
+        TIFFSetField(t.tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
 
-    TIFFSetField(t.tif, TIFFTAG_IMAGELENGTH, uint32(h));
-    TIFFSetField(t.tif, TIFFTAG_IMAGEWIDTH, uint32(input->dim(1)));
-
-    TIFFSetField(t.tif, TIFFTAG_BITSPERSAMPLE, uint16(input->nbits()));
-    TIFFSetField(t.tif, TIFFTAG_SAMPLESPERPIXEL, uint16(input->dim_or(2, 1)));
-
-    TIFFSetField(t.tif, TIFFTAG_PHOTOMETRIC, uint16(photometric));
-    TIFFSetField(t.tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
-
-    if (get_optional_bool(opts, "tiff:compress", true)) {
-        TIFFSetField(t.tif, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
-        // For 8 bit images, prediction defaults to false; for 16 bit images,
-        // it defaults to true. This is because compression of raw 16 bit
-        // images is often counter-productive without this flag. See the
-        // discusssion at http://www.asmail.be/msg0055176395.html
-        const bool prediction_default = input->nbits() != 8;
-        if (get_optional_bool(opts, "tiff:horizontal-predictor", prediction_default)) {
-            TIFFSetField(t.tif, TIFFTAG_PREDICTOR, PREDICTOR_HORIZONTAL);
-            if (!copy_data) {
-                bufdata.resize(input->dim(1) * input->nbytes());
-                bufp = &bufdata[0];
-                copy_data = true;
+        if (get_optional_bool(opts, "tiff:compress", true)) {
+            TIFFSetField(t.tif, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
+            // For 8 bit images, prediction defaults to false; for 16 bit images,
+            // it defaults to true. This is because compression of raw 16 bit
+            // images is often counter-productive without this flag. See the
+            // discusssion at http://www.asmail.be/msg0055176395.html
+            const bool prediction_default = im->nbits() != 8;
+            if (get_optional_bool(opts, "tiff:horizontal-predictor", prediction_default)) {
+                TIFFSetField(t.tif, TIFFTAG_PREDICTOR, PREDICTOR_HORIZONTAL);
+                if (!copy_data) {
+                    bufdata.resize(im->dim(1) * im->nbytes());
+                    bufp = &bufdata[0];
+                    copy_data = true;
+                }
             }
         }
-    }
 
-    TIFFSetField(t.tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
-    const char* meta = get_optional_cstring(opts, "metadata");
-    if (meta) {
-        TIFFSetField(t.tif, TIFFTAG_IMAGEDESCRIPTION, meta);
-    }
-    options_map::const_iterator x_iter = opts.find("tiff:XResolution");
-    if (x_iter != opts.end()) {
-        double d;
-        int i;
-        float value;
-        if (x_iter->second.get_int(i)) { value = i; }
-        else if (x_iter->second.get_double(d)) { value = d; }
-        else { throw WriteOptionsError("XResolution must be an integer or floating point value."); }
-
-        TIFFSetField(t.tif, TIFFTAG_XRESOLUTION, value);
-    }
-
-    options_map::const_iterator y_iter = opts.find("tiff:YResolution");
-    if (x_iter != opts.end()) {
-        double d;
-        int i;
-        float value;
-        if (x_iter->second.get_int(i)) { value = i; }
-        else if (x_iter->second.get_double(d)) { value = d; }
-        else { throw WriteOptionsError("YResolution must be an integer or floating point value."); }
-
-        TIFFSetField(t.tif, TIFFTAG_YRESOLUTION, value);
-    }
-
-    const uint16_t resolution_unit = get_optional_int(opts, "tiff:XResolutionUnit", uint16_t(-1));
-    if (resolution_unit != uint16_t(-1)) {
-        TIFFSetField(t.tif, TIFFTAG_RESOLUTIONUNIT, resolution_unit);
-    }
-
-    for (uint32 r = 0; r != h; ++r) {
-        void* rowp = input->rowp(r);
-        if (copy_data) {
-            std::memcpy(bufp, rowp, input->dim(1) * input->nbytes());
-            rowp = bufp;
+        TIFFSetField(t.tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+        const char* meta = get_optional_cstring(opts, "metadata");
+        if (meta) {
+            TIFFSetField(t.tif, TIFFTAG_IMAGEDESCRIPTION, meta);
         }
-        if (TIFFWriteScanline(t.tif, rowp, r) == -1) {
-            throw CannotWriteError("imread.imsave._tiff: Error writing TIFF file");
+        options_map::const_iterator x_iter = opts.find("tiff:XResolution");
+        if (x_iter != opts.end()) {
+            double d;
+            int i;
+            float value;
+            if (x_iter->second.get_int(i)) { value = i; }
+            else if (x_iter->second.get_double(d)) { value = d; }
+            else { throw WriteOptionsError("XResolution must be an integer or floating point value."); }
+
+            TIFFSetField(t.tif, TIFFTAG_XRESOLUTION, value);
+        }
+
+        options_map::const_iterator y_iter = opts.find("tiff:YResolution");
+        if (x_iter != opts.end()) {
+            double d;
+            int i;
+            float value;
+            if (x_iter->second.get_int(i)) { value = i; }
+            else if (x_iter->second.get_double(d)) { value = d; }
+            else { throw WriteOptionsError("YResolution must be an integer or floating point value."); }
+
+            TIFFSetField(t.tif, TIFFTAG_YRESOLUTION, value);
+        }
+
+        const uint16_t resolution_unit = get_optional_int(opts, "tiff:XResolutionUnit", uint16_t(-1));
+        if (resolution_unit != uint16_t(-1)) {
+            TIFFSetField(t.tif, TIFFTAG_RESOLUTIONUNIT, resolution_unit);
+        }
+
+        if (is_multi) {
+            TIFFSetField(t.tif, TIFFTAG_SUBFILETYPE, FILETYPE_PAGE);
+            TIFFSetField(t.tif, TIFFTAG_PAGENUMBER, i, n_pages);
+        }
+
+        for (uint32 r = 0; r != h; ++r) {
+            void* rowp = im->rowp(r);
+            if (copy_data) {
+                std::memcpy(bufp, rowp, im->dim(1) * im->nbytes());
+                rowp = bufp;
+            }
+            if (TIFFWriteScanline(t.tif, rowp, r) == -1) {
+                throw CannotWriteError("imread.imsave._tiff: Error writing TIFF file");
+            }
+        }
+        if (is_multi) {
+            if (!TIFFWriteDirectory(t.tif)) {
+                throw CannotWriteError("TIFFWriteDirectory failed");
+            }
         }
     }
     TIFFFlush(t.tif);

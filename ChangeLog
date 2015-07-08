@@ -1,5 +1,6 @@
 Version 0.5.1+
 	* Make png compression level tunable when calling imsave
+	* Add imsave_multi
 
 Version 0.5.1 2014-11-06 by luispedro
 	* Improve tests to work after installation

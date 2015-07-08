@@ -1,4 +1,4 @@
-// Copyright 2012-2014 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2015 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #ifndef LPC_NUMPY_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012
@@ -18,6 +18,11 @@ class NumpyImage : public Image, public ImageWithMetadata {
 
         ~NumpyImage() {
             Py_XDECREF(array_);
+        }
+
+        std::auto_ptr<Image> clone() const {
+            Py_XINCREF(array_);
+            return std::auto_ptr<Image>(new NumpyImage(this->array_));
         }
 
         PyArrayObject* release() {

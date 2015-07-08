@@ -8,10 +8,11 @@
 
 class TIFFFormat : public ImageFormat {
     public:
-        bool can_read() const { return true; }
-        bool can_read_multi() const { return true; }
-        bool can_write() const { return true; }
-        bool can_write_metadata() const { return true; }
+        bool can_read()             const { return true; }
+        bool can_read_multi()       const { return true; }
+        bool can_write()            const { return true; }
+        bool can_write_multi()      const { return true; }
+        bool can_write_metadata()   const { return true; }
 
         std::auto_ptr<Image> read(byte_source* s, ImageFactory* f, const options_map& opts) {
             std::auto_ptr<image_list> pages = this->do_read(s, f, false);
@@ -24,8 +25,10 @@ class TIFFFormat : public ImageFormat {
             return this->do_read(s, f, true);
         }
         void write(Image* input, byte_sink* output, const options_map& opts);
+        void write_multi(image_list* input, byte_sink* output, const options_map& opts);
     private:
         std::auto_ptr<image_list> do_read(byte_source* s, ImageFactory* f, bool is_multi);
+        void do_write(image_list* input, byte_sink* output, const options_map& opts, bool);
 };
 
 

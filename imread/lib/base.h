@@ -1,4 +1,4 @@
-// Copyright 2012-2014 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2015 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #ifndef LPC_IMREAD_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012
@@ -85,6 +85,8 @@ class Image {
     public:
         virtual ~Image() { }
 
+        virtual std::auto_ptr<Image> clone() const = 0;
+
         virtual void* rowp(int r) = 0;
 
         virtual int nbits() const = 0;
@@ -134,6 +136,7 @@ struct image_list {
         }
         std::vector<Image*>::size_type size() const { return content.size(); }
         void push_back(std::auto_ptr<Image> p) { content.push_back(p.release()); }
+        Image* at(const unsigned ix) const { return content.at(ix); }
 
         /// After release(), all of the pointers will be owned by the caller
         /// who must figure out how to delete them. Note that release() resets the list.
@@ -227,6 +230,7 @@ class ImageFormat {
         virtual bool can_read() const { return false; }
         virtual bool can_read_multi() const { return false; }
         virtual bool can_write() const { return false; }
+        virtual bool can_write_multi() const { return false; }
         virtual bool can_write_metadata() const { return false; }
 
         virtual std::auto_ptr<Image> read(byte_source* src, ImageFactory* factory, const options_map&) {
@@ -236,6 +240,9 @@ class ImageFormat {
             throw NotImplementedError();
         }
         virtual void write(Image* input, byte_sink* output, const options_map&) {
+            throw NotImplementedError();
+        }
+        virtual void write_multi(image_list* input, byte_sink* output, const options_map&) {
             throw NotImplementedError();
         }
 };

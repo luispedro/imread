@@ -1,6 +1,6 @@
 from nose.tools import with_setup, raises
 import numpy as np
-from imread import imread, imsave, imread_multi
+from imread import imread, imsave, imread_multi, imsave_multi
 from . import file_path
 
 _filename = 'imread_testing_file.tiff'
@@ -76,3 +76,13 @@ def test_horizontal_predictor():
     im3 = imread(_filename)
     assert np.all(im == im3)
 
+@with_setup(teardown=_remove_file)
+def test_imsave_multi():
+    im = imread(file_path('arange512_16bit.png'))
+    im2 = im[::4, ::4]
+    ims = [im, im2]
+    imsave_multi(_filename, ims)
+    ims2 = imread_multi(_filename)
+    assert len(ims) == len(ims2)
+    for a,b in zip(ims, ims2):
+        assert np.all(a == b)

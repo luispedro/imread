@@ -1,4 +1,4 @@
-// Copyright 2012-2014 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2015 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 
@@ -15,6 +15,7 @@
 #endif
 
 #include <sstream>
+#include <iostream>
 
 #include "lib/base.h"
 #include "lib/formats.h"
@@ -223,19 +224,26 @@ PyObject* py_imread             (PyObject* self, PyObject* args) { return py_imr
 PyObject* py_imread_multi       (PyObject* self, PyObject* args) { return py_imread_may_multi(self, args,  true, false); }
 PyObject* py_imread_from_blob   (PyObject* self, PyObject* args) { return py_imread_may_multi(self, args, false, true); }
 
-PyObject* py_imsave(PyObject* self, PyObject* args) {
+PyObject* py_imsave_may_multi(PyObject* self, PyObject* args, bool is_multi) {
     const char* filename;
     const char* formatstr;
     PyObject* formatstrObject;
-    PyArrayObject* array;
-    PyObject* asUtf8 = NULL;
+    PyObject* arrays;
+    PyArrayObject* array = 0;
     PyObject* optsDict;
-    if (!PyArg_ParseTuple(args, "sOOO", &filename, &formatstrObject, &array, &optsDict)) return NULL;
-    if (!PyArray_Check(array)) {
-        PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
-        return NULL;
+    if (!PyArg_ParseTuple(args, "sOOO", &filename, &formatstrObject, &arrays, &optsDict)) return NULL;
+    if (is_multi) {
+        if (!PyList_Check(arrays)) {
+            PyErr_SetString(PyExc_RuntimeError, "List expected for imsave_multi");
+            return NULL;
+        }
+    } else {
+        array = (PyArrayObject*)arrays;
+        if (!PyArray_Check(array)) {
+            PyErr_SetString(PyExc_RuntimeError, "array expected for imsave");
+            return NULL;
+        }
     }
-
 
     formatstr = get_cstring(formatstrObject);
     if (!formatstr) {
@@ -245,13 +253,23 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
     try {
         options_map opts = parse_options(optsDict);
         std::auto_ptr<ImageFormat> format(get_format(formatstr));
-        if (!format.get() || !format->can_write()) {
+        if (!format.get()) {
             std::stringstream ss;
-            ss << "Cannot write this format (" << formatstr << ")";
+            ss << "Handler not found for format '" << formatstr << "'";
+            throw CannotWriteError(ss.str());
+        }
+        if (!is_multi && !format->can_write()) {
+            std::stringstream ss;
+            ss << "Cannot write this format (format: " << formatstr << ")";
+            throw CannotWriteError(ss.str());
+        }
+        if (is_multi && !format->can_write_multi()) {
+            std::stringstream ss;
+            ss << "Cannot write multiple pages with this format (format: " << formatstr << ")";
             throw CannotWriteError(ss.str());
         }
 
-        const int fd = ::open(filename, O_CREAT|O_WRONLY|O_BINARY|O_TRUNC, 0644);
+        const int fd = ::open(filename, O_CREAT|O_RDWR|O_BINARY|O_TRUNC, 0644);
         if (fd < 0) {
             std::stringstream ss;
             ss << "Cannot open file '" << filename << "' for writing";
@@ -260,29 +278,44 @@ PyObject* py_imsave(PyObject* self, PyObject* args) {
 
         std::auto_ptr<byte_sink> output(new fd_source_sink(fd));
 
-        // ~NumpyImage() will decrease the count
-        Py_INCREF(array);
-        NumpyImage input(array);
-        format->write(&input, output.get(), opts);
-
-        Py_XDECREF(asUtf8);
+        if (is_multi) {
+            image_list array_list;
+            const unsigned n = PyList_GET_SIZE(arrays);
+            for (int i = 0; i != n; ++i) {
+                array = (PyArrayObject*)PyList_GET_ITEM(arrays, i);
+                if (!PyArray_Check(array)) {
+                    PyErr_SetString(PyExc_RuntimeError, "imsave_multi: Array expected in list");
+                    return NULL;
+                }
+                // ~NumpyImage() will decrease the count
+                Py_INCREF(array);
+                NumpyImage* input = new NumpyImage(array);
+                array_list.push_back(std::auto_ptr<Image>(input));
+            }
+            format->write_multi(&array_list, output.get(), opts);
+        } else {
+            // ~NumpyImage() will decrease the count
+            Py_INCREF(array);
+            NumpyImage input(array);
+            format->write(&input, output.get(), opts);
+        }
         Py_RETURN_NONE;
     } catch (py_exception_set) {
         return 0;
     } catch (const std::bad_alloc& a) {
         PyErr_SetString(PyExc_MemoryError, a.what());
-        Py_XDECREF(asUtf8);
         return 0;
     } catch (const std::exception& e) {
         PyErr_SetString(PyExc_RuntimeError, e.what());
-        Py_XDECREF(asUtf8);
         return 0;
     } catch (...) {
         PyErr_SetString(PyExc_RuntimeError, "imread: Unknown error occurred (please report a bug at https://github.com/luispedro/imread/issues).");
-        Py_XDECREF(asUtf8);
         return 0;
     }
 }
+
+PyObject* py_imsave       (PyObject* self, PyObject* args) { return py_imsave_may_multi(self, args, false); }
+PyObject* py_imsave_multi (PyObject* self, PyObject* args) { return py_imsave_may_multi(self, args, true); }
 
 
 PyMethodDef methods[] = {
@@ -291,6 +324,7 @@ PyMethodDef methods[] = {
   {"imread_multi",(PyCFunction)py_imread_multi, METH_VARARGS, NULL},
   {"imread_from_blob",(PyCFunction)py_imread_from_blob, METH_VARARGS, NULL},
   {"imsave",(PyCFunction)py_imsave, METH_VARARGS, NULL},
+  {"imsave_multi",(PyCFunction)py_imsave_multi, METH_VARARGS, NULL},
   {NULL, NULL,0,NULL},
 };
 
