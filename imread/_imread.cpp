@@ -1,4 +1,4 @@
-// Copyright 2012-2015 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2016 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 
@@ -152,6 +152,20 @@ PyObject* py_detect_format(PyObject* self, PyObject* args) {
         return 0;
     }
 }
+
+
+PyObject* py_supports_format(PyObject* self, PyObject* args) {
+    const char* formatstr;
+    if (!PyArg_ParseTuple(args, "s", &formatstr)) {
+        PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
+        return NULL;
+    }
+    const bool r = get_format(formatstr).get();
+    if (r) Py_RETURN_TRUE;
+    else Py_RETURN_FALSE;
+}
+
+
 PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, bool is_blob) {
     PyObject* filename_or_blob_object;
     const char* formatstr;
@@ -320,6 +334,7 @@ PyObject* py_imsave_multi (PyObject* self, PyObject* args) { return py_imsave_ma
 
 PyMethodDef methods[] = {
   {"detect_format",(PyCFunction)py_detect_format, METH_VARARGS, NULL},
+  {"supports_format",(PyCFunction)py_supports_format, METH_VARARGS, NULL},
   {"imread",(PyCFunction)py_imread, METH_VARARGS, NULL},
   {"imread_multi",(PyCFunction)py_imread_multi, METH_VARARGS, NULL},
   {"imread_from_blob",(PyCFunction)py_imread_from_blob, METH_VARARGS, NULL},

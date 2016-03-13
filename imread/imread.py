@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright (C) 2012-2015, Luis Pedro Coelho <luis@luispedro.org>
+# Copyright (C) 2012-2016, Luis Pedro Coelho <luis@luispedro.org>
 # vim: set ts=4 sts=4 sw=4 expandtab smartindent:
 #
 # License: MIT (see COPYING.MIT file)
@@ -276,3 +275,18 @@ def detect_format(filename_or_blob, is_blob=False):
         is returned.
     '''
     return _imread.detect_format(filename_or_blob, bool(is_blob))
+
+
+def supports_format(formatstr):
+    '''Query whether the format is supported by imread
+
+    Parameters
+    ----------
+    formatstr : str
+        format string (for example, 'png')
+
+    Returns
+    -------
+    is_supported : bool
+    '''
+    return _imread.supports_format(formatstr)

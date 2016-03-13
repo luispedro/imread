@@ -1,4 +1,5 @@
 Version 0.5.1+
+	* Add `supports_format` function
 	* Make png compression level tunable when calling imsave
 	* Add imsave_multi
 
