@@ -60,8 +60,14 @@ In Bibtex format::
     }
 
 
-Dependencies
-~~~~~~~~~~~~
+Installation/Dependencies
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The easiest environment to install mahotas-imread is on nix, just use::
+
+    nix-env -iA nixpkgs.python27Packages.imread
+
+or use the ``pkgs.python27Packages.imread`` object in your ``*.nix`` files.
 
 To compile on debian/ubuntu::
 
@@ -104,11 +110,11 @@ Travis Build Status
 .. image:: https://travis-ci.org/luispedro/imread.png
        :target: https://travis-ci.org/luispedro/imread
 
-Python versions 2.6, 2.7, 3.3, and 3.4 are officially supported.
+Python versions 2.6, 2.7, 3.3+ are officially supported.
 
 Python 3.2 (and earlier versions in the Python 3 series) are officially **not
 supported**. Patches will be accepted if they do not mess up anything else, but
-bug reports will not be considered.
+bug reports will not be considered as very high priority.
 
 History
 ~~~~~~~
