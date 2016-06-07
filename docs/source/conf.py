@@ -10,7 +10,7 @@
 
 
 # We cannot import ``imread`` as imread does not install correctly in the
-# rtfd.org environment (jpeglib is missing).
+# rtfd.io environment (jpeglib is missing).
 
 # from imread import __version__ as imread_version
 

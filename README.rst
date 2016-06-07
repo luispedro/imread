@@ -25,14 +25,14 @@ Gaussian filtering)::
 
 
 This grew out of frustration at current image loading solutions in Python, in
-either my packages [`mahotas <http://mahotas.rtfd.org>`__] or packages from
+either my packages [`mahotas <http://mahotas.rtfd.io>`__] or packages from
 others [`scikit-image <http://scikit-image.org/>`__, for example].
 
 The relationship with numpy is very contained and this could be easily
 repurposed to load images in other frameworks, even other programming
 languages.
 
-`Online documentation <http://imread.rtfd.org/>`__
+`Online documentation <http://imread.rtfd.io/>`__
 
 Citation
 --------
@@ -40,7 +40,7 @@ Citation
 .. _Citation:
 
 If you use imread on a published publication, please cite the main `mahotas
-<http://mahotas.rtfd.org>`__ paper (imread is a spin-off of mahotas):
+<http://mahotas.rtfd.io>`__ paper (imread is a spin-off of mahotas):
 
     **Luis Pedro Coelho** Mahotas: Open source software for scriptable computer
     vision in Journal of Open Research Software, vol 1, 2013. [`DOI
@@ -92,7 +92,7 @@ repository <http://www.lfd.uci.edu/~gohlke/pythonlibs/#imread>`__
 Links & Contacts
 ----------------
 
-*Documentation*: `http://imread.readthedocs.org/ <http://imread.readthedocs.org/>`__
+*Documentation*: `http://imread.readthedocs.io/ <http://imread.readthedocs.io/>`__
 
 *Issue Tracker*: `github imread issues <https://github.com/luispedro/imread`__
 

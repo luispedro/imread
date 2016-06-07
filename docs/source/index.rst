@@ -21,7 +21,7 @@ This needs to be used with a a computer vision & image processing packages:
 
 
 This grew out of frustration at current image loading solutions in Python, in
-either my packages [`mahotas <http://mahotas.rtfd.org>`__] or packages from
+either my packages [`mahotas <http://mahotas.rtfd.io>`__] or packages from
 others [`scikit-image <http://scikit-image.org>`__, for example].
 
 The relationship with numpy is very contained and this could be easily
