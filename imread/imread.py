@@ -26,7 +26,7 @@ def _as_grey(im, as_grey):
     transform = np.array([ 0.30,  0.59,  0.11])
     return np.dot(im, transform)
 
-def imread(filename, as_grey=False, formatstr=None, return_metadata=False):
+def imread(filename, as_grey=False, formatstr=None, return_metadata=False, opts=None):
     '''
     im = imread(filename, as_grey=False, formatstr={filename extension}, return_metadata=False)
     im,meta = imread(filename, as_grey=False, formatstr={filename extension}, return_metadata=True)
@@ -45,6 +45,11 @@ def imread(filename, as_grey=False, formatstr=None, return_metadata=False):
         does not correspond to the format, you can pass it explicitly.
     return_metadata : bool, optional
         Whether to return metadata (default: False)
+    opts : dict, optional
+        Other options. Support will depend on the backend. Currently used
+
+            strip_alpha: bool
+                Whether to strip the alpha channel.
 
     Returns
     -------
@@ -60,9 +65,11 @@ def imread(filename, as_grey=False, formatstr=None, return_metadata=False):
     imread_from_blob : function
         Read from a in-memory string
     '''
+    if opts is None:
+        opts = {}
     formatstr = _parse_formatstr(filename, formatstr, 'imread')
     reader = special.get(formatstr, _imread.imread)
-    imdata,meta = reader(filename, formatstr)
+    imdata,meta = reader(filename, formatstr, opts)
     imdata = _as_grey(imdata, as_grey)
     if return_metadata:
         return imdata, meta
@@ -71,7 +78,7 @@ def imread(filename, as_grey=False, formatstr=None, return_metadata=False):
 imload = imread
 
 
-def imread_from_blob(blob, formatstr=None, as_grey=False, return_metadata=False):
+def imread_from_blob(blob, formatstr=None, as_grey=False, return_metadata=False, opts=None):
     '''
     imdata = imread_from_blob(blob, formatstr=None, as_grey=False, return_metadata={True})
     imdata,metadata = imread_from_blob(blob, formatstr=None, as_grey={False}, return_metadata=True)
@@ -93,6 +100,11 @@ def imread_from_blob(blob, formatstr=None, as_grey=False, return_metadata=False)
         Whether to convert to grey scale image (default: no)
     return_metadata : bool, optional
         Whether to return metadata (default: False)
+    opts : dict, optional
+        Other options. Support will depend on the backend. Currently used
+
+            strip_alpha: bool
+                Whether to strip the alpha channel.
 
     Returns
     -------
@@ -108,10 +120,12 @@ def imread_from_blob(blob, formatstr=None, as_grey=False, return_metadata=False)
     imread : function
         Read from a file on disk
     '''
+    if opts is None:
+        opts = {}
     reader = _imread.imread_from_blob
     if formatstr is None:
         formatstr = detect_format(blob, is_blob=True)
-    imdata,meta = reader(blob, formatstr)
+    imdata,meta = reader(blob, formatstr, opts)
     imdata = _as_grey(imdata, as_grey)
     if return_metadata:
         return imdata,meta

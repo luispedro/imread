@@ -169,11 +169,12 @@ PyObject* py_supports_format(PyObject* self, PyObject* args) {
 PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, bool is_blob) {
     PyObject* filename_or_blob_object;
     const char* formatstr;
-    if (!PyArg_ParseTuple(args, "Os", &filename_or_blob_object, &formatstr)) {
+    PyObject* optsDict;
+    if (!PyArg_ParseTuple(args, "OsO", &filename_or_blob_object, &formatstr, &optsDict)) {
         PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
         return NULL;
     }
-    options_map opts;
+    options_map opts = parse_options(optsDict);
 
     try {
         std::auto_ptr<ImageFormat> format(get_format(formatstr));

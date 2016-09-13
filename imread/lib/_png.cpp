@@ -1,4 +1,4 @@
-// Copyright 2012-2014 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2016 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #include "base.h"
@@ -109,6 +109,10 @@ std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory, co
     // PNGs are in "network" order (ie., big-endian)
     if (bit_depth == 16 && !is_big_endian()) png_set_swap(p.png_ptr);
 
+    const bool strip_alpha = get_optional_bool(opts, "strip_alpha", false);
+    if (strip_alpha) {
+        png_set_strip_alpha(p.png_ptr);
+    }
     int d = -1;
     switch (png_get_color_type(p.png_ptr, p.png_info)) {
         case PNG_COLOR_TYPE_PALETTE:
@@ -120,6 +124,12 @@ std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory, co
             d = 4;
             break;
         case PNG_COLOR_TYPE_GRAY:
+            d = -1;
+            break;
+        case PNG_COLOR_TYPE_GRAY_ALPHA:
+            if (!strip_alpha) {
+                throw CannotReadError("imread.png: Color type (4: grayscale with alpha channel) can  only be read when strip_alpha is set to true.");
+            }
             d = -1;
             break;
         default: {
