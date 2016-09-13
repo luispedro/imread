@@ -169,8 +169,7 @@ PyObject* py_supports_format(PyObject* self, PyObject* args) {
 PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, bool is_blob) {
     PyObject* filename_or_blob_object;
     const char* formatstr;
-    const char* flags;
-    if (!PyArg_ParseTuple(args, "Oss", &filename_or_blob_object, &formatstr, &flags)) {
+    if (!PyArg_ParseTuple(args, "Os", &filename_or_blob_object, &formatstr)) {
         PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
         return NULL;
     }

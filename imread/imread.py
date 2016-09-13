@@ -62,8 +62,7 @@ def imread(filename, as_grey=False, formatstr=None, return_metadata=False):
     '''
     formatstr = _parse_formatstr(filename, formatstr, 'imread')
     reader = special.get(formatstr, _imread.imread)
-    flags = ('m' if return_metadata else '')
-    imdata,meta = reader(filename, formatstr, flags)
+    imdata,meta = reader(filename, formatstr)
     imdata = _as_grey(imdata, as_grey)
     if return_metadata:
         return imdata, meta
@@ -112,8 +111,7 @@ def imread_from_blob(blob, formatstr=None, as_grey=False, return_metadata=False)
     reader = _imread.imread_from_blob
     if formatstr is None:
         formatstr = detect_format(blob, is_blob=True)
-    flags = ('m' if return_metadata else '')
-    imdata,meta = reader(blob, formatstr, flags)
+    imdata,meta = reader(blob, formatstr)
     imdata = _as_grey(imdata, as_grey)
     if return_metadata:
         return imdata,meta
