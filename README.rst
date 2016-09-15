@@ -2,6 +2,9 @@
 mahotas-imread: Read Image Files
 ================================
 
+[![Travis](https://api.travis-ci.org/luispedro/imread.png)](https://travis-ci.org/luispedro/imread)
+[![License](https://pypip.in/license/imread/badge.png)](http://opensource.org/licenses/MIT)
+
 Mahotas-imread is a simple module with a small number of functions:
 
 imread
@@ -94,7 +97,7 @@ Links & Contacts
 
 *Documentation*: `http://imread.readthedocs.io/ <http://imread.readthedocs.io/>`__
 
-*Issue Tracker*: `github imread issues <https://github.com/luispedro/imread`__
+*Issue Tracker*: `github imread issues <https://github.com/luispedro/imread>`__
 
 *Mailing List*: Use the `pythonvision mailing list
 <http://groups.google.com/group/pythonvision?pli=1>`_ for questions, bug
