@@ -121,7 +121,7 @@ std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory, co
             d = 3;
             break;
         case PNG_COLOR_TYPE_RGB_ALPHA:
-            d = 4;
+            d = 4 - int(strip_alpha);
             break;
         case PNG_COLOR_TYPE_GRAY:
             d = -1;

@@ -80,3 +80,9 @@ def test_write_16bit():
     imsave(_filename, f)
     f2 = imread(_filename)
     assert np.all(f == f2)
+
+
+def test_strip_alpha():
+    w_alpha = imread(file_path('rgba.png'))
+    wno_alpha = imread(file_path('rgba.png'), opts={'strip_alpha':True})
+    assert np.all(w_alpha[:,:,:3] == wno_alpha)
