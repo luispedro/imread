@@ -14,7 +14,7 @@
 
 # from imread import __version__ as imread_version
 
-imread_version = '0.5.1+git'
+imread_version = '0.6'
 import sys, os
 
 # If extensions (or modules to document with autodoc) are in another directory,

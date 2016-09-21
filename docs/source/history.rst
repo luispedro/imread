@@ -2,6 +2,14 @@
 History
 =======
 
+Version 0.6 (2016-09-21)
+--------------------------
+- Add `supports_format` function
+- Make png compression level tunable when calling imsave
+- Add imsave_multi
+- Add partial support for reading PNG files in Gray+alpha format
+
+
 Version 0.5.1 (2014-11-06)
 --------------------------
 - Improve tests to work after installation
