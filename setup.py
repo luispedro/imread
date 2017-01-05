@@ -16,7 +16,16 @@ On linux, the package is often called python-setuptools''')
     sys.exit(1)
 
 import os
-import numpy as np
+
+from setuptools.command.build_ext import build_ext as _build_ext
+# Based on http://stackoverflow.com/questions/19919905/how-to-bootstrap-numpy-installation-in-setup-py
+class build_ext(_build_ext):
+    def finalize_options(self):
+        _build_ext.finalize_options(self)
+        # Prevent numpy from thinking it is still in its setup process:
+        __builtins__.__NUMPY_SETUP__ = False
+        import numpy
+        self.include_dirs.append(numpy.get_include())
 
 def has_webp():
     return os.system("pkg-config --exists libwebp") == 0
@@ -42,7 +51,7 @@ if EXCLUDE_WEBP is None:
 if EXCLUDE_WEBP:
     define_macros.append( ('IMREAD_EXCLUDE_WEBP', '1') )
 
-include_dirs = [np.get_include()]
+include_dirs = []
 library_dirs = []
 
 for pth in ('/usr/local/include', '/usr/X11/include'):
@@ -122,5 +131,7 @@ setuptools.setup(name = 'imread',
       ext_modules = ext_modules,
       package_dir = package_dir,
       package_data = package_data,
+      cmdclass = {'build_ext': build_ext},
+      setup_requires = ['numpy'],
       test_suite = 'nose.collector',
       )
