@@ -66,11 +66,12 @@ In Bibtex format::
 Installation/Dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The easiest environment to install mahotas-imread is on nix, just use::
+The easiest environment to install mahotas-imread is anaconda, through
+`conda-forge <https://conda-forge.github.io>`__. Just use::
 
-    nix-env -iA nixpkgs.python27Packages.imread
+    conda config --add channels conda-forge
+    conda install imread
 
-or use the ``pkgs.python27Packages.imread`` object in your ``*.nix`` files.
 
 To compile on debian/ubuntu::
 
@@ -91,6 +92,12 @@ and install with::
 
 On Windows, you can also just download a pre-built package from `C. Gohlke's
 repository <http://www.lfd.uci.edu/~gohlke/pythonlibs/#imread>`__
+
+On nix, you can use::
+
+    nix-env -iA nixpkgs.python27Packages.imread
+
+or use the ``pkgs.python27Packages.imread`` object in your ``*.nix`` files.
 
 Links & Contacts
 ----------------
