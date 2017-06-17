@@ -16,7 +16,7 @@ def _parse_formatstr(filename, formatstr, funcname):
     _,ext = path.splitext(filename)
     if len(ext) and ext[0] == '.':
         return ext[1:].lower()
-    raise ValueError('imread.%s: Could not identify format from filename: `%s`' % (funcname,filename))
+    raise ValueError('imread.{0}: Could not identify format from filename: `{1}`'.format(funcname,filename))
 
 def _as_grey(im, as_grey):
     if not as_grey or len(im.shape) != 3: return im
@@ -25,6 +25,12 @@ def _as_grey(im, as_grey):
     # these are the values that wikipedia says are typical
     transform = np.array([ 0.30,  0.59,  0.11])
     return np.dot(im, transform)
+
+def _norm_path(path):
+    import os
+    if hasattr(os, 'PathLike') and isinstance(path, os.PathLike):
+        return str(path)
+    return path
 
 def imread(filename, as_grey=False, formatstr=None, return_metadata=False, opts=None):
     '''
@@ -67,6 +73,7 @@ def imread(filename, as_grey=False, formatstr=None, return_metadata=False, opts=
     '''
     if opts is None:
         opts = {}
+    filename = _norm_path(filename)
     formatstr = _parse_formatstr(filename, formatstr, 'imread')
     reader = special.get(formatstr, _imread.imread)
     imdata,meta = reader(filename, formatstr, opts)
@@ -151,6 +158,7 @@ def imread_multi(filename, formatstr=None):
     -------
     images : list
     '''
+    filename = _norm_path(filename)
     formatstr = _parse_formatstr(filename, formatstr, 'imread')
     return _imread.imread_multi(filename, formatstr, '')
 
@@ -202,10 +210,11 @@ def imsave(filename, array, formatstr=None, metadata=None, opts=None):
     if not np.issubdtype(array.dtype, np.integer):
         raise TypeError('imread.imsave: only integer images are supported')
     array = np.ascontiguousarray(array)
+    filename = _norm_path(filename)
     if formatstr is None:
         dot = filename.rfind('.')
         if dot < 0:
-            raise ValueError('imread.imsave: dot not found in filename (%s)' % filename)
+            raise ValueError('imread.imsave: dot not found in filename ({})'.format(filename))
         formatstr = filename[dot+1:]
     if metadata is not None:
         opts['metadata'] = metadata
@@ -256,6 +265,7 @@ def imsave_multi(filename, arrays, formatstr=None, opts=None):
         if not np.issubdtype(array.dtype, np.integer):
             raise TypeError('imread.imsave: only integer images are supported')
     arrays = [np.ascontiguousarray(array) for array in arrays]
+    filename = _norm_path(filename)
     if formatstr is None:
         dot = filename.rfind('.')
         if dot < 0:
@@ -286,6 +296,8 @@ def detect_format(filename_or_blob, is_blob=False):
         Representation of the format if detected. When no format matches, None
         is returned.
     '''
+    if not is_blob:
+        filename_or_blob = _norm_path(filename_or_blob)
     return _imread.detect_format(filename_or_blob, bool(is_blob))
 
 

@@ -1,3 +1,6 @@
+Version 0.6+
+	* Support pathlib paths as function arguments
+
 Version 0.6 2016-09-21 by luispedro
 	* Add `supports_format` function
 	* Make png compression level tunable when calling imsave
