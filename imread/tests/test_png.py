@@ -81,6 +81,13 @@ def test_write_16bit():
     f2 = imread(_filename)
     assert np.all(f == f2)
 
+@with_setup(teardown=_remove_file)
+def test_write_16bit_rgb():
+    f = np.random.random((16,8,3)) * 65535.0
+    f = f.astype(np.uint16)
+    imsave(_filename, f)
+    f2 = imread(_filename)
+    assert np.all(f == f2)
 
 def test_strip_alpha():
     w_alpha = imread(file_path('rgba.png'))
