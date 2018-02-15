@@ -2,6 +2,12 @@
 History
 =======
 
+Version 0.6.1 (2018-02-15)
+--------------------------
+- Support pathlib paths as function arguments
+- Fix 16 bit PNG write support (patch by Tomi Aarnio)
+
+
 Version 0.6 (2016-09-21)
 --------------------------
 - Add `supports_format` function
