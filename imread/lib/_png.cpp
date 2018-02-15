@@ -76,12 +76,12 @@ int color_type_of(Image* im) {
 }
 
 
-void swap_bytes_inplace(std::vector<png_bytep>& data, const int ncols, stack_based_memory_pool& mem) {
+void swap_bytes_inplace(std::vector<png_bytep>& data, const int nelems, stack_based_memory_pool& mem) {
     for (unsigned int r = 0; r != data.size(); ++r) {
         png_bytep row = data[r];
-        png_bytep newbf = mem.allocate_as<png_bytep>(ncols * 2);
-        std::memcpy(newbf, row, ncols*2);
-        for (int c = 0; c != ncols; ++c) {
+        png_bytep newbf = mem.allocate_as<png_bytep>(nelems * 2);
+        std::memcpy(newbf, row, nelems*2);
+        for (int c = 0; c != nelems; ++c) {
             std::swap(newbf[2*c], newbf[2*c + 1]);
         }
         data[r] = newbf;
@@ -155,12 +155,13 @@ void PNGFormat::write(Image* input, byte_sink* output, const options_map& opts) 
     png_set_write_fn(p.png_ptr, output, write_to_source, flush_source);
     const int height = input->dim(0);
     const int width = input->dim(1);
+    const int nchannels = input->ndims() == 2 ? 1 : input->dim(2);
     const int bit_depth = input->nbits();
     const int color_type = color_type_of(input);
 
     png_set_IHDR(p.png_ptr, p.png_info, width, height,
                      bit_depth, color_type, PNG_INTERLACE_NONE,
-                     PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+                     PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
     int compression_level = get_optional_int(opts, "png:compression_level", -1);
     if (compression_level != -1) {
         png_set_compression_level(p.png_ptr, compression_level);
@@ -169,10 +170,9 @@ void PNGFormat::write(Image* input, byte_sink* output, const options_map& opts) 
 
     std::vector<png_bytep> rowps = allrows<png_byte>(*input);
     if (bit_depth == 16 && !is_big_endian()) {
-        swap_bytes_inplace(rowps, width, alloc);
+        swap_bytes_inplace(rowps, width * nchannels, alloc);
     }
 
     png_write_image(p.png_ptr, &rowps[0]);
     png_write_end(p.png_ptr, p.png_info);
 }
-
