@@ -295,7 +295,7 @@ PyObject* py_imsave_may_multi(PyObject* self, PyObject* args, bool is_multi) {
         if (is_multi) {
             image_list array_list;
             const unsigned n = PyList_GET_SIZE(arrays);
-            for (int i = 0; i != n; ++i) {
+            for (int i = 0; i != int(n); ++i) {
                 array = (PyArrayObject*)PyList_GET_ITEM(arrays, i);
                 if (!PyArray_Check(array)) {
                     PyErr_SetString(PyExc_RuntimeError, "imsave_multi: Array expected in list");
