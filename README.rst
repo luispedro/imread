@@ -2,8 +2,21 @@
 mahotas-imread: Read Image Files
 ================================
 
-[![Travis](https://api.travis-ci.org/luispedro/imread.png)](https://travis-ci.org/luispedro/imread)
-[![License](https://pypip.in/license/imread/badge.png)](http://opensource.org/licenses/MIT)
+IO with images and numpy arrays.t
+
+.. image:: https://api.travis-ci.org/luispedro/imread.png
+   :target: https://travis-ci.org/luispedro/imread
+
+.. image:: https://anaconda.org/conda-forge/imread/badges/license.svg
+   :target: http://opensource.org/licenses/MIT
+
+.. image:: https://anaconda.org/conda-forge/imread/badges/installer/conda.svg
+   :target: https://anaconda.org/conda-forge/imread
+
+.. image:: https://anaconda.org/conda-forge/imread/badges/downloads.svg
+   :target: https://anaconda.org/conda-forge/imread
+
+
 
 Mahotas-imread is a simple module with a small number of functions:
 
