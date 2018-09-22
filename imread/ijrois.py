@@ -1,4 +1,4 @@
-# Copyright: Luis Pedro Coelho <luis@luispedro.org>, 2012
+# Copyright: Luis Pedro Coelho <luis@luispedro.org>, 2012-2018
 # License: MIT
 import numpy as np
 
@@ -7,6 +7,15 @@ def read_roi(fileobj):
     points = read_roi(fileobj)
 
     Read ImageJ's ROI format
+
+    Parameters
+    ----------
+    fileobj: should be a file-like object
+
+    Returns
+    -------
+
+    points: a list of points
     '''
 # This is based on:
 # http://rsbweb.nih.gov/ij/developer/source/ij/io/RoiDecoder.java.html
@@ -47,7 +56,7 @@ def read_roi(fileobj):
         return v.view(np.float32)
 
     magic = fileobj.read(4)
-    if magic != 'Iout':
+    if magic != b'Iout':
         raise IOError('Magic number not found')
     version = get16()
 
@@ -78,7 +87,7 @@ def read_roi(fileobj):
     fill_color = get32()
     subtype = get16()
     if subtype != 0:
-        raise ValueError('roireader: ROI subtype %s not supported (!= 0)' % subtype)
+        raise ValueError('roireader: ROI subtype {} not supported (!= 0)'.format(subtype))
     options = get16()
     arrow_style = get8()
     arrow_head_size = get8()
@@ -92,14 +101,31 @@ def read_roi(fileobj):
     else:
         getc = get16
         points = np.empty((n_coordinates, 2), dtype=np.int16)
-    points[:,1] = [getc() for i in xrange(n_coordinates)]
-    points[:,0] = [getc() for i in xrange(n_coordinates)]
+    points[:,1] = [getc() for i in range(n_coordinates)]
+    points[:,0] = [getc() for i in range(n_coordinates)]
     points[:,1] += left
     points[:,0] += top
     points -= 1
     return points
 
 def read_roi_zip(fname):
+    '''
+    Reads all ROIs in a ZIP file
+
+    Parameters
+    ----------
+    fname : str
+        Input filename
+
+    Returns
+    -------
+    rois: list of ROIs
+        Each ROI is a vector of 2D points
+
+    See Also
+    --------
+    read_roi: function, reads a single ROI
+    '''
     import zipfile
     with zipfile.ZipFile(fname) as zf:
         return [read_roi(zf.open(n))
