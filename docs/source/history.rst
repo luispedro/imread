@@ -2,6 +2,10 @@
 History
 =======
 
+Version 0.7.0 (2018-09-30)
+--------------------------
+- Add support for reading ImageJ ROIs
+
 Version 0.6.1 (2018-02-15)
 --------------------------
 - Support pathlib paths as function arguments

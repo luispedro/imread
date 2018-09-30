@@ -2,19 +2,15 @@
 mahotas-imread: Read Image Files
 ================================
 
-IO with images and numpy arrays.t
-
 .. image:: https://api.travis-ci.org/luispedro/imread.png
    :target: https://travis-ci.org/luispedro/imread
-
 .. image:: https://anaconda.org/conda-forge/imread/badges/license.svg
    :target: http://opensource.org/licenses/MIT
-
 .. image:: https://anaconda.org/conda-forge/imread/badges/installer/conda.svg
    :target: https://anaconda.org/conda-forge/imread
-
 .. image:: https://anaconda.org/conda-forge/imread/badges/downloads.svg
    :target: https://anaconda.org/conda-forge/imread
+IO with images and numpy arrays.
 
 
 
@@ -49,6 +45,13 @@ repurposed to load images in other frameworks, even other programming
 languages.
 
 `Online documentation <http://imread.rtfd.io/>`__
+
+
+Python versions 2.6, 2.7, 3.3+ are officially supported.
+
+Python 3.2 (and earlier versions in the Python 3 series) are officially **not
+supported**. Patches will be accepted if they do not mess up anything else, but
+bug reports will not be considered as very high priority.
 
 Citation
 --------
@@ -127,20 +130,13 @@ submissions, etc.
 <https://twitter.com/luispedrocoelho>`__ or `github
 <https://github.com/luispedro>`__).
 
-Travis Build Status
-~~~~~~~~~~~~~~~~~~~
-
-.. image:: https://travis-ci.org/luispedro/imread.png
-       :target: https://travis-ci.org/luispedro/imread
-
-Python versions 2.6, 2.7, 3.3+ are officially supported.
-
-Python 3.2 (and earlier versions in the Python 3 series) are officially **not
-supported**. Patches will be accepted if they do not mess up anything else, but
-bug reports will not be considered as very high priority.
-
 History
 ~~~~~~~
+
+Version 0.7.0 (2018-09-30)
+--------------------------
+- Add support for reading ImageJ ROIs
+
 
 Version 0.6.1 (2018-02-15)
 --------------------------

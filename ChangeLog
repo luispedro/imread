@@ -1,5 +1,5 @@
-Version 0.7.0
-	* Added support for reading ImageJ ROIs
+Version 0.7.0 2018-09-30 by luispedro
+	* Support reading ImageJ ROIs
 
 Version 0.6.1 2018-02-15 by luispedro
 	* Support pathlib paths as function arguments
