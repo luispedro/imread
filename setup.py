@@ -4,6 +4,7 @@
 # License: MIT
 
 from __future__ import division, print_function
+import platform
 import sys
 
 try:
@@ -84,6 +85,11 @@ if not EXCLUDE_WEBP:
     extensions['imread._imread'].append('imread/lib/_webp.cpp')
     libraries.append('webp')
 
+extra_args = []
+if platform.platform().startswith('Darwin'):
+    if int(platform.mac_ver()[0].split('.')[1]) >= 9:
+        extra_args.append('-stdlib=libc++')
+
 ext_modules = [
     setuptools.Extension(
         key,
@@ -93,6 +99,8 @@ ext_modules = [
         sources=sources,
         undef_macros=undef_macros,
         define_macros=define_macros,
+        extra_compile_args=extra_args,
+        extra_link_args=extra_args,
         ) for key, sources in extensions.items()]
 
 packages = setuptools.find_packages()
