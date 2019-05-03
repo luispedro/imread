@@ -316,6 +316,7 @@ void TIFFFormat::do_write(image_list* input, byte_sink* output, const options_ma
         void* bufp = 0;
         bool copy_data = false;
         const uint32 h = im->dim(0);
+        const uint32 nchannels = uint16(im->dim_or(2, 1));
         const uint16 photometric = ((im->ndims() == 3 && im->dim(2)) ?
                                                         PHOTOMETRIC_RGB :
                                                         PHOTOMETRIC_MINISBLACK);
@@ -336,7 +337,7 @@ void TIFFFormat::do_write(image_list* input, byte_sink* output, const options_ma
             if (get_optional_bool(opts, "tiff:horizontal-predictor", prediction_default)) {
                 TIFFSetField(t.tif, TIFFTAG_PREDICTOR, PREDICTOR_HORIZONTAL);
                 if (!copy_data) {
-                    bufdata.resize(im->dim(1) * im->nbytes());
+                    bufdata.resize(im->dim(1) * im->nbytes() * nchannels);
                     bufp = &bufdata[0];
                     copy_data = true;
                 }
@@ -385,7 +386,7 @@ void TIFFFormat::do_write(image_list* input, byte_sink* output, const options_ma
         for (uint32 r = 0; r != h; ++r) {
             void* rowp = im->rowp(r);
             if (copy_data) {
-                std::memcpy(bufp, rowp, im->dim(1) * im->nbytes());
+                std::memcpy(bufp, rowp, im->dim(1) * im->nbytes() * nchannels);
                 rowp = bufp;
             }
             if (TIFFWriteScanline(t.tif, rowp, r) == -1) {
@@ -400,4 +401,3 @@ void TIFFFormat::do_write(image_list* input, byte_sink* output, const options_ma
     }
     TIFFFlush(t.tif);
 }
-
