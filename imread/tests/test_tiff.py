@@ -67,6 +67,15 @@ def test_read_back_colour():
     assert np.all(im == im2)
 
 @with_setup(teardown=_remove_file)
+def test_read_back_colour_16bit():
+    im = np.random.random((16,8,3)) * 65535.0
+    im = im.astype(np.uint16)
+    imsave(_filename, im)
+    im2 = imread(_filename)
+    assert im.shape == im2.shape
+    assert np.all(im == im2)
+
+@with_setup(teardown=_remove_file)
 def test_horizontal_predictor():
     im = imread(file_path('arange512_16bit.png'))
     im2 = im.copy()
