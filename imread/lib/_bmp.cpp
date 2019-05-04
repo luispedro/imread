@@ -1,4 +1,4 @@
-// Copyright 2012-2013 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2019 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #define NO_IMPORT_ARRAY
@@ -35,7 +35,7 @@ uint32_t pow2(uint32_t n) {
 }
 }
 
-std::auto_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory, const options_map&) {
+std::unique_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory, const options_map&) {
     char magick[2];
     if (src->read(reinterpret_cast<byte*>(magick), 2) != 2) {
         throw CannotReadError("imread.bmp: File is empty");
@@ -78,7 +78,7 @@ std::auto_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory, co
     }
     const int depth = (bitsppixel == 16 ? -1 : 3);
     const int nbits = (bitsppixel == 16 ? 16 : 8);
-    std::auto_ptr<Image> output(factory->create(nbits, height, width, depth));
+    std::unique_ptr<Image> output(factory->create(nbits, height, width, depth));
 
     std::vector<byte> color_table;
     if (bitsppixel <= 8) {

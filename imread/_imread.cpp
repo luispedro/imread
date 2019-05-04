@@ -1,4 +1,4 @@
-// Copyright 2012-2016 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2019 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 
@@ -89,7 +89,7 @@ options_map parse_options(PyObject* dict) {
     return res;
 }
 
-std::auto_ptr<byte_source> get_input(PyObject* filename_or_blob_object, const bool is_blob) {
+std::unique_ptr<byte_source> get_input(PyObject* filename_or_blob_object, const bool is_blob) {
     if (is_blob) {
         size_t len;
         const char* data = get_blob(filename_or_blob_object, len);
@@ -97,7 +97,7 @@ std::auto_ptr<byte_source> get_input(PyObject* filename_or_blob_object, const bo
             PyErr_SetString(PyExc_TypeError, "Expected blob of bytes");
             throw py_exception_set();
         }
-        return std::auto_ptr<byte_source>(new memory_source(reinterpret_cast<const byte*>(data), len));
+        return std::unique_ptr<byte_source>(new memory_source(reinterpret_cast<const byte*>(data), len));
     } else {
         const char* filename = get_cstring(filename_or_blob_object);
         if (!filename) throw py_exception_set();
@@ -114,7 +114,7 @@ std::auto_ptr<byte_source> get_input(PyObject* filename_or_blob_object, const bo
             PyErr_SetString(PyExc_OSError, ss.str().c_str());
             throw py_exception_set();
         }
-        return std::auto_ptr<byte_source>(new fd_source_sink(fd));
+        return std::unique_ptr<byte_source>(new fd_source_sink(fd));
     }
 }
 
@@ -131,7 +131,7 @@ PyObject* py_detect_format(PyObject* self, PyObject* args) {
     }
 
     try {
-        std::auto_ptr<byte_source> input = get_input(filename_or_blob_object, is_blob);
+        std::unique_ptr<byte_source> input = get_input(filename_or_blob_object, is_blob);
         const char* format = magic_format(&*input);
         if (!format) Py_RETURN_NONE;
 #if PY_MAJOR_VERSION >= 3
@@ -177,7 +177,7 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, boo
     options_map opts = parse_options(optsDict);
 
     try {
-        std::auto_ptr<ImageFormat> format(get_format(formatstr));
+        std::unique_ptr<ImageFormat> format(get_format(formatstr));
         if (!format.get()) {
             std::stringstream ss;
             ss << "This format (" << formatstr << ") is unknown to imread";
@@ -201,9 +201,9 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, boo
         }
 
         NumpyFactory factory;
-        std::auto_ptr<byte_source> input = get_input(filename_or_blob_object, is_blob);
+        std::unique_ptr<byte_source> input = get_input(filename_or_blob_object, is_blob);
         if (is_multi) {
-            std::auto_ptr<image_list> images = format->read_multi(input.get(), &factory, opts);
+            std::unique_ptr<image_list> images = format->read_multi(input.get(), &factory, opts);
             PyObject* output = PyList_New(images->size());
             if (!output) return NULL;
             std::vector<Image*> pages = images->release();
@@ -213,7 +213,7 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, boo
             }
             return output;
         } else {
-            std::auto_ptr<Image> output = format->read(input.get(), &factory, opts);
+            std::unique_ptr<Image> output = format->read(input.get(), &factory, opts);
             PyObject* final = PyTuple_New(2);
             if (!final) return NULL;
             PyTuple_SET_ITEM(final, 0, static_cast<NumpyImage&>(*output).releasePyObject());
@@ -266,7 +266,7 @@ PyObject* py_imsave_may_multi(PyObject* self, PyObject* args, bool is_multi) {
     }
     try {
         options_map opts = parse_options(optsDict);
-        std::auto_ptr<ImageFormat> format(get_format(formatstr));
+        std::unique_ptr<ImageFormat> format(get_format(formatstr));
         if (!format.get()) {
             std::stringstream ss;
             ss << "Handler not found for format '" << formatstr << "'";
@@ -290,7 +290,7 @@ PyObject* py_imsave_may_multi(PyObject* self, PyObject* args, bool is_multi) {
             throw CannotWriteError(ss.str());
         }
 
-        std::auto_ptr<byte_sink> output(new fd_source_sink(fd));
+        std::unique_ptr<byte_sink> output(new fd_source_sink(fd));
 
         if (is_multi) {
             image_list array_list;
@@ -304,7 +304,7 @@ PyObject* py_imsave_may_multi(PyObject* self, PyObject* args, bool is_multi) {
                 // ~NumpyImage() will decrease the count
                 Py_INCREF(array);
                 NumpyImage* input = new NumpyImage(array);
-                array_list.push_back(std::auto_ptr<Image>(input));
+                array_list.push_back(std::unique_ptr<Image>(input));
             }
             format->write_multi(&array_list, output.get(), opts);
         } else {

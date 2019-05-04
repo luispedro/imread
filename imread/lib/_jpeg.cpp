@@ -1,4 +1,4 @@
-// Copyright 2012-2014 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2019 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 #include "base.h"
 #include "_jpeg.h"
@@ -145,7 +145,7 @@ J_COLOR_SPACE color_space(int components) {
 
 } // namespace
 
-std::auto_ptr<Image> JPEGFormat::read(byte_source* src, ImageFactory* factory, const options_map&) {
+std::unique_ptr<Image> JPEGFormat::read(byte_source* src, ImageFactory* factory, const options_map&) {
     jpeg_source_adaptor adaptor(src);
     jpeg_decompress_holder c;
 
@@ -165,7 +165,7 @@ std::auto_ptr<Image> JPEGFormat::read(byte_source* src, ImageFactory* factory, c
     const int h = c.info.output_height;
     const int w = c.info.output_width;
     const int d = c.info.output_components;
-    std::auto_ptr<Image> output(factory->create(8, h, w, d));
+    std::unique_ptr<Image> output(factory->create(8, h, w, d));
 
     for (int r = 0; r != h; ++r) {
         byte* rowp = output->rowp_as<byte>(r);

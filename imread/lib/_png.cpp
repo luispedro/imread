@@ -89,7 +89,7 @@ void swap_bytes_inplace(std::vector<png_bytep>& data, const int nelems, stack_ba
 }
 }
 
-std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory, const options_map& opts) {
+std::unique_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory, const options_map& opts) {
     png_holder p(png_holder::read_mode);
     png_set_read_fn(p.png_ptr, src, read_from_source);
     p.create_info();
@@ -141,7 +141,7 @@ std::auto_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory, co
         }
     }
 
-    std::auto_ptr<Image> output(factory->create(bit_depth, h, w, d));
+    std::unique_ptr<Image> output(factory->create(bit_depth, h, w, d));
     std::vector<png_bytep> rowps = allrows<png_byte>(*output);
     png_read_image(p.png_ptr, &rowps[0]);
 

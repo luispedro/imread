@@ -1,4 +1,4 @@
-// Copyright 2012-2015 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2019 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #ifndef LPC_NUMPY_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012
@@ -20,9 +20,9 @@ class NumpyImage : public Image, public ImageWithMetadata {
             Py_XDECREF(array_);
         }
 
-        std::auto_ptr<Image> clone() const {
+        std::unique_ptr<Image> clone() const {
             Py_XINCREF(array_);
-            return std::auto_ptr<Image>(new NumpyImage(this->array_));
+            return std::unique_ptr<Image>(new NumpyImage(this->array_));
         }
 
         PyArrayObject* release() {
@@ -86,7 +86,7 @@ class NumpyImage : public Image, public ImageWithMetadata {
 
 class NumpyFactory : public ImageFactory {
     protected:
-        std::auto_ptr<Image> create(int nbits, int d0, int d1, int d2, int d3, int d4) {
+        std::unique_ptr<Image> create(int nbits, int d0, int d1, int d2, int d3, int d4) {
             npy_intp dims[5];
             dims[0] = d0;
             dims[1] = d1;
@@ -114,7 +114,7 @@ class NumpyFactory : public ImageFactory {
             PyArrayObject* array = reinterpret_cast<PyArrayObject*>(PyArray_SimpleNew(nd, dims, dtype));
             if (!array) throw std::bad_alloc();
             try {
-                return std::auto_ptr<Image>(new NumpyImage(array));
+                return std::unique_ptr<Image>(new NumpyImage(array));
             } catch(...) {
                 Py_DECREF(array);
                 throw;

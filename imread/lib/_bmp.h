@@ -1,4 +1,4 @@
-// Copyright 2012 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2019 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #ifndef LPC_BMP_H_INCLUDE_GUARD_THU_OCT_25_20_16_30_WEST_2012
@@ -11,7 +11,7 @@ class BMPFormat : public ImageFormat {
         bool can_read() const { return true; }
         bool can_write() const { return false; }
 
-        std::auto_ptr<Image> read(byte_source* src, ImageFactory* factory, const options_map& opts);
+        std::unique_ptr<Image> read(byte_source* src, ImageFactory* factory, const options_map& opts);
 };
 
 

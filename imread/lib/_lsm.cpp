@@ -5,7 +5,7 @@
 
  This is an open-source copyright as follows:
  Copyright (c) 2004-2008 BioImageXD Development Team
- Copyright (C) 2012 Luis Pedro Coelho
+ Copyright (C) 2012-2019 Luis Pedro Coelho
 
  All rights reserved.
 
@@ -154,7 +154,7 @@ class LSMReader {
         ~LSMReader();
 
         void PrintSelf(std::ostream& os, const char* indent="");
-        std::auto_ptr<Image> read(ImageFactory* factory, const options_map&);
+        std::unique_ptr<Image> read(ImageFactory* factory, const options_map&);
         void readHeader();
 
         int GetChannelColorComponent(int,int);
@@ -1136,12 +1136,12 @@ void LSMReader::PrintSelf(std::ostream& os, const char* indent)
     }
 }
 
-std::auto_ptr<Image> LSMReader::read(ImageFactory* factory, const options_map&) {
+std::unique_ptr<Image> LSMReader::read(ImageFactory* factory, const options_map&) {
     this->readHeader();
 
     const int dataType = this->GetDataTypeForChannel(0); // This could vary by channel!
 
-    std::auto_ptr<Image> output = factory->create(
+    std::unique_ptr<Image> output = factory->create(
                             BYTES_BY_DATA_TYPE(dataType)*8,
                             this->dimensions_[2],
                             this->dimensions_[3],
@@ -1178,7 +1178,7 @@ std::auto_ptr<Image> LSMReader::read(ImageFactory* factory, const options_map&) 
 
 } // namespace
 
-std::auto_ptr<Image> LSMFormat::read(byte_source* s, ImageFactory* factory, const options_map& opts) {
+std::unique_ptr<Image> LSMFormat::read(byte_source* s, ImageFactory* factory, const options_map& opts) {
     LSMReader reader(s);
     return reader.read(factory, opts);
 }

@@ -64,7 +64,7 @@ class LSMFormat : public ImageFormat {
     public:
         bool can_read() const { return true; }
 
-        std::auto_ptr<Image> read(byte_source* src, ImageFactory* factory, const options_map& opts);
+        std::unique_ptr<Image> read(byte_source* src, ImageFactory* factory, const options_map& opts);
 };
 
 #endif

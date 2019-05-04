@@ -85,7 +85,7 @@ class Image {
     public:
         virtual ~Image() { }
 
-        virtual std::auto_ptr<Image> clone() const = 0;
+        virtual std::unique_ptr<Image> clone() const = 0;
 
         virtual void* rowp(int r) = 0;
 
@@ -112,7 +112,7 @@ class Image {
 class ImageFactory {
     public:
         virtual ~ImageFactory() { }
-        virtual std::auto_ptr<Image>
+        virtual std::unique_ptr<Image>
             create(int nbits, int d0, int d1, int d2, int d3=-1, int d4=-1) = 0;
     protected:
 };
@@ -135,7 +135,7 @@ struct image_list {
             for (unsigned i = 0; i != content.size(); ++i) delete content[i];
         }
         std::vector<Image*>::size_type size() const { return content.size(); }
-        void push_back(std::auto_ptr<Image> p) { content.push_back(p.release()); }
+        void push_back(std::unique_ptr<Image>&& p) { content.push_back(p.release()); }
         Image* at(const unsigned ix) const { return content.at(ix); }
 
         /// After release(), all of the pointers will be owned by the caller
@@ -233,10 +233,10 @@ class ImageFormat {
         virtual bool can_write_multi() const { return false; }
         virtual bool can_write_metadata() const { return false; }
 
-        virtual std::auto_ptr<Image> read(byte_source* src, ImageFactory* factory, const options_map&) {
+        virtual std::unique_ptr<Image> read(byte_source* src, ImageFactory* factory, const options_map&) {
             throw NotImplementedError();
         }
-        virtual std::auto_ptr<image_list> read_multi(byte_source* src, ImageFactory* factory, const options_map&) {
+        virtual std::unique_ptr<image_list> read_multi(byte_source* src, ImageFactory* factory, const options_map&) {
             throw NotImplementedError();
         }
         virtual void write(Image* input, byte_sink* output, const options_map&) {

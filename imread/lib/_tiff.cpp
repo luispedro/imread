@@ -1,4 +1,4 @@
-// Copyright 2012-2015 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2019 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #define NO_IMPORT_ARRAY
@@ -8,6 +8,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <utility>
 #include <cstdio>
 #include <cstring>
 
@@ -215,13 +216,13 @@ struct stk_extend {
 } // namespace
 
 
-std::auto_ptr<image_list> STKFormat::read_multi(byte_source* src, ImageFactory* factory) {
+std::unique_ptr<image_list> STKFormat::read_multi(byte_source* src, ImageFactory* factory) {
     shift_source moved(src);
     stk_extend ext;
     tiff_warn_error twe;
 
     tif_holder t = read_client(&moved);
-    std::auto_ptr<image_list> images(new image_list);
+    std::unique_ptr<image_list> images(new image_list);
     const uint32 h = tiff_get<uint32>(t, TIFFTAG_IMAGELENGTH);
     const uint32 w = tiff_get<uint32>(t, TIFFTAG_IMAGEWIDTH);
 
@@ -242,7 +243,7 @@ std::auto_ptr<image_list> STKFormat::read_multi(byte_source* src, ImageFactory* 
         // Monkey patch strip offsets. This is very hacky, but it seems to work!
         moved.shift(z * raw_strip_size);
 
-        std::auto_ptr<Image> output(factory->create(bits_per_sample, h, w, depth));
+        std::unique_ptr<Image> output(factory->create(bits_per_sample, h, w, depth));
         uint8_t* start = output->rowp_as<uint8_t>(0);
         for (int st = 0; st != n_strips; ++st) {
             const int offset = TIFFReadEncodedStrip(t.tif, st, start, strip_size);
@@ -251,15 +252,15 @@ std::auto_ptr<image_list> STKFormat::read_multi(byte_source* src, ImageFactory* 
             }
             start += offset;
         }
-        images->push_back(output);
+        images->push_back(std::move(output));
     }
     return images;
 }
 
-std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* factory, bool is_multi) {
+std::unique_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* factory, bool is_multi) {
     tiff_warn_error twe;
     tif_holder t = read_client(src);
-    std::auto_ptr<image_list> images(new image_list);
+    std::unique_ptr<image_list> images(new image_list);
     do {
         const uint32 h = tiff_get<uint32>(t, TIFFTAG_IMAGELENGTH);
         const uint32 w = tiff_get<uint32>(t, TIFFTAG_IMAGEWIDTH);
@@ -267,7 +268,7 @@ std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* fa
         const uint16 bits_per_sample = tiff_get<uint16>(t, TIFFTAG_BITSPERSAMPLE);
         const int depth = nr_samples > 1 ? nr_samples : -1;
 
-        std::auto_ptr<Image> output = factory->create(bits_per_sample, h, w, depth);
+        std::unique_ptr<Image> output = factory->create(bits_per_sample, h, w, depth);
         if (ImageWithMetadata* metaout = dynamic_cast<ImageWithMetadata*>(output.get())) {
             std::string description = tiff_get<std::string>(t, TIFFTAG_IMAGEDESCRIPTION, "");
             metaout->set_meta(description);
@@ -277,7 +278,7 @@ std::auto_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* fa
                 throw CannotReadError("imread.imread._tiff: Error reading scanline");
             }
         }
-        images->push_back(output);
+        images->push_back(std::move(output));
     } while (is_multi && TIFFReadDirectory(t.tif));
     return images;
 }
