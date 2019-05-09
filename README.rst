@@ -132,6 +132,10 @@ submissions, etc.
 History
 ~~~~~~~
 
+Version 0.7.1 (2019-05-09)
+--------------------------
+- Fix 16-bit RGB/RGBA TIFF write (patch by Tomi Aarnio)
+
 Version 0.7.0 (2018-09-30)
 --------------------------
 - Add support for reading ImageJ ROIs
