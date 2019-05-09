@@ -10,8 +10,8 @@ mahotas-imread: Read Image Files
    :target: https://anaconda.org/conda-forge/imread
 .. image:: https://anaconda.org/conda-forge/imread/badges/downloads.svg
    :target: https://anaconda.org/conda-forge/imread
-IO with images and numpy arrays.
 
+IO with images and numpy arrays.
 
 
 Mahotas-imread is a simple module with a small number of functions:
@@ -45,7 +45,6 @@ repurposed to load images in other frameworks, even other programming
 languages.
 
 `Online documentation <http://imread.rtfd.io/>`__
-
 
 Python versions 2.6, 2.7, 3.3+ are officially supported.
 
