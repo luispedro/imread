@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Based on https://github.com/pypa/python-manylinux-demo/blob/master/travis/build-wheels.sh
+
 set -ev
 
 PLAT=manylinux2010_x86_64
@@ -19,7 +21,7 @@ done
 
 # Install packages and test
 for PYBIN in /opt/python/*/bin/; do
-    "${PYBIN}/pip" install python-manylinux-demo --no-index -f /io/wheelhouse
-    (cd "$HOME"; "${PYBIN}/nosetests" pymanylinuxdemo)
+    "${PYBIN}/pip" install imread --no-index -f /io/wheelhouse
+    (cd "$HOME"; "${PYBIN}/nosetests" imread)
 done
 
