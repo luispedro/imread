@@ -2,8 +2,8 @@
 mahotas-imread: Read Image Files
 ================================
 
-.. image:: https://api.travis-ci.org/luispedro/imread.png
-   :target: https://travis-ci.org/luispedro/imread
+.. image:: https://api.travis-ci.com/luispedro/imread.png
+   :target: https://travis-ci.com/luispedro/imread
 .. image:: https://anaconda.org/conda-forge/imread/badges/license.svg
    :target: http://opensource.org/licenses/MIT
 .. image:: https://anaconda.org/conda-forge/imread/badges/installer/conda.svg
