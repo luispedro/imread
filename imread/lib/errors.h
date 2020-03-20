@@ -1,4 +1,4 @@
-// Copyright 2012 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2020 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #ifndef LPC_ERRORS_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012
@@ -27,6 +27,7 @@
 
 DECLARE_IMREAD_ERROR_TYPE(CannotReadError, "Read Error");
 DECLARE_IMREAD_ERROR_TYPE(CannotWriteError, "Write Error");
+DECLARE_IMREAD_ERROR_TYPE(CannotSeekError, "Could not seek in file");
 DECLARE_IMREAD_ERROR_TYPE(NotImplementedError, "Not Implemented");
 DECLARE_IMREAD_ERROR_TYPE(ProgrammingError, "Programming Error");
 DECLARE_IMREAD_ERROR_TYPE(OptionsError, "Options Error");
