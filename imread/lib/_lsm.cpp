@@ -5,7 +5,7 @@
 
  This is an open-source copyright as follows:
  Copyright (c) 2004-2008 BioImageXD Development Team
- Copyright (C) 2012-2019 Luis Pedro Coelho
+ Copyright (C) 2012-2020 Luis Pedro Coelho
 
  All rights reserved.
 
@@ -167,10 +167,10 @@ class LSMReader {
 
     private:
 
+        static int FindChannelNameStart(const char *, int);
+        static int ReadChannelName(const char *, int, char *);
+
         unsigned long ReadImageDirectory(byte_source *,unsigned long);
-        void SetChannelName(const char *,int);
-        int FindChannelNameStart(const char *, int);
-        int ReadChannelName(const char *, int, char *);
         int ReadChannelDataTypes(byte_source*, unsigned long);
         int ReadChannelColorsAndNames(byte_source *,unsigned long);
         int ReadTimeStampInformation(byte_source *,unsigned long);
@@ -232,36 +232,28 @@ class LSMReader {
 
 };
 
-int ReadFile(byte_source* s, unsigned long *pos,int size,void *buf,bool swap=false)
+int ReadFile(byte_source* s, unsigned long *pos, int size, void *buf, bool swap=false)
 {
-  s->seek_absolute(*pos);
-  const unsigned ret = s->read(reinterpret_cast<byte*>(buf), size);
+    s->seek_absolute(*pos);
+    const unsigned ret = s->read(reinterpret_cast<byte*>(buf), size);
 #ifdef VTK_WORDS_BIGENDIAN
   if(swap) {
     vtkByteSwap::SwapLERange(buf,size);
   }
 #endif
-  *pos += ret;
-  return ret;
+    *pos += ret;
+    return ret;
 }
 
-
-int ReadData(byte_source* s, unsigned long *pos,int size,char *buf) {
-  return ReadFile(s,pos,size,buf,1);
-}
 
 std::string read_str(byte_source* s, unsigned long* pos, const unsigned long len) {
     char* buf = new char[len];
-    ReadData(s, pos, len, buf);
+    ReadFile(s, pos, len, buf, 1);
     std::string res(buf, len);
     delete [] buf;
     return res;
 }
 
-unsigned char CharPointerToUnsignedChar(char *buf)
-{
-  return *((unsigned char*)(buf));
-}
 
 int CharPointerToInt(char *buf)
 {
@@ -301,7 +293,7 @@ int ReadInt(byte_source* s, unsigned long *pos)
 unsigned int ReadUnsignedInt(byte_source* s, unsigned long *pos)
 {
   char buff[4];
-  ReadFile(s,pos,4,buff);
+  ReadFile(s, pos, 4, buff);
 #ifdef VTK_WORDS_BIGENDIAN
   vtkByteSwap::Swap4LE((unsigned int*)buff);
 #endif
@@ -436,18 +428,10 @@ std::string LSMReader::GetChannelName(int chNum)
     return this->channel_names_[chNum];
 }
 
-void LSMReader::SetChannelName(const char * name, const int chNum)
-{
-    const int n_channels = this->dimensions_[4];
-    if(!name || chNum > n_channels) return;
-    this->channel_names_.resize(n_channels);
-    this->channel_names_[chNum] = std::string(name);
-}
 
 int LSMReader::FindChannelNameStart(const char *buf, const int length) {
     for (int i = 0; i < length; ++i) {
-        char ch = buf[i];
-        if (ch > 32) return i;
+        if (buf[i] > 32) return i;
     }
     return length;
 }
@@ -472,67 +456,64 @@ int LSMReader::ReadChannelDataTypes(byte_source* s, unsigned long start)
     return 0;
 }
 
-int LSMReader::ReadChannelColorsAndNames(byte_source* s, unsigned long start)
-{
-    int colNum,nameNum,sizeOfStructure,sizeOfNames,nameLength, nameSkip;
-    unsigned long colorOffset,nameOffset,pos;
-    char *nameBuff,*name,*tempBuff;
-    unsigned char component;
-
-    pos = start;
+int LSMReader::ReadChannelColorsAndNames(byte_source* s, const unsigned long start) {
+    unsigned long pos = start;
     // Read size of structure
-    sizeOfStructure = ReadInt(s,&pos);
+    const int sizeOfStructure = ReadInt(s, &pos);
     // Read number of colors
-    colNum = ReadInt(s,&pos);
+    const int n_cols = ReadInt(s, &pos);
     // Read number of names
-    nameNum = ReadInt(s,&pos);
-    sizeOfNames = sizeOfStructure - ( (10*4) + (colNum*4) );
+    const int n_names = ReadInt(s, &pos);
+    const int sizeOfNames = sizeOfStructure - ( (10*4) + (n_cols*4) );
 
-    nameBuff = new char[sizeOfNames+1];
-    name = new char[sizeOfNames+1];
-
-    if(colNum != this->dimensions_[4]) {
-        // not great
+    if(n_cols != this->dimensions_[4]) {
+        throw CannotReadError("LSM file seems malformed (n_cols != dimensions_[4])");
     }
-    if(nameNum != this->dimensions_[4]) {
-        // not great
+    if(n_names != this->dimensions_[4]) {
+        throw CannotReadError("LSM file seems malformed (n_names != dimensions_[4])");
     }
 
     // Read offset to color info
-    colorOffset = ReadInt(s,&pos) + start;
+    unsigned long colorOffset = ReadInt(s, &pos) + start;
     // Read offset to name info
-    nameOffset = ReadInt(s,&pos) + start;
+    unsigned long nameOffset = ReadInt(s, &pos) + start;
 
-    this->channel_colors_.resize( 3 *  (colNum+1));
+    this->channel_colors_.resize( 3 *  (n_cols+1));
 
   // Read the colors
     for(int j = 0; j < this->dimensions_[4]; ++j) {
         char colorBuff[5];
-        ReadFile(s,&colorOffset,4,colorBuff,1);
+        ReadFile(s, &colorOffset, 4, colorBuff, 1);
         for(int i=0;i<3;i++) {
-            component = CharPointerToUnsignedChar(colorBuff+i);
-            this->channel_colors_[i + 3*j] = component;
+            this->channel_colors_[i + 3*j] = static_cast<unsigned char>(colorBuff[i]);
         }
     }
 
-    ReadFile(s,&nameOffset,sizeOfNames,nameBuff,1);
 
-    nameLength = nameSkip = 0;
-    tempBuff = nameBuff;
+    std::vector<char> nameBuff;
+    nameBuff.resize(sizeOfNames + 1);
+    std::vector<char> name;
+    name.resize(sizeOfNames + 1);
+
+    ReadFile(s, &nameOffset, sizeOfNames, nameBuff.data(), 1);
+
+    this->channel_names_.resize(this->dimensions_[4]);
+    int nameStart = 0;
     for(int i = 0; i < this->dimensions_[4]; i++) {
-        nameSkip = this->FindChannelNameStart(tempBuff,sizeOfNames-nameSkip);
-        nameLength = this->ReadChannelName(tempBuff+nameSkip,sizeOfNames-nameSkip,name);
+        nameStart += this->FindChannelNameStart(nameBuff.data() + nameStart,
+                                            sizeOfNames-nameStart);
+        if (nameStart >= sizeOfNames) {
+            throw CannotReadError("LSM file malformed");
+        }
+        const int nameLength = this->ReadChannelName(nameBuff.data()+nameStart, sizeOfNames-nameStart, name.data());
+        nameStart += nameLength;
 
-        tempBuff += nameSkip + nameLength;
-        this->SetChannelName(name,i);
+        this->channel_names_[i] = std::string(name.data());
     }
-    delete [] nameBuff;
-    delete [] name;
     return 0;
 }
 
-int LSMReader::ReadTimeStampInformation(byte_source* s, unsigned long offset)
-{
+int LSMReader::ReadTimeStampInformation(byte_source* s, unsigned long offset) {
     // position is 0 for non-timeseries files!
     if( offset == 0 ) return 0;
 
@@ -551,9 +532,7 @@ int LSMReader::ReadTimeStampInformation(byte_source* s, unsigned long offset)
  *
  *
  */
-int LSMReader::ReadLSMSpecificInfo(byte_source* s, unsigned long pos)
-{
-  unsigned long offset;
+int LSMReader::ReadLSMSpecificInfo(byte_source* s, unsigned long pos) {
 
   pos += 2 * 4; // skip over the start of the LSMInfo
                 // first 4 byte entry if magic number
@@ -645,7 +624,7 @@ int LSMReader::ReadLSMSpecificInfo(byte_source* s, unsigned long pos)
   // SKip Zeiss Vision KS-3D speific data
   pos +=  4;
   // Read timestamp information
-  offset = ReadUnsignedInt(s,&pos);
+  unsigned long offset = ReadUnsignedInt(s, &pos);
   this->ReadTimeStampInformation(s,offset);
 
   return 1;
@@ -774,7 +753,7 @@ int LSMReader::AnalyzeTag(byte_source* s, unsigned long startPos)
   const unsigned short type = ReadUnsignedShort(s,&startPos);
   const unsigned short length = ReadUnsignedInt(s,&startPos);
 
-  ReadFile(s,&startPos,4,tempValue);
+  ReadFile(s, &startPos, 4, tempValue);
 
   for(int i=0;i<4;i++)tempValue2[i]=tempValue[i];
 #ifdef VTK_WORDS_BIGENDIAN
@@ -1017,8 +996,8 @@ void LSMReader::DecodeLZWCompression(unsigned char* buffer, int size, int bytes)
     std::vector<unsigned char> decoded = lzw_decode(buffer, size);
     unsigned char* outbufp = &decoded[0];
 
-    int width = this->dimensions_[0];
-    int lines = size / (width*bytes);
+    const int width = this->dimensions_[0];
+    const int lines = size / (width*bytes);
 
     for(int line = 0; line < lines; line++) {
         if(this->Predictor == 2) {
