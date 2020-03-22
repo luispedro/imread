@@ -1,0 +1,3 @@
+ReadChannelColorsAndNames allows the file contents to control the size of the channel_colors_ vector (down to
+a size of zero by providing a negative colnum?), which it can then cause to be written past the end of by
+altering the value that ends up in dimensions[4].

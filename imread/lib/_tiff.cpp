@@ -82,7 +82,11 @@ void tiff_error(const char* module, const char* fmt, va_list ap) {
 struct tif_holder {
     tif_holder(TIFF* tif)
         :tif(tif)
-        { }
+        {
+            if (!tif) {
+                throw CannotReadError();
+            }
+        }
 
     ~tif_holder() {
         TIFFClose(tif);

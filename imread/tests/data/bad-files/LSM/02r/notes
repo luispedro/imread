@@ -1,0 +1,1 @@
+ReadChannelColorsAndNames doesn't check there is enough space for sizeOfNames in the read buffer

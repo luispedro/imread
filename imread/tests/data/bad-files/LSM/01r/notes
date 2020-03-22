@@ -1,0 +1,1 @@
+ReadImageDirectory doesn't check there is sufficient space for numberOfTags in the read buffer

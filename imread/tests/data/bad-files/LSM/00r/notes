@@ -1,0 +1,1 @@
+AnalyzeTag doesn't check the value of `length` fits within the read buffer

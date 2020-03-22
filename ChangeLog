@@ -1,5 +1,5 @@
 Version 0.7.0+
-	* Fix several memory access bugs in LSM parser (reported by Robert Scott)
+	* Fix several memory access bugs in LSM & TIFF parsers (reported by Robert Scott)
 
 Version 0.7.1 2019-05-09 by luispedro
 	* Fix 16-bit RGB/RGBA TIFF write (patch by Tomi Aarnio)
