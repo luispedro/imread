@@ -260,9 +260,23 @@ int CharPointerToInt(char *buf)
   return *((int*)(buf));
 }
 
-unsigned int CharPointerToUnsignedInt(char *buf)
-{
-  return *((unsigned int*)(buf));
+
+uint32_t parse_uint32_t(const char *buf) {
+#ifdef VTK_WORDS_BIGENDIAN
+    char buf2[4];
+    ::memcpy(buf2, buf, 4);
+    vtkByteSwap::Swap4LE(buf2);
+    return *reinterpret_cast<const uint32_t*>(buf2);
+#else
+    return *reinterpret_cast<const uint32_t*>(buf);
+#endif
+}
+
+uint32_t parse_uint32_t(const std::vector<char> &buf) {
+    if (buf.size() < 4) {
+        throw CannotReadError("Malformed LSM file: expected 4 Bytes, cannot parse uint32_t");
+    }
+    return parse_uint32_t(buf.data());
 }
 
 short CharPointerToShort(char *buf)
@@ -270,9 +284,22 @@ short CharPointerToShort(char *buf)
   return *((short*)(buf));
 }
 
-unsigned short CharPointerToUnsignedShort(char *buf)
-{
-  return *((unsigned short*)(buf));
+
+uint16_t parse_uint16_t(const char *buf) {
+#ifdef VTK_WORDS_BIGENDIAN
+    char buf2[2];
+    buf2[0] = buf[1];
+    buf2[1] = buf[0];
+    return *reinterpret_cast<const uint16_t*>(buf2);
+#else
+    return *reinterpret_cast<const uint16_t*>(buf);
+#endif
+}
+uint16_t parse_uint16_t(const std::vector<char>& buf) {
+    if (buf.size() < 2) {
+        throw CannotReadError("Failed to read short (size(vec) < 2)");
+    }
+    return parse_uint16_t(buf.data());
 }
 
 double CharPointerToDouble(char *buf)
@@ -290,14 +317,10 @@ int ReadInt(byte_source* s, unsigned long *pos)
   return CharPointerToInt(buff);
 }
 
-unsigned int ReadUnsignedInt(byte_source* s, unsigned long *pos)
-{
-  char buff[4];
-  ReadFile(s, pos, 4, buff);
-#ifdef VTK_WORDS_BIGENDIAN
-  vtkByteSwap::Swap4LE((unsigned int*)buff);
-#endif
-  return CharPointerToUnsignedInt(buff);
+unsigned int ReadUnsignedInt(byte_source* s, unsigned long *pos) {
+    char buff[4];
+    ReadFile(s, pos, 4, buff);
+    return parse_uint32_t(buff);
 }
 
 short ReadShort(byte_source* s, unsigned long *pos)
@@ -310,14 +333,10 @@ short ReadShort(byte_source* s, unsigned long *pos)
   return CharPointerToShort(buff);
 }
 
-unsigned short ReadUnsignedShort(byte_source* s, unsigned long *pos)
-{
-  char buff[2];
-  ReadFile(s,pos,2,buff);
-#ifdef VTK_WORDS_BIGENDIAN
-  vtkByteSwap::Swap2LE((unsigned short*)buff);
-#endif
-  return CharPointerToUnsignedShort(buff);
+uint16_t ReadUnsignedShort(byte_source* s, unsigned long *pos) {
+    char buff[2];
+    ReadFile(s,pos,2,buff);
+    return parse_uint16_t(buff);
 }
 
 double ReadDouble(byte_source* s, unsigned long *pos)
@@ -744,156 +763,111 @@ int LSMReader::ReadScanInformation(byte_source* s,  unsigned long pos)
     } while (subblocksOpen);
     return 0;
 }
-int LSMReader::AnalyzeTag(byte_source* s, unsigned long startPos)
-{
-  int value, dataSize;
-  char tempValue[4],tempValue2[4];
-  char *actualValue = NULL;
-  const unsigned short tag = ReadUnsignedShort(s,&startPos);
-  const unsigned short type = ReadUnsignedShort(s,&startPos);
-  const unsigned short length = ReadUnsignedInt(s,&startPos);
 
-  ReadFile(s, &startPos, 4, tempValue);
+int LSMReader::AnalyzeTag(byte_source* s, unsigned long startPos) {
+    std::vector<char> valueData;
+    const unsigned short tag = ReadUnsignedShort(s, &startPos);
+    const unsigned short type = ReadUnsignedShort(s, &startPos);
+    const unsigned short length = ReadUnsignedInt(s, &startPos);
 
-  for(int i=0;i<4;i++)tempValue2[i]=tempValue[i];
-#ifdef VTK_WORDS_BIGENDIAN
-  vtkByteSwap::Swap4LE((unsigned int*)tempValue2);
-#endif
-  value = CharPointerToUnsignedInt(tempValue2);
+    valueData.resize(4);
+    ReadFile(s, &startPos, 4, valueData.data());
 
-  // if there is more than 4 bytes in value,
-  // value is an offset to the actual data
-  dataSize = TIFF_BYTES(type);
-  const unsigned long readSize = dataSize*length;
-  if(readSize > 4 && tag != TIF_CZ_LSMINFO)
-  {
-    actualValue = new char[readSize];
-    startPos = value;
-   if(tag == TIF_STRIPOFFSETS ||tag == TIF_STRIPBYTECOUNTS) {
-        if( !ReadFile(s,&startPos,readSize,actualValue) ) {
-            throw CannotReadError("Failed to get strip offsets\n");
-        }
-    }
-  }
-  else
-  {
-      actualValue = new char[4];
-      for(int o=0;o<4;o++)actualValue[o] = tempValue[o];
-  }
-  switch(tag)
-  {
-    case TIF_NEWSUBFILETYPE:
-      this->NewSubFileType = value;
-      break;
+    const int value = parse_uint32_t(valueData);
 
-    case TIF_IMAGEWIDTH:
-#ifdef VTK_WORDS_BIGENDIAN
-      vtkByteSwap::Swap4LE((unsigned int*)actualValue);
-#endif
-      //this->dimensions_[0] = this->CharPointerToUnsignedInt(actualValue);
-      //this->dimensions_[0] = value;
-      break;
-
-    case TIF_IMAGELENGTH:
-#ifdef VTK_WORDS_BIGENDIAN
-      vtkByteSwap::Swap4LE((unsigned int*)actualValue);
-      //this->dimensions_[1] = this->CharPointerToUnsignedInt(actualValue);
-#endif
-      //this->dimensions_[1] = value;
-      break;
-
-    case TIF_BITSPERSAMPLE:
-#ifdef VTK_WORDS_BIGENDIAN
-        vtkByteSwap::Swap2LE((unsigned short*)actualValue);
-#endif
-        this->bits_per_sample_.resize(length);
-        unsigned short bits_per_sample_;
-        for(int i=0;i<length;i++)
-        {
-           bits_per_sample_ = CharPointerToUnsignedShort(actualValue + TIFF_BYTES(TIFF_SHORT)*i);
-           this->bits_per_sample_[i] = bits_per_sample_;
-        }
-        break;
-
-    case TIF_COMPRESSION:
-#ifdef VTK_WORDS_BIGENDIAN
-      vtkByteSwap::Swap2LE((unsigned short*)actualValue);
-#endif
-      this->compression_ = CharPointerToUnsignedShort(actualValue);
-      break;
-
-    case TIF_PHOTOMETRICINTERPRETATION:
-#ifdef VTK_WORDS_BIGENDIAN
-        vtkByteSwap::Swap2LE((unsigned short*)actualValue);
-#endif
-        this->PhotometricInterpretation = CharPointerToUnsignedShort(actualValue);
-        break;
-
-    case TIF_STRIPOFFSETS:
-        this->strip_offset_.resize(length);
-#ifdef VTK_WORDS_BIGENDIAN
-      vtkByteSwap::Swap4LERange((unsigned int*)actualValue,length);
-#endif
-        if(length>1) {
-            for(int i=0;i<length;++i)
-            {
-                unsigned int* offsets = (unsigned int*)actualValue;
-                this->strip_offset_[i] = offsets[i];
+    // if there is more than 4 bytes in value,
+    // value is an offset to the actual data
+    const int dataSize = TIFF_BYTES(type);
+    const unsigned long readSize = dataSize*length;
+    if(readSize > 4 && tag != TIF_CZ_LSMINFO) {
+        valueData.resize(readSize);
+        startPos = value;
+        if(tag == TIF_STRIPOFFSETS ||tag == TIF_STRIPBYTECOUNTS) {
+            if( !ReadFile(s, &startPos, readSize, valueData.data()) ) {
+                throw CannotReadError("Failed to get strip offsets\n");
             }
-        } else {
-            this->strip_offset_[0] = value;
         }
-        break;
+    }
+    switch(tag) {
+        case TIF_NEWSUBFILETYPE:
+            this->NewSubFileType = value;
+            break;
 
-    case TIF_SAMPLESPERPIXEL:
-#ifdef VTK_WORDS_BIGENDIAN
-      vtkByteSwap::Swap4LE((unsigned int*)actualValue);
-#endif
-      this->sample_per_pixel_ = CharPointerToUnsignedInt(actualValue);
-      break;
+        case TIF_IMAGEWIDTH:
+            //this->dimensions_[0] = parse_uint32_t(valueData);
+            //this->dimensions_[0] = value;
+            break;
 
-    case TIF_STRIPBYTECOUNTS:
-#ifdef VTK_WORDS_BIGENDIAN
-        vtkByteSwap::Swap4LERange((unsigned int*)actualValue,length);
-#endif
-        this->strip_byte_count_.resize(length);
-        if (length > 1) {
-            for(int i=0; i<length; ++i) {
-                this->strip_byte_count_[i] = CharPointerToUnsignedInt(actualValue + TIFF_BYTES(TIFF_LONG)*i);
+        case TIF_IMAGELENGTH:
+            //this->dimensions_[1] = parse_uint32_t(valueData);
+            //this->dimensions_[1] = value;
+            break;
+
+        case TIF_BITSPERSAMPLE:
+            if (valueData.size() < TIFF_BYTES(TIFF_SHORT) * length) {
+                throw CannotReadError("LSM file is malformed (TIF_BITSPERSAMPLE field is too short)");
             }
-        } else {
-            this->strip_byte_count_[0] = value;
-        }
-        break;
-    case TIF_PLANARCONFIGURATION:
-#ifdef VTK_WORDS_BIGENDIAN
-      vtkByteSwap::Swap2LE((unsigned short*)actualValue);
-#endif
-      this->PlanarConfiguration = CharPointerToUnsignedShort(actualValue);
-      break;
-    case TIF_PREDICTOR:
-#ifdef VTK_WORDS_BIGENDIAN
-      vtkByteSwap::Swap2LE((unsigned short*)actualValue);
-#endif
-      this->Predictor = CharPointerToUnsignedShort(actualValue);
-      break;
-    case TIF_COLORMAP:
-#ifdef VTK_WORDS_BIGENDIAN
-      vtkByteSwap::Swap4LE((unsigned int*)actualValue);
-#endif
-      //this->ColorMapOffset = CharPointerToUnsignedInt(actualValue);
-      break;
-    case TIF_CZ_LSMINFO:
+            this->bits_per_sample_.resize(length);
+            for(int i=0;i<length;i++) {
+                this->bits_per_sample_[i] = parse_uint16_t(valueData.data() + TIFF_BYTES(TIFF_SHORT)*i);
+            }
+            break;
 
-      this->LSMSpecificInfoOffset = value;
-      break;
+        case TIF_COMPRESSION:
+            this->compression_ = parse_uint16_t(valueData);
+            break;
+
+        case TIF_PHOTOMETRICINTERPRETATION:
+            this->PhotometricInterpretation = parse_uint16_t(valueData);
+            break;
+
+        case TIF_STRIPOFFSETS:
+            this->strip_offset_.resize(length);
+            if(length>1) {
+                if (length * sizeof(uint32_t) > valueData.size()) {
+                    throw CannotReadError("LSM file is malformed (TIF_STRIPOFFSETS field is too short)");
+                }
+                for(int i=0;i<length;++i) {
+                    this->strip_offset_[i] = parse_uint32_t(valueData.data() + sizeof(uint32_t) * i);
+                }
+            } else {
+                this->strip_offset_[0] = value;
+            }
+            break;
+
+        case TIF_SAMPLESPERPIXEL:
+            this->sample_per_pixel_ = parse_uint32_t(valueData);
+            break;
+
+        case TIF_STRIPBYTECOUNTS:
+            this->strip_byte_count_.resize(length);
+            if (length > 1) {
+                for(int i=0; i<length; ++i) {
+                    if (valueData.size() < TIFF_BYTES(TIFF_LONG) * i + 4) {
+                        throw CannotReadError();
+                    }
+                    this->strip_byte_count_[i] = parse_uint32_t(valueData.data() + TIFF_BYTES(TIFF_LONG)*i);
+                }
+            } else {
+                this->strip_byte_count_[0] = value;
+            }
+            break;
+        case TIF_PLANARCONFIGURATION:
+            this->PlanarConfiguration = parse_uint16_t(valueData);
+            break;
+        case TIF_PREDICTOR:
+            this->Predictor = parse_uint16_t(valueData);
+            break;
+        case TIF_COLORMAP:
+            //this->ColorMapOffset = parse_uint32_t(valueData);
+            break;
+        case TIF_CZ_LSMINFO:
+
+            this->LSMSpecificInfoOffset = value;
+            break;
     }
 
-  if(actualValue)
-    {
-    delete [] actualValue;
-    }
-  return 0;
+    return 0;
 }
 
 
