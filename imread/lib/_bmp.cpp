@@ -1,4 +1,4 @@
-// Copyright 2012-2019 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2020 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #define NO_IMPORT_ARRAY
@@ -25,6 +25,9 @@ void color_expand(const std::vector<byte>& color_table, byte* row, const int w) 
     // awkward, but works correctly
     std::vector<byte>::const_iterator pbegin = color_table.begin();
     for (int i = w-1; i >= 0; --i) {
+        if (color_table.size() < 4*row[i] + 3) {
+            throw CannotReadError("Malformed BMP file: color table is too small");
+        }
         std::copy(pbegin + 4*row[i], pbegin + 4*row[i] + 3, row + 3*i);
     }
 }
@@ -84,7 +87,7 @@ std::unique_ptr<Image> BMPFormat::read(byte_source* src, ImageFactory* factory, 
     if (bitsppixel <= 8) {
         const uint32_t table_size = (n_colours == 0 ? pow2(bitsppixel) : n_colours);
         color_table.resize(table_size*4);
-        src->read_check(&color_table[0], table_size*4);
+        src->read_check(color_table.data(), table_size*4);
     }
 
     src->seek_absolute(offset);
