@@ -167,8 +167,8 @@ class LSMReader {
 
     private:
 
-        static int FindChannelNameStart(const char *, int);
-        static int ReadChannelName(const char *, int, char *);
+        static int FindChannelNameStart(const byte *, int);
+        static int ReadChannelName(const byte *, int, byte *);
 
         unsigned long ReadImageDirectory(byte_source *,unsigned long);
         int ReadChannelDataTypes(byte_source*, unsigned long);
@@ -261,7 +261,7 @@ int CharPointerToInt(char *buf)
 }
 
 
-uint32_t parse_uint32_t(const char *buf) {
+uint32_t parse_uint32_t(const byte *buf) {
 #ifdef VTK_WORDS_BIGENDIAN
     char buf2[4];
     ::memcpy(buf2, buf, 4);
@@ -272,7 +272,7 @@ uint32_t parse_uint32_t(const char *buf) {
 #endif
 }
 
-uint32_t parse_uint32_t(const std::vector<char> &buf) {
+uint32_t parse_uint32_t(const std::vector<byte> &buf) {
     if (buf.size() < 4) {
         throw CannotReadError("Malformed LSM file: expected 4 Bytes, cannot parse uint32_t");
     }
@@ -285,7 +285,7 @@ short CharPointerToShort(char *buf)
 }
 
 
-uint16_t parse_uint16_t(const char *buf) {
+uint16_t parse_uint16_t(const byte *buf) {
 #ifdef VTK_WORDS_BIGENDIAN
     char buf2[2];
     buf2[0] = buf[1];
@@ -295,7 +295,7 @@ uint16_t parse_uint16_t(const char *buf) {
     return *reinterpret_cast<const uint16_t*>(buf);
 #endif
 }
-uint16_t parse_uint16_t(const std::vector<char>& buf) {
+uint16_t parse_uint16_t(const std::vector<byte>& buf) {
     if (buf.size() < 2) {
         throw CannotReadError("Failed to read short (size(vec) < 2)");
     }
@@ -318,7 +318,7 @@ int ReadInt(byte_source* s, unsigned long *pos)
 }
 
 unsigned int ReadUnsignedInt(byte_source* s, unsigned long *pos) {
-    char buff[4];
+    byte buff[4];
     ReadFile(s, pos, 4, buff);
     return parse_uint32_t(buff);
 }
@@ -334,7 +334,7 @@ short ReadShort(byte_source* s, unsigned long *pos)
 }
 
 uint16_t ReadUnsignedShort(byte_source* s, unsigned long *pos) {
-    char buff[2];
+    byte buff[2];
     ReadFile(s,pos,2,buff);
     return parse_uint16_t(buff);
 }
@@ -448,14 +448,14 @@ std::string LSMReader::GetChannelName(int chNum)
 }
 
 
-int LSMReader::FindChannelNameStart(const char *buf, const int length) {
+int LSMReader::FindChannelNameStart(const byte *buf, const int length) {
     for (int i = 0; i < length; ++i) {
         if (buf[i] > 32) return i;
     }
     return length;
 }
 
-int LSMReader::ReadChannelName(const char *nameBuff, const int length, char *buffer) {
+int LSMReader::ReadChannelName(const byte *nameBuff, const int length, byte *buffer) {
     for (int i = 0; i < length; ++i) {
         buffer[i] = nameBuff[i];
         if (!buffer[i]) return i;
@@ -509,9 +509,9 @@ int LSMReader::ReadChannelColorsAndNames(byte_source* s, const unsigned long sta
     }
 
 
-    std::vector<char> nameBuff;
+    std::vector<byte> nameBuff;
     nameBuff.resize(sizeOfNames + 1);
-    std::vector<char> name;
+    std::vector<byte> name;
     name.resize(sizeOfNames + 1);
 
     ReadFile(s, &nameOffset, sizeOfNames, nameBuff.data(), 1);
@@ -519,15 +519,15 @@ int LSMReader::ReadChannelColorsAndNames(byte_source* s, const unsigned long sta
     this->channel_names_.resize(this->dimensions_[4]);
     int nameStart = 0;
     for(int i = 0; i < this->dimensions_[4]; i++) {
-        nameStart += this->FindChannelNameStart(nameBuff.data() + nameStart,
+        nameStart += FindChannelNameStart(nameBuff.data() + nameStart,
                                             sizeOfNames-nameStart);
         if (nameStart >= sizeOfNames) {
             throw CannotReadError("LSM file malformed");
         }
-        const int nameLength = this->ReadChannelName(nameBuff.data()+nameStart, sizeOfNames-nameStart, name.data());
+        const int nameLength = ReadChannelName(nameBuff.data()+nameStart, sizeOfNames-nameStart, name.data());
         nameStart += nameLength;
 
-        this->channel_names_[i] = std::string(name.data());
+        this->channel_names_[i] = std::string(reinterpret_cast<const char*>(name.data()));
     }
     return 0;
 }
@@ -765,7 +765,7 @@ int LSMReader::ReadScanInformation(byte_source* s,  unsigned long pos)
 }
 
 int LSMReader::AnalyzeTag(byte_source* s, unsigned long startPos) {
-    std::vector<char> valueData;
+    std::vector<byte> valueData;
     const unsigned short tag = ReadUnsignedShort(s, &startPos);
     const unsigned short type = ReadUnsignedShort(s, &startPos);
     const unsigned short length = ReadUnsignedInt(s, &startPos);
