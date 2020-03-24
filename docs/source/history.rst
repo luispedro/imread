@@ -2,6 +2,10 @@
 History
 =======
 
+Version 0.7.2 (2020-03-24)
+--------------------------
+- Fix several memory access bugs in parsers (reported by Robert Scott)
+
 Version 0.7.1 (2019-05-09)
 --------------------------
 - Fix 16-bit RGB/RGBA TIFF write (patch by Tomi Aarnio)
