@@ -1,3 +1,6 @@
+Version 0.7.3 2020-04-09 by luispedro
+	* Add missing test data to distribution
+
 Version 0.7.2 2020-03-24 by luispedro
 	* Fix several memory access bugs in parsers (reported by Robert Scott)
 

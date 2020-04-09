@@ -2,6 +2,10 @@
 History
 =======
 
+Version 0.7.3 (2020-04-09)
+--------------------------
+- Add missing test data to distribution
+
 Version 0.7.2 (2020-03-24)
 --------------------------
 - Fix several memory access bugs in parsers (reported by Robert Scott)
