@@ -1,6 +1,7 @@
 include README.rst
 include ChangeLog
 include COPYING.MIT
-include imread/lib/*cpp
+include imread/lib/*.cpp
+include imread/lib/*.h
 include docs/source/*.rst
 recursive-include imread/tests/data *tiff *lsm *bmp
