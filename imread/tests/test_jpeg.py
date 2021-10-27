@@ -1,22 +1,23 @@
-from nose.tools import with_setup, raises
+import pytest
 import numpy as np
 from imread import imread, imsave
 from . import file_path
+import glob
+
 _filename = 'imread_testing_file.jpg'
 
-def remove_files(filelist):
-    def perform_removal():
-        from os import unlink
-        for f in filelist:
-            try:
-                unlink(f)
-            except:
-                pass
-    def wrap(f):
-        return with_setup(teardown=perform_removal)(f)
-    return wrap
+@pytest.fixture(autouse=True)
+def _remove_files():
+    yield
+    from os import unlink
+    from glob import glob
+    filelist = glob("*.jpg")
+    for f in filelist:
+        try:
+            unlink(f)
+        except:
+            pass
 
-@remove_files([_filename])
 def test_jpeg():
     f = np.arange(64*16).reshape((64,16))
     f %= 16
@@ -26,17 +27,15 @@ def test_jpeg():
     assert np.mean(np.abs(f.astype(float)-g)) < 1.
 
 
-@raises(RuntimeError)
 def test_error():
-    imread(file_path('error.jpg'))
+    with pytest.raises(RuntimeError):
+        imread(file_path('error.jpg'))
 
-@raises(OSError)
 def test_error_noent():
-    imread(file_path('this-file-does-not-exist.jpeg'))
+    with pytest.raises(OSError):
+        imread(file_path('this-file-does-not-exist.jpeg'))
 
 
-
-@remove_files(['imread_def.jpg', 'imread_def91.jpg'])
 def test_quality():
     def pixel_diff(a):
         return np.mean(np.abs(a.astype(float) - data))

@@ -1,10 +1,11 @@
-from nose.tools import with_setup, raises
+import pytest
 import numpy as np
 from . import file_path
 from imread import imread, imsave
 
 _filename = 'imread_testing_file.png'
 
+@pytest.fixture(autouse=True)
 def _remove_file():
     from os import unlink
     try:
@@ -12,7 +13,7 @@ def _remove_file():
     except:
         pass
 
-@with_setup(teardown=_remove_file)
+
 def test_png_raw():
     simple = np.arange(16*16).reshape((16,16))
     simple = simple.astype(np.uint8)
@@ -20,7 +21,6 @@ def test_png_raw():
     back = imread(_filename)
     assert np.all(simple == back)
 
-@with_setup(teardown=_remove_file)
 def test_asym():
     simple = np.arange(16*16).reshape((32,8))
     simple = simple.astype(np.uint8)
@@ -28,7 +28,6 @@ def test_asym():
     back = imread(_filename)
     assert np.all(simple == back)
 
-@with_setup(teardown=_remove_file)
 def test_random():
     np.random.seed(23)
     for i in range(8):
@@ -42,7 +41,6 @@ def test_random():
         assert np.all(simple == back)
 
 
-@with_setup(teardown=_remove_file)
 def test_non_carray():
     np.random.seed(87)
     simple = np.random.random_sample((128,128,3))
@@ -58,9 +56,9 @@ def test_binary():
     f = imread(file_path('bit1.png'))
     assert f.dtype == np.bool_
 
-@raises(RuntimeError)
 def test_error():
-    imread(file_path('error.png'))
+    with pytest.raises(RuntimeError):
+        imread(file_path('error.png'))
 
 def test_regression():
     im = imread(file_path('palette_zero.png'))
@@ -73,7 +71,6 @@ def test_16bit():
     assert np.all(f.ravel() == np.arange(512))
 
 
-@with_setup(teardown=_remove_file)
 def test_write_16bit():
     f = np.arange(100000, dtype=np.uint16)*1000
     f = f.reshape((100,-1))
@@ -81,7 +78,6 @@ def test_write_16bit():
     f2 = imread(_filename)
     assert np.all(f == f2)
 
-@with_setup(teardown=_remove_file)
 def test_write_16bit_rgb():
     f = np.random.random((16,8,3)) * 65535.0
     f = f.astype(np.uint16)

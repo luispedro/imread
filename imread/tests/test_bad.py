@@ -1,4 +1,4 @@
-from nose.tools import raises
+import pytest
 from imread import imread
 from . import file_path
 
@@ -34,9 +34,9 @@ BAD_FILES = [
 
 ]
 def test_read():
-    @raises(RuntimeError)
     def read1(fname):
-        imread(file_path(fname))
-        assert False
+        with pytest.raises(RuntimeError):
+            imread(file_path(fname))
+            assert False
     for fname in BAD_FILES:
         read1(fname)

@@ -153,5 +153,4 @@ setuptools.setup(name = 'imread',
       cmdclass = {'build_ext': build_ext},
       setup_requires = ['numpy'],
       install_requires = ['numpy'],
-      test_suite = 'nose.collector',
       )
