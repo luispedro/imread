@@ -1,4 +1,4 @@
-from nose.tools import raises
+import pytest
 from . import file_path
 from imread import imread
 
@@ -10,9 +10,9 @@ def test_uppercase():
     f = imread(file_path('GOOD.PNG'))
     assert f.shape == (2,2)
 
-@raises(ValueError)
 def test_no_ext():
-    imread('file_without_extension')
+    with pytest.raises(ValueError):
+        imread('file_without_extension')
 
 
 def test_formatstr():

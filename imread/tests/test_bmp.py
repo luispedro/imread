@@ -1,4 +1,3 @@
-from nose.tools import with_setup, raises
 import numpy as np
 from imread import imread
 from . import file_path
