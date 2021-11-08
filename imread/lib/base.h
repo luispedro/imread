@@ -1,4 +1,4 @@
-// Copyright 2012-2015 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2021 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #ifndef LPC_IMREAD_H_INCLUDE_GUARD_WED_FEB__1_16_34_50_WET_2012
@@ -218,7 +218,7 @@ bool match_magic(byte_source* src, const char* magic, const size_t n) {
     std::vector<byte> buf;
     buf.resize(n);
     const size_t n_read = src->read(&buf.front(), n);
-    src->seek_relative(-n_read);
+    src->seek_relative(-int(n_read));
 
     return (n_read == n && std::memcmp(&buf.front(), magic, n) == 0);
 }
