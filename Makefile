@@ -8,7 +8,7 @@ clean:
 	rm -rf build imread/*.so imread/lib/*.so
 
 tests: debug
-	nosetests -vx
+	python -m pytest
 
 docs:
 	rm -rf build/docs
