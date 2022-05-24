@@ -4,7 +4,7 @@
 
 set -ev
 
-PLAT=manylinux2010_x86_64
+PLAT=manylinux2014_x86_64
 
 yum -y install libjpeg-devel libpng-devel libtiff-devel libwebp-devel
 
