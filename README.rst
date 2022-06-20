@@ -110,9 +110,9 @@ repository <https://www.lfd.uci.edu/~gohlke/pythonlibs/#imread>`__
 
 On nix, you can use::
 
-    nix-env -iA nixpkgs.python27Packages.imread
+    nix-env -iA nixpkgs.python3Packages.imread
 
-or use the ``pkgs.python27Packages.imread`` object in your ``*.nix`` files.
+or use the ``pkgs.python3Packages.imread`` object in your ``*.nix`` files.
 
 Links & Contacts
 ----------------
