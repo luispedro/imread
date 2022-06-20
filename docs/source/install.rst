@@ -10,7 +10,7 @@ You can get the released version using our favorite Python package manager::
     pip install imread
 
 If you prefer, you can download the source from `PyPI
-<http://pypi.python.org/pypi/mahotas>`__ and run::
+<https://pypi.python.org/pypi/mahotas>`__ and run::
 
     python setup.py install
 
@@ -28,7 +28,7 @@ On Windows
 ----------
 
 On Windows, Christoph Gohlke does an excelent job maintaining `binary packages
-of imread <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`__ (and several other
+of imread <https://www.lfd.uci.edu/~gohlke/pythonlibs/>`__ (and several other
 packages).
 
 conda

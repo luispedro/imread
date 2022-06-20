@@ -5,7 +5,7 @@ mahotas-imread: Read Image Files
 .. image:: https://api.travis-ci.com/luispedro/imread.png
    :target: https://travis-ci.com/luispedro/imread
 .. image:: https://anaconda.org/conda-forge/imread/badges/license.svg
-   :target: http://opensource.org/licenses/MIT
+   :target: https://opensource.org/licenses/MIT
 .. image:: https://anaconda.org/conda-forge/imread/badges/installer/conda.svg
    :target: https://anaconda.org/conda-forge/imread
 .. image:: https://anaconda.org/conda-forge/imread/badges/downloads.svg
@@ -24,7 +24,7 @@ imread_multi
 imsave
     Writes an image file
 
-Example (which uses `mahotas <http://luispedro.org/software/mahotas>`__ for
+Example (which uses `mahotas <https://luispedro.org/software/mahotas>`__ for
 Gaussian filtering)::
 
 
@@ -37,14 +37,14 @@ Gaussian filtering)::
 
 
 This grew out of frustration at current image loading solutions in Python, in
-either my packages [`mahotas <http://mahotas.rtfd.io>`__] or packages from
-others [`scikit-image <http://scikit-image.org/>`__, for example].
+either my packages [`mahotas <https://mahotas.rtfd.io>`__] or packages from
+others [`scikit-image <https://scikit-image.org/>`__, for example].
 
 The relationship with numpy is very contained and this could be easily
 repurposed to load images in other frameworks, even other programming
 languages.
 
-`Online documentation <http://imread.rtfd.io/>`__
+`Online documentation <https://imread.rtfd.io/>`__
 
 Python versions 2.6, 2.7, 3.3+ are officially supported.
 
@@ -58,11 +58,11 @@ Citation
 .. _Citation:
 
 If you use imread on a published publication, please cite the main `mahotas
-<http://mahotas.rtfd.io>`__ paper (imread is a spin-off of mahotas):
+<https://mahotas.rtfd.io>`__ paper (imread is a spin-off of mahotas):
 
     **Luis Pedro Coelho** Mahotas: Open source software for scriptable computer
     vision in Journal of Open Research Software, vol 1, 2013. [`DOI
-    <http://dx.doi.org/10.5334/jors.ac>`__]
+    <https://dx.doi.org/10.5334/jors.ac>`__]
 
 
 In Bibtex format::
@@ -72,7 +72,7 @@ In Bibtex format::
         title = {Mahotas: Open source software for scriptable computer vision},
         journal = {Journal of Open Research Software},
         year = {2013},
-        doi = {http://dx.doi.org/10.5334/jors.ac},
+        doi = {https://dx.doi.org/10.5334/jors.ac},
         month = {July},
         volume = {1}
     }
@@ -106,7 +106,7 @@ and install with::
     python setup.py install
 
 On Windows, you can also just download a pre-built package from `C. Gohlke's
-repository <http://www.lfd.uci.edu/~gohlke/pythonlibs/#imread>`__
+repository <https://www.lfd.uci.edu/~gohlke/pythonlibs/#imread>`__
 
 On nix, you can use::
 
@@ -117,15 +117,15 @@ or use the ``pkgs.python27Packages.imread`` object in your ``*.nix`` files.
 Links & Contacts
 ----------------
 
-*Documentation*: `http://imread.readthedocs.io/ <http://imread.readthedocs.io/>`__
+*Documentation*: `https://imread.readthedocs.io/ <https://imread.readthedocs.io/>`__
 
 *Issue Tracker*: `github imread issues <https://github.com/luispedro/imread>`__
 
 *Mailing List*: Use the `pythonvision mailing list
-<http://groups.google.com/group/pythonvision?pli=1>`_ for questions, bug
+<https://groups.google.com/group/pythonvision?pli=1>`_ for questions, bug
 submissions, etc.
 
-*Main Author & Maintainer*: `Luis Pedro Coelho <http://luispedro.org>`__ (follow on `twitter
+*Main Author & Maintainer*: `Luis Pedro Coelho <https://luispedro.org>`__ (follow on `twitter
 <https://twitter.com/luispedrocoelho>`__ or `github
 <https://github.com/luispedro>`__).
 
