@@ -15,6 +15,7 @@ for PYVER in \
        cp38-cp38 \
        cp39-cp39 \
        cp310-cp310 \
+       cp311-cp311 \
        ; do
 
     PYBIN="/opt/python/${PYVER}/bin"
