@@ -14,7 +14,7 @@
 
 # from imread import __version__ as imread_version
 
-imread_version = '0.6'
+imread_version = '0.7.4'
 import sys, os
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -51,7 +51,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'imread'
-copyright = u'2012-2014, Luis Pedro Coelho'
+copyright = u'2012-2023, Luis Pedro Coelho'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -234,7 +234,7 @@ man_pages = [
 epub_title = u'imread'
 epub_author = u'Luis Pedro Coelho'
 epub_publisher = u'Luis Pedro Coelho'
-epub_copyright = u'2012-2014, Luis Pedro Coelho'
+epub_copyright = u'2012-2023, Luis Pedro Coelho'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
