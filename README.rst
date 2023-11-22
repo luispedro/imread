@@ -132,6 +132,14 @@ submissions, etc.
 History
 ~~~~~~~
 
+Version 0.7.5 (2023-11-22)
+--------------------------
+- Fix build issue (#43, patch by @carlosal1015)
+
+Version 0.7.4 (2020-04-14)
+--------------------------
+- Add missing header files to distribution
+
 Version 0.7.3 (2020-04-09)
 --------------------------
 - Add missing test data to distribution
