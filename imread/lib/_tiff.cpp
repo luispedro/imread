@@ -227,11 +227,11 @@ std::unique_ptr<image_list> STKFormat::read_multi(byte_source* src, ImageFactory
 
     tif_holder t = read_client(&moved);
     std::unique_ptr<image_list> images(new image_list);
-    const uint32 h = tiff_get<uint32>(t, TIFFTAG_IMAGELENGTH);
-    const uint32 w = tiff_get<uint32>(t, TIFFTAG_IMAGEWIDTH);
+    const uint32_t h = tiff_get<uint32_t>(t, TIFFTAG_IMAGELENGTH);
+    const uint32_t w = tiff_get<uint32_t>(t, TIFFTAG_IMAGEWIDTH);
 
-    const uint16 nr_samples = tiff_get<uint16>(t, TIFFTAG_SAMPLESPERPIXEL, 1);
-    const uint16 bits_per_sample = tiff_get<uint16>(t, TIFFTAG_BITSPERSAMPLE, 8);
+    const uint16_t nr_samples = tiff_get<uint16_t>(t, TIFFTAG_SAMPLESPERPIXEL, 1);
+    const uint16_t bits_per_sample = tiff_get<uint16_t>(t, TIFFTAG_BITSPERSAMPLE, 8);
     const int depth = nr_samples > 1 ? nr_samples : -1;
 
     const int strip_size = TIFFStripSize(t.tif);
@@ -266,10 +266,10 @@ std::unique_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* 
     tif_holder t = read_client(src);
     std::unique_ptr<image_list> images(new image_list);
     do {
-        const uint32 h = tiff_get<uint32>(t, TIFFTAG_IMAGELENGTH);
-        const uint32 w = tiff_get<uint32>(t, TIFFTAG_IMAGEWIDTH);
-        const uint16 nr_samples = tiff_get<uint16>(t, TIFFTAG_SAMPLESPERPIXEL);
-        const uint16 bits_per_sample = tiff_get<uint16>(t, TIFFTAG_BITSPERSAMPLE);
+        const uint32_t h = tiff_get<uint32_t>(t, TIFFTAG_IMAGELENGTH);
+        const uint32_t w = tiff_get<uint32_t>(t, TIFFTAG_IMAGEWIDTH);
+        const uint16_t nr_samples = tiff_get<uint16_t>(t, TIFFTAG_SAMPLESPERPIXEL);
+        const uint16_t bits_per_sample = tiff_get<uint16_t>(t, TIFFTAG_BITSPERSAMPLE);
         const int depth = nr_samples > 1 ? nr_samples : -1;
 
         std::unique_ptr<Image> output = factory->create(bits_per_sample, h, w, depth);
@@ -277,7 +277,7 @@ std::unique_ptr<image_list> TIFFFormat::do_read(byte_source* src, ImageFactory* 
             std::string description = tiff_get<std::string>(t, TIFFTAG_IMAGEDESCRIPTION, "");
             metaout->set_meta(description);
         }
-        for (uint32 r = 0; r != h; ++r) {
+        for (uint32_t r = 0; r != h; ++r) {
             if(TIFFReadScanline(t.tif, output->rowp_as<byte>(r), r) == -1) {
                 throw CannotReadError("imread.imread._tiff: Error reading scanline");
             }
@@ -320,16 +320,16 @@ void TIFFFormat::do_write(image_list* input, byte_sink* output, const options_ma
         Image* im = input->at(i);
         void* bufp = 0;
         bool copy_data = false;
-        const uint32 h = im->dim(0);
-        const uint32 nchannels = uint16(im->dim_or(2, 1));
-        const uint16 photometric = ((im->ndims() == 3 && im->dim(2)) ?
+        const uint32_t h = im->dim(0);
+        const uint32_t nchannels = uint16_t(im->dim_or(2, 1));
+        const uint16_t photometric = ((im->ndims() == 3 && im->dim(2)) ?
                                                         PHOTOMETRIC_RGB :
                                                         PHOTOMETRIC_MINISBLACK);
-        TIFFSetField(t.tif, TIFFTAG_IMAGELENGTH, uint32(h));
-        TIFFSetField(t.tif, TIFFTAG_IMAGEWIDTH, uint32(im->dim(1)));
-        TIFFSetField(t.tif, TIFFTAG_BITSPERSAMPLE, uint16(im->nbits()));
-        TIFFSetField(t.tif, TIFFTAG_SAMPLESPERPIXEL, uint16(im->dim_or(2, 1)));
-        TIFFSetField(t.tif, TIFFTAG_PHOTOMETRIC, uint16(photometric));
+        TIFFSetField(t.tif, TIFFTAG_IMAGELENGTH, uint32_t(h));
+        TIFFSetField(t.tif, TIFFTAG_IMAGEWIDTH, uint32_t(im->dim(1)));
+        TIFFSetField(t.tif, TIFFTAG_BITSPERSAMPLE, uint16_t(im->nbits()));
+        TIFFSetField(t.tif, TIFFTAG_SAMPLESPERPIXEL, uint16_t(im->dim_or(2, 1)));
+        TIFFSetField(t.tif, TIFFTAG_PHOTOMETRIC, uint16_t(photometric));
         TIFFSetField(t.tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
 
         if (get_optional_bool(opts, "tiff:compress", true)) {
@@ -388,7 +388,7 @@ void TIFFFormat::do_write(image_list* input, byte_sink* output, const options_ma
             TIFFSetField(t.tif, TIFFTAG_PAGENUMBER, i, n_pages);
         }
 
-        for (uint32 r = 0; r != h; ++r) {
+        for (uint32_t r = 0; r != h; ++r) {
             void* rowp = im->rowp(r);
             if (copy_data) {
                 std::memcpy(bufp, rowp, im->dim(1) * im->nbytes() * nchannels);
