@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # vim: set ts=4 sts=4 sw=4 expandtab smartindent:
-# Copyright (C) 2012-2020, Luis Pedro Coelho <luis@luispedro.org>
+# Copyright (C) 2012-2024, Luis Pedro Coelho <luis@luispedro.org>
 # License: MIT
 
 from glob import glob
@@ -36,7 +36,7 @@ def has_webp():
 
 exec(compile(open('imread/imread_version.py').read(),
              'imread/imread_version.py', 'exec'))
-long_description = open('README.rst').read()
+long_description = open('README.md').read()
 
 undef_macros = []
 define_macros = []
@@ -119,21 +119,23 @@ package_data = {
     }
 
 classifiers = [
-'Development Status :: 4 - Beta',
+'Development Status :: 5 - Production/Stable',
 'Intended Audience :: Developers',
 'Intended Audience :: Science/Research',
 'Topic :: Multimedia',
 'Topic :: Scientific/Engineering :: Image Recognition',
 'Topic :: Software Development :: Libraries',
 'Programming Language :: Python',
-'Programming Language :: Python :: 2',
-'Programming Language :: Python :: 2.7',
 'Programming Language :: Python :: 3',
 'Programming Language :: Python :: 3.3',
 'Programming Language :: Python :: 3.4',
 'Programming Language :: Python :: 3.5',
 'Programming Language :: Python :: 3.6',
 'Programming Language :: Python :: 3.7',
+'Programming Language :: Python :: 3.8',
+'Programming Language :: Python :: 3.9',
+'Programming Language :: Python :: 3.10',
+'Programming Language :: Python :: 3.11',
 'Programming Language :: C++',
 'License :: OSI Approved :: MIT License',
 ]
@@ -142,7 +144,7 @@ setuptools.setup(name = 'imread',
       version = __version__,
       description = 'imread: Image reading library',
       long_description = long_description,
-      long_description_content_type = 'text/x-rst',
+      long_description_content_type = 'text/markdown',
       author = 'Luis Pedro Coelho',
       author_email = 'luis@luispedro.org',
       license = 'MIT',
