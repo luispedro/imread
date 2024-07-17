@@ -8,7 +8,6 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - '3.7'
           - '3.8'
           - '3.9'
           - '3.10'
@@ -25,20 +24,6 @@ jobs:
           - '1.26'
           - '2.0'
         exclude:
-            # 3.7 is too old for NumPy 1.22+
-            - python-version: '3.7'
-              numpy-version: '1.22'
-            - python-version: '3.7'
-              numpy-version: '1.23'
-            - python-version: '3.7'
-              numpy-version: '1.24'
-            - python-version: '3.7'
-              numpy-version: '1.25'
-            - python-version: '3.7'
-              numpy-version: '1.26'
-            - python-version: '3.7'
-              numpy-version: '2.0'
-
             # 3.8 is too old for NumPy 1.25+
             - python-version: '3.8'
               numpy-version: '1.25'
@@ -47,13 +32,8 @@ jobs:
             - python-version: '3.8'
               numpy-version: '2.0'
 
-            # NumPy 1.20 & Python 3.7 trigger a bad resolve from mamba
-            - python-version: '3.7'
-              numpy-version: '1.20'
 
             # NumPy 1.19 is not available on 3.7-9
-            - python-version: '3.7'
-              numpy-version: '1.19'
             - python-version: '3.8'
               numpy-version: '1.19'
             - python-version: '3.9'
