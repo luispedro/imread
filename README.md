@@ -1,7 +1,7 @@
 # mahotas-imread: Read Image Files
 
-[![image](https://anaconda.org/conda-forge/imread/badges/license.svg)](https://opensource.org/licenses/MIT)
-[![image](https://anaconda.org/conda-forge/imread/badges/installer/conda.svg)](https://anaconda.org/conda-forge/imread)
+[![License](https://anaconda.org/conda-forge/imread/badges/license.svg)](https://opensource.org/licenses/MIT)
+[![Install with conda](https://img.shields.io/badge/install%20with-conda-brightgreen.svg?style=flat)](https://anaconda.org/conda-forge/imread)
 [![image](https://anaconda.org/conda-forge/imread/badges/downloads.svg)](https://anaconda.org/conda-forge/imread)
 [![Test mahotas-imread](https://github.com/luispedro/imread/actions/workflows/test-python-package-with-conda.yml/badge.svg)](https://github.com/luispedro/imread/actions/workflows/test-python-package-with-conda.yml)
 
@@ -38,11 +38,6 @@ languages.
 [Online documentation](https://imread.rtfd.io/)
 
 Python versions 2.6, 2.7, 3.3+ are officially supported.
-
-Python 3.2 (and earlier versions in the Python 3 series) are officially
-**not supported**. Patches will be accepted if they do not mess up
-anything else, but bug reports will not be considered as very high
-priority.
 
 ## Citation
 
