@@ -89,3 +89,10 @@ def test_strip_alpha():
     w_alpha = imread(file_path('rgba.png'))
     wno_alpha = imread(file_path('rgba.png'), opts={'strip_alpha':True})
     assert np.all(w_alpha[:,:,:3] == wno_alpha)
+
+def test_paletted_rgba():
+    f = imread(file_path('paletted_rgba.png'))
+    assert f.shape[2] == 4
+
+    f = imread(file_path('paletted_rgba.png'), opts={'strip_alpha':True})
+    assert f.shape[2] == 3

@@ -2,6 +2,10 @@
 History
 =======
 
+Version 0.7.6 (2024-08-02)
+--------------------------
+- Fix loading paletted PNGs with transparency
+
 Version 0.7.5 (2023-11-22)
 --------------------------
 - Fix build issue (#43, patch by @carlosal1015)

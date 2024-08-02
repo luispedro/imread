@@ -1,4 +1,4 @@
-// Copyright 2012-2016 Luis Pedro Coelho <luis@luispedro.org>
+// Copyright 2012-2024 Luis Pedro Coelho <luis@luispedro.org>
 // License: MIT (see COPYING.MIT file)
 
 #include "base.h"
@@ -117,6 +117,13 @@ std::unique_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory, 
     switch (png_get_color_type(p.png_ptr, p.png_info)) {
         case PNG_COLOR_TYPE_PALETTE:
             png_set_palette_to_rgb(p.png_ptr);
+            if (png_get_valid(p.png_ptr, p.png_info, PNG_INFO_tRNS)) {
+                png_set_tRNS_to_alpha(p.png_ptr);
+                d = 4 - int(strip_alpha);
+            } else {
+                d = 3;
+            }
+            break;
         case PNG_COLOR_TYPE_RGB:
             d = 3;
             break;
@@ -128,7 +135,7 @@ std::unique_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory, 
             break;
         case PNG_COLOR_TYPE_GRAY_ALPHA:
             if (!strip_alpha) {
-                throw CannotReadError("imread.png: Color type (4: grayscale with alpha channel) can  only be read when strip_alpha is set to true.");
+                throw CannotReadError("imread.png: Color type (4: grayscale with alpha channel) can only be read when strip_alpha is set to true.");
             }
             d = -1;
             break;
