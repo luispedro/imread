@@ -166,6 +166,18 @@ TIFF* read_client(byte_source* src) {
                     NULL);
 }
 
+bool get_resolution(const options_map& opts, const char* key, double& value) {
+    options_map::const_iterator iter = opts.find(key);
+    if (iter == opts.end()) return false;
+    int i;
+    if (iter->second.get_int(i)) {
+        value = i;
+        return true;
+    }
+    if (iter->second.get_double(value)) return true;
+    throw WriteOptionsError(std::string(key) + " must be an integer or floating point value.");
+}
+
 const int UIC1Tag = 33628;
 const int UIC2Tag = 33629;
 const int UIC3Tag = 33630;
@@ -354,28 +366,16 @@ void TIFFFormat::do_write(image_list* input, byte_sink* output, const options_ma
         if (meta) {
             TIFFSetField(t.tif, TIFFTAG_IMAGEDESCRIPTION, meta);
         }
-        options_map::const_iterator x_iter = opts.find("tiff:XResolution");
-        if (x_iter != opts.end()) {
-            double d;
-            int i;
-            float value;
-            if (x_iter->second.get_int(i)) { value = i; }
-            else if (x_iter->second.get_double(d)) { value = d; }
-            else { throw WriteOptionsError("XResolution must be an integer or floating point value."); }
-
-            TIFFSetField(t.tif, TIFFTAG_XRESOLUTION, value);
-        }
-
-        options_map::const_iterator y_iter = opts.find("tiff:YResolution");
-        if (x_iter != opts.end()) {
-            double d;
-            int i;
-            float value;
-            if (x_iter->second.get_int(i)) { value = i; }
-            else if (x_iter->second.get_double(d)) { value = d; }
-            else { throw WriteOptionsError("YResolution must be an integer or floating point value."); }
-
-            TIFFSetField(t.tif, TIFFTAG_YRESOLUTION, value);
+        double xres, yres;
+        const bool has_xres = get_resolution(opts, "tiff:XResolution", xres);
+        const bool has_yres = get_resolution(opts, "tiff:YResolution", yres);
+        if (has_xres || has_yres) {
+            // libtiff always writes both tags (an unset one as 0), so if only
+            // one is given, use it for both (i.e., assume square pixels)
+            if (!has_xres) xres = yres;
+            if (!has_yres) yres = xres;
+            TIFFSetField(t.tif, TIFFTAG_XRESOLUTION, xres);
+            TIFFSetField(t.tif, TIFFTAG_YRESOLUTION, yres);
         }
 
         const uint16_t resolution_unit = get_optional_int(opts, "tiff:XResolutionUnit", uint16_t(-1));

@@ -143,6 +143,7 @@ or use the `pkgs.python3Packages.imread` object in your `*.nix` files.
 -   Require Python 3.11 or later and NumPy 2.0 or later
 -   Switch build system to meson-python
 -   Build wheels for Linux (x86_64, aarch64), macOS and Windows
+-   Fix the `tiff:YResolution` option, which was ignored (`tiff:XResolution` was used for both)
 
 ### Version 0.7.6 (2024-08-02)
 

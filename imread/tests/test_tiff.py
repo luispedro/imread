@@ -80,6 +80,41 @@ def test_horizontal_predictor():
     im3 = imread(_filename)
     assert np.all(im == im3)
 
+def _read_resolution(fname):
+    '''Returns {tag: value} for the XResolution (282) and YResolution (283)
+    tags in the first directory of a TIFF file'''
+    import struct
+    with open(fname, 'rb') as f:
+        data = f.read()
+    bo = '<' if data[:2] == b'II' else '>'
+    ifd, = struct.unpack(bo + 'I', data[4:8])
+    n, = struct.unpack(bo + 'H', data[ifd:ifd+2])
+    res = {}
+    for i in range(n):
+        tag, _, _, offset = struct.unpack(bo + 'HHII', data[ifd+2+12*i:ifd+14+12*i])
+        if tag in (282, 283):
+            num, den = struct.unpack(bo + 'II', data[offset:offset+8])
+            res[tag] = num / den
+    return res
+
+@pytest.mark.parametrize('opts,expected', [
+    ({}, {}),
+    # If only one is given, it is used for both
+    ({'tiff:XResolution': 100}, {282: 100., 283: 100.}),
+    ({'tiff:YResolution': 50}, {282: 50., 283: 50.}),
+    ({'tiff:XResolution': 100, 'tiff:YResolution': 50}, {282: 100., 283: 50.}),
+    ({'tiff:XResolution': 72.5, 'tiff:YResolution': 36.25}, {282: 72.5, 283: 36.25}),
+    ])
+def test_resolution(opts, expected):
+    im = np.zeros((4, 4), np.uint8)
+    imsave(_filename, im, opts=opts)
+    assert _read_resolution(_filename) == expected
+
+def test_resolution_bad_value():
+    im = np.zeros((4, 4), np.uint8)
+    with pytest.raises(RuntimeError):
+        imsave(_filename, im, opts={'tiff:YResolution': 'high'})
+
 def test_imsave_multi():
     im = imread(file_path('arange512_16bit.png'))
     im2 = im[::4, ::4]
