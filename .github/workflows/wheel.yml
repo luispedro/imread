@@ -18,6 +18,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # meson-python configures the project (and so looks up the libraries)
+      # before running `meson dist`
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libpng-dev libjpeg-dev libtiff-dev libwebp-dev
+
       - name: Build SDist
         run: pipx run build --sdist
 
