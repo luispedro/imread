@@ -41,7 +41,7 @@ def imread(filename, as_grey=False, formatstr=None, return_metadata=False, opts=
 
     Parameters
     ----------
-    filename : str
+    filename : str or os.PathLike
         filename
     as_grey : boolean, optional
         Whether to convert to grey scale image (default: no)
@@ -148,7 +148,7 @@ def imread_multi(filename, formatstr=None):
 
     Parameters
     ----------
-    filename : str
+    filename : str or os.PathLike
         filename
 
     formatstr : str, optional
@@ -173,7 +173,7 @@ def imsave(filename, array, formatstr=None, metadata=None, opts=None):
 
     Parameters
     ----------
-    filename : str
+    filename : str or os.PathLike
         path on file system
     array : ndarray-like
     formatstr: str, optional
@@ -228,7 +228,7 @@ def imsave_multi(filename, arrays, formatstr=None, opts=None):
 
     Parameters
     ----------
-    filename : str
+    filename : str or os.PathLike
         path on file system
     arrays : list of ndarray-like
     formatstr: str, optional
@@ -286,9 +286,10 @@ def detect_format(filename_or_blob, is_blob=False):
 
     Parameters
     ----------
-    filename_or_blob : bytes (str in Python 2)
+    filename_or_blob : str, os.PathLike, or bytes
     is_blob : boolean, optional
         If true, then filename_or_blob is interpreted as a blob; otherwise,
+        it is interpreted as a filename
 
     Returns
     -------
