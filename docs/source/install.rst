@@ -2,40 +2,65 @@
 How To Install Mahotas-imread
 =============================
 
-From source
------------
+imread requires Python 3.11 or later and NumPy 2.0 or later.
 
-You can get the released version using our favorite Python package manager::
+With pixi (recommended)
+-----------------------
+
+`pixi <https://pixi.sh>`__ installs imread, together with the C libraries it
+needs, from `conda-forge <https://conda-forge.org>`__::
+
+    pixi init my-project
+    cd my-project
+    pixi add imread
+    pixi run python -c "import imread; print(imread.__version__)"
+
+In an existing pixi project, ``pixi add imread`` is all you need.
+
+With pip
+--------
+
+::
 
     pip install imread
 
-If you prefer, you can download the source from `PyPI
-<https://pypi.python.org/pypi/mahotas>`__ and run::
+Binary wheels are provided for Linux (x86_64 and aarch64), macOS (Intel and
+Apple Silicon, macOS 15 or later) and Windows (AMD64 and ARM64). On other
+platforms, pip builds imread from source (see below).
 
-    pip install .
+From source
+-----------
 
-You will need to have ``numpy`` and a ``C++`` compiler.
+Building imread needs a C++ compiler, ``pkg-config`` and the development files
+for libpng, libjpeg and libtiff. libwebp is optional: WebP support is built
+only if it is found. pixi can provide all of these::
 
+    git clone https://github.com/luispedro/imread
+    cd imread
+    pixi init --format pixi
+    pixi add python numpy pip meson-python meson ninja pkg-config cxx-compiler \
+        zlib libpng libjpeg-turbo libtiff libwebp
+    pixi run pip install --no-build-isolation .
 
-Bleeding Edge (Development)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To build without WebP support, pass
+``--config-settings=setup-args=-Dwebp=disabled`` to ``pip install``.
 
-Development happens on `github <https://github.com/luispedro/imread>`__. You
-can get the development source there. Watch out that *these versions are more
-likely to have problems*.
+Development happens on `github <https://github.com/luispedro/imread>`__. Watch
+out that *development versions are more likely to have problems*.
 
-On Windows
-----------
+With nix
+--------
 
-On Windows, Christoph Gohlke does an excelent job maintaining `binary packages
-of imread <https://www.lfd.uci.edu/~gohlke/pythonlibs/>`__ (and several other
-packages).
+::
 
-conda
-~~~~~
+    nix-env -iA nixpkgs.python3Packages.imread
 
-Imread is not a part of standard conda packages, but on 64 bit Linux, you can
-get it `from this repository <https://binstar.org/luispedro/imread`__ with::
+or use the ``pkgs.python3Packages.imread`` object in your ``*.nix`` files.
 
-    conda install -c https://conda.binstar.org/luispedro imread
+Reading XCF files
+-----------------
 
+XCF (GIMP) files are read through the ``xcf2png`` utility, which is part of
+xcftools. It must be installed separately and be in the ``PATH`` (for example,
+``sudo apt-get install xcftools`` on Debian/Ubuntu). It is not available on
+Windows.

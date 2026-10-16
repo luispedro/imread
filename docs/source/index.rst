@@ -56,21 +56,12 @@ In Bibtex format::
 INSTALL
 ~~~~~~~
 
-On Windows, you can also just download a pre-built package from `C. Gohlke's
-repository <https://www.lfd.uci.edu/~gohlke/pythonlibs/#imread>`__
+The recommended way to install imread is with `pixi <https://pixi.sh>`__::
 
-To compile on debian/ubuntu::
+    pixi add imread
 
-    sudo apt-get install libpng12-dev libtiff4-dev libwebp-dev
-    sudo apt-get install xcftools
-
-To compile on Mac::
-
-    sudo port install libpng tiff webp
-
-Either way, you can then install::
-
-    pip install imread
+Binary wheels are also available with ``pip install imread``. See
+:doc:`install` for all the options, including building from source.
 
 
 Contents:

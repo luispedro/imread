@@ -9,22 +9,36 @@ IO with images and numpy arrays.
 
 Mahotas-imread is a simple module with a small number of functions:
 
-- `imread`:   Reads an image file
-- `imread_multi`:   Reads an image file with multiple images. Currently, TIFF and STK (a TIFF sub-based format) support this function.
-- `imsave`:   Writes an image file
+- `imread`: Reads an image file
+- `imread_multi`: Reads all the images in a multi-image file (TIFF and STK)
+- `imread_from_blob`: Reads an image from a `bytes` object in memory
+- `imsave`: Writes an image file
+- `imsave_multi`: Writes several images into a single file (TIFF only)
+- `detect_format`: Detects the format of a file or blob from its magic number (PNG and JPEG only)
+- `supports_format`: Checks whether a format is supported
+- `imread.ijrois.read_roi` and `imread.ijrois.read_roi_zip`: Read [ImageJ](https://imagej.net/) regions of interest
+
+`imload`, `imload_multi`, `imload_from_blob`, `imwrite` and `imwrite_multi`
+are aliases.
+
+PNG, JPEG and TIFF can be read and written. WebP, BMP, LSM, STK and XCF can
+be read. XCF needs the `xcf2png` utility (from xcftools).
 
 Example (which uses [mahotas](https://luispedro.org/software/mahotas)
 for Gaussian filtering):
 
-
 ```python
+import numpy as np
 from imread import imread, imsave
 from mahotas import gaussian_filter
-lena = imread('lena.jpeg')
 
-lena = gaussian_filter(lena.astype(float), 4.)
-imsave('lena-filtered.jpeg', lena)
+image = imread('photo.jpeg', as_grey=True)
+blurred = gaussian_filter(image, 4.)
+imsave('photo-blurred.png', blurred.astype(np.uint8))
 ```
+
+`imsave` only accepts integer arrays, so floating point results must be
+converted (here, to `uint8`) before saving.
 
 This grew out of frustration at current image loading solutions in
 Python, in either my packages \[[mahotas](https://mahotas.rtfd.io)\] or
@@ -37,19 +51,15 @@ languages.
 
 [Online documentation](https://imread.rtfd.io/)
 
-Python versions 2.6, 2.7, 3.3+ are officially supported.
-
 ## Citation
 
-::: {#Citation}
-If you use imread on a published publication, please cite the main
+If you use imread in a publication, please cite the main
 [mahotas](https://mahotas.rtfd.io) paper (imread is a spin-off of
 mahotas):
-:::
 
 > **Luis Pedro Coelho** Mahotas: Open source software for scriptable
 > computer vision in Journal of Open Research Software, vol 1, 2013.
-> \[[DOI](https://dx.doi.org/10.5334/jors.ac)\]
+> \[[DOI](https://doi.org/10.5334/jors.ac)\]
 
 In Bibtex format:
 
@@ -59,47 +69,59 @@ In Bibtex format:
     title = {Mahotas: Open source software for scriptable computer vision},
     journal = {Journal of Open Research Software},
     year = {2013},
-    doi = {https://dx.doi.org/10.5334/jors.ac},
+    doi = {10.5334/jors.ac},
     month = {July},
     volume = {1}
 }
 ```
 
-### Installation/Dependencies
+## Installation
 
-The easiest environment to install mahotas-imread is anaconda, through
-[conda-forge](https://conda-forge.github.io). Just use:
+imread requires Python 3.11 or later and NumPy 2.0 or later.
 
+### With pixi (recommended)
 
-```bash
-conda config --add channels conda-forge
-conda install imread
-```
-
-To compile on debian/ubuntu:
+[pixi](https://pixi.sh) installs imread, together with the C libraries it
+needs, from [conda-forge](https://conda-forge.org):
 
 ```bash
-sudo apt-get install libpng12-dev libtiff4-dev libwebp-dev
-sudo apt-get install xcftools
+pixi init my-project
+cd my-project
+pixi add imread
+pixi run python -c "import imread; print(imread.__version__)"
 ```
 
-To compile on Mac:
+In an existing pixi project, `pixi add imread` is all you need.
+
+### With pip
 
 ```bash
-sudo port install libpng tiff webp
+pip install imread
 ```
 
-Either way, you can then compile and install with:
+Binary wheels are provided for Linux (x86_64 and aarch64), macOS (Intel and
+Apple Silicon, macOS 15 or later) and Windows (AMD64 and ARM64). On other
+platforms, pip builds imread from source (see below).
+
+### From source
+
+Building imread needs a C++ compiler, `pkg-config` and the development files
+for libpng, libjpeg and libtiff. libwebp is optional: WebP support is built
+only if it is found. pixi can provide all of these:
 
 ```bash
-pip install .
+git clone https://github.com/luispedro/imread
+cd imread
+pixi init --format pixi
+pixi add python numpy pip meson-python meson ninja pkg-config cxx-compiler \
+    zlib libpng libjpeg-turbo libtiff libwebp
+pixi run pip install --no-build-isolation .
 ```
 
-On Windows, you can also just download a pre-built package from [C.
-Gohlke\'s
-repository](https://www.lfd.uci.edu/~gohlke/pythonlibs/#imread)
+To build without WebP support, pass
+`--config-settings=setup-args=-Dwebp=disabled` to `pip install`.
 
-On nix, you can use:
+### With nix
 
 ```
 nix-env -iA nixpkgs.python3Packages.imread
@@ -110,103 +132,103 @@ or use the `pkgs.python3Packages.imread` object in your `*.nix` files.
 ## Links & Contacts
 
 - *Documentation*: https://imread.readthedocs.io/
-- *Issue Tracker*: [github imread issues](https://github.com/luispedro/imread)
+- *Issue Tracker*: [github imread issues](https://github.com/luispedro/imread/issues)
 - *Mailing List*: Use the [pythonvision mailing list](https://groups.google.com/group/pythonvision?pli=1) for questions, bug submissions, etc.
 - *Main Author & Maintainer*: [Luis Pedro Coelho](https://luispedro.org) (follow on [twitter](https://twitter.com/luispedrocoelho) or [github](https://github.com/luispedro)).
 
-### History
+## History
 
-## Version 0.7.7+
+### Version 0.7.7+
 
 -   Require Python 3.11 or later and NumPy 2.0 or later
 -   Switch build system to meson-python
 -   Build wheels for Linux (x86_64, aarch64), macOS and Windows
 
-## Version 0.7.6 (2024-08-02)
+### Version 0.7.6 (2024-08-02)
 
 -   Fix loading paletted PNGs with transparency
 
-## Version 0.7.5 (2023-11-22)
+### Version 0.7.5 (2023-11-22)
 
--   Fix build issue (#43, patch by \@carlosal1015)
+-   Fix build issue (#43, patch by @carlosal1015)
 
-## Version 0.7.4 (2020-04-14)
+### Version 0.7.4 (2020-04-14)
 
 -   Add missing header files to distribution
 
-## Version 0.7.3 (2020-04-09)
+### Version 0.7.3 (2020-04-09)
 
 -   Add missing test data to distribution
 
-## Version 0.7.2 (2020-03-24)
+### Version 0.7.2 (2020-03-24)
 
 -   Fix several memory access bugs in parsers (reported by Robert Scott)
 
-## Version 0.7.1 (2019-05-09)
+### Version 0.7.1 (2019-05-09)
 
 -   Fix 16-bit RGB/RGBA TIFF write (patch by Tomi Aarnio)
 
-## Version 0.7.0 (2018-09-30)
+### Version 0.7.0 (2018-09-30)
 
 -   Add support for reading ImageJ ROIs
 
-## Version 0.6.1 (2018-02-15)
+### Version 0.6.1 (2018-02-15)
 
 -   Support pathlib paths as function arguments
 -   Fix 16 bit PNG write support (patch by Tomi Aarnio)
 
-## Version 0.6 (2016-09-21)
+### Version 0.6 (2016-09-21)
 
--   Add [supports_format]{.title-ref} function
+-   Add `supports_format` function
 -   Make png compression level tunable when calling imsave
 -   Add imsave_multi
 -   Add partial support for reading PNG files in Gray+alpha format
 
-## Version 0.5.1 (2014-11-06)
+### Version 0.5.1 (2014-11-06)
 
 -   Improve tests to work after installation
 -   Fix compilation in MSVC (patch by Christoph Gohlke)
 
-## Version 0.5 (2014-10-16)
+### Version 0.5 (2014-10-16)
 
 -   Add magic-number based format auto-detection
 -   Auto detect whether webp is installed
 -   Fix WebP reading (update to newer API)
 
-## Version 0.4 (2014-07-21)
+### Version 0.4 (2014-07-21)
 
 -   Add configuration for TIFF saving
 -   Correctly save 16 bit PNG images
 -   Better error messages for JPEG
 
-## Version 0.3.2 (2013-10-06)
+### Version 0.3.2 (2013-10-06)
 
 -   Added imload\*/imwrite synonyms as suggested by Thouis (Ray) Jones
 -   Options framework
 -   Allow user to specify JPEG quality when saving
 -   Fix loading of 16 bit PNG images
 
-## Version 0.3.1 (2013-06-20)
+### Version 0.3.1 (2013-08-20)
 
 -   Fix possible crash on error with TIFF
 -   Fix compilation on Windows (reported by Volker Hilsenstein)
 -   Make it easy to compile without WebP
 
-## Version 0.3.0 (2013-07-29)
+### Version 0.3.0 (2013-07-29)
 
 -   Support for reading from in-memory blobs
 -   Support for reading & writing TIFF metadata
 -   Add PHOTOMETRIC tag to TIFF (reported by Volker Hilsenstein)
 -   Support writing RGB TIFFs
 
-## Version 0.2.6 (2013-06-19)
+### Version 0.2.6 (2013-06-19)
 
 -   Fix hard crash when saving with non-existing file type
 -   Fix compilation on MacOS (patch by Alexander Bohn)
 -   Add `verbose` argument to tests.run()
 -   Better error when attempting to save floating point images
 
-## Version 0.2.5 (2012-10-29)
+### Version 0.2.5 (2012-10-29)
 
 -   Correctly accept uppercase extensions
 -   Python 3 support (patch by Christoph Gohlke \[pull request 8 on
@@ -215,29 +237,29 @@ or use the `pkgs.python3Packages.imread` object in your `*.nix` files.
 -   Read simple BMPs (compression and many bit types not supported)
 -   More complete debug mode (export DEBUG=2 when building), more checks
 
-## Version 0.2.4 (2012-06-26)
+### Version 0.2.4 (2012-06-26)
 
 -   Add lzw.cpp to source distribution
 -   Support saving 16-bit TIFF
 -   Better Mac OS support (patch from Alexander Bohn)
 
-## Version 0.2.3 (2012-06-8)
+### Version 0.2.3 (2012-06-08)
 
 -   Fix imread_multi
 
-## Version 0.2.2 (2012-06-5)
+### Version 0.2.2 (2012-06-05)
 
--   Add [formatstr]{.title-ref} argument to imread
+-   Add `formatstr` argument to imread
 -   Open files in binary mode on Windows (patch by Christoph Gohlke)
 -   Read-only support for LSM files
--   Read-only support for XCF files (through [xcf2png]{.title-ref})
+-   Read-only support for XCF files (through `xcf2png`)
 -   Fix writing of non-contiguous images (at least PNG was affected)
 
-## Version 0.2.1 (2012-02-11)
+### Version 0.2.1 (2012-04-11)
 
 -   Add missing files to distribution
 
-## Version 0.2 (2012-03-19)
+### Version 0.2 (2012-03-19)
 
 -   Compile on MSVC++ (Patches by Christoph Gohlke)
 -   Support for WebP
@@ -246,7 +268,7 @@ or use the `pkgs.python3Packages.imread` object in your `*.nix` files.
 -   Support for multi-page TIFF reading
 -   Experimental read-only support for STK files
 
-## Version 0.1 (2012-02-28)
+### Version 0.1 (2012-02-28)
 
 -   Support for PNG
 -   Support for TIFF

@@ -8,7 +8,7 @@ This file provides guidance to AI coding agents (such as Claude Code) when worki
 
 ## Build and test
 
-The build uses meson-python (`meson.build`, `meson.options`, `pyproject.toml`). There is no `setup.py`. The Makefile targets do an editable install with `--no-build-isolation`, so meson, meson-python, ninja, pkg-config and numpy must be installed in the active environment. The editable install rebuilds the extension when `imread` is imported.
+The build uses meson-python (`meson.build`, `meson.options`, `pyproject.toml`). There is no `setup.py`. The Makefile targets do an editable install with `--no-build-isolation`, so meson, meson-python, ninja, pkg-config and numpy must be installed in the active environment. The "From source" section of `README.md` shows how to set up such an environment with pixi; add `pytest` to it to run the tests. The editable install rebuilds the extension when `imread` is imported.
 
 ```bash
 make debug     # editable build in build/debug: assertions on (b_ndebug=false) and _GLIBCXX_DEBUG (this is what CI uses)

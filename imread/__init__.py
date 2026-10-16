@@ -14,11 +14,12 @@ except ImportError as e:
     print('''\
 Could not import submodules (exact error was: {0}).
 
-There are many reasons for this error the most common one is that you have
-either not built the packages or have built (using `python setup.py build`) or
-installed them (using `python setup.py install`) and then proceeded to test
-mahotas-imread **without changing the current directory**.
+The most common cause is importing imread from inside its source directory,
+which picks up the source tree (without the compiled extension) instead of the
+installed package.
 
-Try installing and then changing to another directory before importing mahotas.
+Try installing imread (see https://imread.readthedocs.io/) and then changing to
+another directory before importing it. For development, use an editable
+install (`make debug`).
 '''.format(e), file=sys.stderr)
 
