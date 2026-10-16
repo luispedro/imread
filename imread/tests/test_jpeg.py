@@ -49,3 +49,27 @@ def test_quality():
     readback    = imread('imread_def.jpg')
     readback91  = imread('imread_def91.jpg')
     assert pixel_diff(readback91) < pixel_diff(readback)
+
+
+def test_truncated():
+    from imread import imread_from_blob
+    data = open(file_path('ghsystem_flame.jpg'), 'rb').read()
+    full = imread_from_blob(data, 'jpeg')
+    truncated = imread_from_blob(data[:len(data)//2], 'jpeg')
+    assert truncated.shape == full.shape
+    assert np.all(truncated[:16] == full[:16])
+
+
+def test_truncated_marker():
+    from imread import imread_from_blob
+    # APP1 segment whose declared length runs past the end of the data
+    # (used to loop forever)
+    with pytest.raises(RuntimeError):
+        imread_from_blob(b'\xff\xd8\xff\xe1\xff\xf0' + b'x'*10, 'jpeg')
+
+
+@pytest.mark.parametrize('data', [b'', b'\xff\xd8'])
+def test_empty(data):
+    from imread import imread_from_blob
+    with pytest.raises(RuntimeError):
+        imread_from_blob(data, 'jpeg')

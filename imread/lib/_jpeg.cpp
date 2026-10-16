@@ -8,6 +8,7 @@
 
 extern "C" {
 #include <jpeglib.h>
+#include <jerror.h>
 }
 
 namespace {
@@ -18,6 +19,7 @@ struct jpeg_source_adaptor {
     jpeg_source_mgr mgr;
     byte_source* s;
     byte* buf;
+    bool start_of_file;
 
     jpeg_source_adaptor(byte_source* s);
 
@@ -41,10 +43,32 @@ struct jpeg_dst_adaptor {
 void nop(j_decompress_ptr cinfo) { }
 void nop_dst(j_compress_ptr cinfo) { }
 
-boolean fill_input_buffer(j_decompress_ptr cinfo) {
+// Returns false at end of input, in which case the buffer holds a fake EOI
+// marker (this mirrors what libjpeg's own jdatasrc.c does)
+bool fill_input_buffer_check_eof(j_decompress_ptr cinfo) {
     jpeg_source_adaptor* adaptor = reinterpret_cast<jpeg_source_adaptor*>(cinfo->src);
+    const size_t n = adaptor->s->read(adaptor->buf, buffer_size);
+    if (n == size_t(-1)) {
+        ERREXIT(cinfo, JERR_FILE_READ);
+    }
     adaptor->mgr.next_input_byte = adaptor->buf;
-    adaptor->mgr.bytes_in_buffer = adaptor->s->read(adaptor->buf, buffer_size);
+    if (n == 0) {
+        if (adaptor->start_of_file) {
+            ERREXIT(cinfo, JERR_INPUT_EMPTY);
+        }
+        WARNMS(cinfo, JWRN_JPEG_EOF);
+        adaptor->buf[0] = 0xFF;
+        adaptor->buf[1] = JPEG_EOI;
+        adaptor->mgr.bytes_in_buffer = 2;
+        return false;
+    }
+    adaptor->start_of_file = false;
+    adaptor->mgr.bytes_in_buffer = n;
+    return true;
+}
+
+boolean fill_input_buffer(j_decompress_ptr cinfo) {
+    fill_input_buffer_check_eof(cinfo);
     return (boolean) true;
 }
 
@@ -53,7 +77,8 @@ void skip_input_data(j_decompress_ptr cinfo, long num_bytes) {
     jpeg_source_adaptor* adaptor = reinterpret_cast<jpeg_source_adaptor*>(cinfo->src);
     while (num_bytes > long(adaptor->mgr.bytes_in_buffer)) {
         num_bytes -= adaptor->mgr.bytes_in_buffer;
-        fill_input_buffer(cinfo);
+        // At EOF, leave the fake EOI marker in the buffer
+        if (!fill_input_buffer_check_eof(cinfo)) return;
     }
     adaptor->mgr.next_input_byte += num_bytes;
     adaptor->mgr.bytes_in_buffer -= num_bytes;
@@ -76,6 +101,7 @@ void flush_output_buffer(j_compress_ptr cinfo) {
 
 jpeg_source_adaptor::jpeg_source_adaptor(byte_source* s)
     :s(s)
+    ,start_of_file(true)
     {
         buf = new byte[buffer_size];
         mgr.next_input_byte = buf;
