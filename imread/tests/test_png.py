@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+from pathlib import Path
 from . import file_path
 from imread import imread, imsave
 
@@ -9,8 +10,8 @@ _filename = 'imread_testing_file.png'
 def test_png_raw():
     simple = np.arange(16*16).reshape((16,16))
     simple = simple.astype(np.uint8)
-    imsave(_filename, simple, 'png')
-    back = imread(_filename)
+    imsave(Path(_filename), simple)
+    back = imread(Path(_filename))
     assert np.all(simple == back)
 
 def test_asym():
