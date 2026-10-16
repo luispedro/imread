@@ -4,6 +4,7 @@
 [![Install with conda](https://img.shields.io/badge/install%20with-conda-brightgreen.svg?style=flat)](https://anaconda.org/conda-forge/imread)
 [![image](https://anaconda.org/conda-forge/imread/badges/downloads.svg)](https://anaconda.org/conda-forge/imread)
 [![Test mahotas-imread](https://github.com/luispedro/imread/actions/workflows/test-python-package-with-conda.yml/badge.svg)](https://github.com/luispedro/imread/actions/workflows/test-python-package-with-conda.yml)
+[![Documentation Status](https://readthedocs.org/projects/imread/badge/?version=latest)](https://imread.readthedocs.io/en/latest/?badge=latest)
 
 IO with images and numpy arrays.
 
