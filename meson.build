@@ -75,6 +75,7 @@ python_sources = files(
     'imread/imread_version.py',
     'imread/special.py',
     'imread/tests/__init__.py',
+    'imread/tests/conftest.py',
     'imread/tests/test_bad.py',
     'imread/tests/test_bmp.py',
     'imread/tests/test_error.py',

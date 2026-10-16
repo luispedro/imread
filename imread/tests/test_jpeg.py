@@ -2,21 +2,8 @@ import pytest
 import numpy as np
 from imread import imread, imsave
 from . import file_path
-import glob
 
 _filename = 'imread_testing_file.jpg'
-
-@pytest.fixture(autouse=True)
-def _remove_files():
-    yield
-    from os import unlink
-    from glob import glob
-    filelist = glob("*.jpg")
-    for f in filelist:
-        try:
-            unlink(f)
-        except:
-            pass
 
 def test_jpeg():
     f = np.arange(64*16).reshape((64,16))

@@ -5,14 +5,6 @@ from . import file_path
 
 _filename = 'imread_testing_file.tiff'
 
-@pytest.fixture(autouse=True)
-def _remove_file():
-    from os import unlink
-    try:
-        unlink(_filename)
-    except:
-        pass
-
 def test_error():
     with pytest.raises(RuntimeError):
         imread(file_path('error.tif'))

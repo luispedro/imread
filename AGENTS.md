@@ -66,7 +66,7 @@ Build notes:
 - Tests live in `imread/tests/` (pytest).
 - Use `from . import file_path` and `file_path('name')` to locate fixtures in `imread/tests/data/`.
 - Malformed inputs for robustness tests live in `data/bad-files/`.
-- Write tests save to a fixed filename in the current directory, such as `imread_testing_file.png`. An autouse fixture deletes that file.
+- Every test runs in its own temporary directory: an autouse fixture in `imread/tests/conftest.py` changes into pytest's `tmp_path`. Write tests can therefore save to a fixed relative filename, such as `imread_testing_file.png`, without cleaning up.
 
 ## Conventions
 

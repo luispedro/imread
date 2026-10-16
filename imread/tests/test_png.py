@@ -5,14 +5,6 @@ from imread import imread, imsave
 
 _filename = 'imread_testing_file.png'
 
-@pytest.fixture(autouse=True)
-def _remove_file():
-    from os import unlink
-    try:
-        unlink(_filename)
-    except:
-        pass
-
 
 def test_png_raw():
     simple = np.arange(16*16).reshape((16,16))
