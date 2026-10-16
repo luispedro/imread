@@ -1,17 +1,27 @@
 Welcome to imread's documentation!
 ==================================
 
-Imread is a very simple library. It has three functions:
+Imread is a very simple library, with a small number of functions:
 
 imread
-    Reads an image from disk
+    Reads an image file
 imread_multi
-    Reads multiple images from disk (only for file formats that support
-    multiple images)
-imwrite
-    Saves an image to disk
+    Reads all the images in a multi-image file (TIFF and STK)
+imread_from_blob
+    Reads an image from a ``bytes`` object in memory
+imsave
+    Writes an image file
+imsave_multi
+    Writes several images into a single file (TIFF only)
+detect_format
+    Detects the format of a file or blob from its magic number (PNG and JPEG
+    only)
+supports_format
+    Checks whether a format is supported
 
-That's it.
+``imload``, ``imload_multi``, ``imload_from_blob``, ``imwrite`` and
+``imwrite_multi`` are aliases. The ``imread.ijrois`` module reads `ImageJ
+<https://imagej.net/>`__ regions of interest (see :doc:`formats`).
 
 It is meant to be used with a computer vision & image processing package, such
 as:

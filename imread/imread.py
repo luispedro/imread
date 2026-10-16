@@ -63,13 +63,15 @@ def imread(filename, as_grey=False, formatstr=None, return_metadata=False, opts=
         The type of this array will depend on the contents of the file and of
         `as_grey`. Conversion from colour to greyscale will return a floating
         point image.
-    meta : str
-        Metadata. The metadata in the file. Only returned if ``return_metadata``.
+    meta : bytes or None
+        The metadata in the file. Only returned if ``return_metadata``. For
+        TIFF, this is the ImageDescription tag as ``bytes`` (``b''`` if the tag
+        is absent). For other formats, it is ``None``.
 
     See Also
     --------
     imread_from_blob : function
-        Read from an in-memory string
+        Read from an in-memory blob
     '''
     if opts is None:
         opts = {}
@@ -92,17 +94,15 @@ def imread_from_blob(blob, formatstr=None, as_grey=False, return_metadata=False,
 
     Read an image into an ndarray from an in-memory blob.
 
-    Note that the parameter order is changed wrt. ``imread`` because
-    **formatstr** is a mandatory parameter to this function!
-
     Parameters
     ----------
-    blob : str (bytes in Py3)
+    blob : bytes
         Input data
     formatstr : str, optional
         Format name. This is the file extension typically associated with this
         format. If None is given, then ``detect_format`` is used to auto-detect
-        the format.
+        the format. Auto-detection only works for PNG and JPEG, so
+        ``formatstr`` must be given for other formats.
     as_grey : boolean, optional
         Whether to convert to a greyscale image (default: False)
     return_metadata : bool, optional
@@ -119,8 +119,10 @@ def imread_from_blob(blob, formatstr=None, as_grey=False, return_metadata=False,
         The type of this array will depend on the contents of the file and of
         `as_grey`. Conversion from colour to greyscale will return a floating
         point image.
-    meta : str
-        Metadata. The metadata in the file. Only returned if ``return_metadata``.
+    meta : bytes or None
+        The metadata in the file. Only returned if ``return_metadata``. For
+        TIFF, this is the ImageDescription tag as ``bytes`` (``b''`` if the tag
+        is absent). For other formats, it is ``None``.
 
     See Also
     --------
