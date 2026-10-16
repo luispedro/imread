@@ -89,16 +89,10 @@ To compile on Mac:
 sudo port install libpng tiff webp
 ```
 
-Either way, you can then compile with:
+Either way, you can then compile and install with:
 
 ```bash
-python setup.py build
-```
-
-and install with:
-
-```bash
-python setup.py install
+pip install .
 ```
 
 On Windows, you can also just download a pre-built package from [C.
@@ -121,6 +115,12 @@ or use the `pkgs.python3Packages.imread` object in your `*.nix` files.
 - *Main Author & Maintainer*: [Luis Pedro Coelho](https://luispedro.org) (follow on [twitter](https://twitter.com/luispedrocoelho) or [github](https://github.com/luispedro)).
 
 ### History
+
+## Version 0.7.7+
+
+-   Require Python 3.11 or later and NumPy 2.0 or later
+-   Switch build system to meson-python
+-   Build wheels for Linux (x86_64, aarch64), macOS and Windows
 
 ## Version 0.7.6 (2024-08-02)
 

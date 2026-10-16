@@ -1,0 +1,89 @@
+[build-system]
+requires = [
+    "meson-python>=0.17.1,<0.18",
+    "meson>=1.2.3",
+    "ninja",
+    "numpy>=2.0",
+]
+build-backend = "mesonpy"
+
+[project]
+name = "imread"
+dynamic = ["version"]
+description = "imread: Image reading library"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "Luis Pedro Coelho", email = "luis@luispedro.org"},
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Multimedia",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+    "Topic :: Software Development :: Libraries",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Programming Language :: C++",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "numpy>=2.0",
+]
+
+[project.urls]
+Homepage = "https://luispedro.org/software/imread"
+Documentation = "https://imread.readthedocs.io/"
+Repository = "https://github.com/luispedro/imread"
+Issues = "https://github.com/luispedro/imread/issues"
+
+[project.optional-dependencies]
+tests = [
+    "pip",
+    "meson-python>=0.17.1,<0.18",
+    "meson>=1.2.3",
+    "ninja",
+    "pytest",
+]
+
+[tool.cibuildwheel]
+# Run the tests against the installed wheel: pointing pytest at
+# {project}/imread/tests makes it import the (uncompiled) source tree.
+test-command = "pytest --pyargs imread.tests"
+test-extras = ["tests"]
+# Match the versions in the classifiers: no free-threaded (cp31xt) builds
+build = ["cp311-*", "cp312-*", "cp313-*", "cp314-*", "cp315-*"]
+skip = ["*musllinux*"]
+environment = {PIP_PREFER_BINARY = "1"}
+
+[tool.cibuildwheel.linux]
+# auditwheel bundles these into the wheel
+before-all = "dnf install -y libjpeg-turbo-devel libpng-devel libtiff-devel libwebp-devel"
+
+[tool.cibuildwheel.macos]
+# delocate bundles these into the wheel. Homebrew bottles target the runner's
+# macOS version, so the wheels cannot claim to support anything older
+before-all = "brew install jpeg-turbo libpng libtiff webp pkgconf"
+environment = {PIP_PREFER_BINARY = "1", MACOSX_DEPLOYMENT_TARGET = "15.0"}
+
+[tool.cibuildwheel.windows]
+# No 32-bit numpy wheels for the supported Python versions: AMD64 on x86-64
+# runners, ARM64 on ARM runners
+archs = ["auto64"]
+# The libraries come from vcpkg, which also provides pkgconf for meson to find
+# them. VCPKG_DEFAULT_TRIPLET (x64-windows or arm64-windows) is set by the
+# workflow. delvewheel bundles the DLLs into the wheel
+before-all = "vcpkg install libpng libjpeg-turbo tiff libwebp pkgconf"
+before-build = "pip install delvewheel"
+environment = { PIP_PREFER_BINARY = "1", PKG_CONFIG = "$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_DEFAULT_TRIPLET/tools/pkgconf/pkgconf.exe", PKG_CONFIG_PATH = "$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_DEFAULT_TRIPLET/lib/pkgconfig" }
+repair-wheel-command = "delvewheel repair --add-path %VCPKG_INSTALLATION_ROOT%\\installed\\%VCPKG_DEFAULT_TRIPLET%\\bin -w {dest_dir} {wheel}"
+# Force MSVC: otherwise meson picks up the MinGW gcc on the runner's PATH
+config-settings = {setup-args = "--vsenv"}

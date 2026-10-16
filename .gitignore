@@ -4,3 +4,5 @@
 /imread.egg-info/
 *.pyc
 *.so
+.pytest_cache/
+.mesonpy-*/

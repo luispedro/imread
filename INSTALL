@@ -2,7 +2,7 @@
 INSTALL Instructions
 ====================
 
-    python setup.py install
+    pip install .
 
 
 Dependencies

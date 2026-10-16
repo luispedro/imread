@@ -1,0 +1,66 @@
+name: Build wheel and sdist
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - build_wheel
+
+concurrency:
+  group: wheel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  make_sdist:
+    name: Make SDist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build SDist
+        run: pipx run build --sdist
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: cibw-sdist
+          path: dist/*.tar.gz
+
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # macos-15-intel is an intel runner, macos-15 is apple silicon;
+        # ubuntu-24.04-arm and windows-11-arm build native aarch64/ARM64 wheels
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, windows-11-arm, macos-15-intel, macos-15]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v4.3.1
+        env:
+          # Used on Windows to install and locate the vcpkg libraries (see
+          # pyproject.toml); ignored elsewhere
+          VCPKG_DEFAULT_TRIPLET: ${{ runner.arch == 'ARM64' && 'arm64-windows' || 'x64-windows' }}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./wheelhouse/*.whl
+
+  upload_all:
+    needs: [ build_wheels, make_sdist ]
+    environment: pypi
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: cibw-*
+          path: dist
+          merge-multiple: true

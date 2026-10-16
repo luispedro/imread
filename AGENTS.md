@@ -8,13 +8,13 @@ This file provides guidance to AI coding agents (such as Claude Code) when worki
 
 ## Build and test
 
-You must build the extension in place before you can run the tests:
+The build uses meson-python (`meson.build`, `meson.options`, `pyproject.toml`). There is no `setup.py`. The Makefile targets do an editable install with `--no-build-isolation`, so meson, meson-python, ninja, pkg-config and numpy must be installed in the active environment. The editable install rebuilds the extension when `imread` is imported.
 
 ```bash
-make debug     # DEBUG=2 python setup.py build --build-lib=.  (asserts on, _GLIBCXX_DEBUG; this is what CI uses)
-make fast      # optimized in-place build
-make tests     # make debug, then python -m pytest
-make clean     # remove build/ and the in-place .so files
+make debug     # editable build in build/debug: assertions on (b_ndebug=false) and _GLIBCXX_DEBUG (this is what CI uses)
+make fast      # optimized editable build in build/fast
+make tests     # make debug, then python -m pytest -v
+make clean     # remove build dirs and compiled .so files
 ```
 
 Run a single test:
@@ -24,11 +24,12 @@ python -m pytest imread/tests/test_png.py::test_asym -v
 ```
 
 Build notes:
-- System dependencies are the libpng, libjpeg, libtiff and libwebp dev headers. CI installs `jpeg libpng libwebp libtiff gcc_linux-64 gxx_linux-64 pytest` into a micromamba environment.
-- WebP support is detected with `pkg-config --exists libwebp`. Setting `EXCLUDE_WEBP=1` forces it off and defines `IMREAD_EXCLUDE_WEBP`, so WebP code must stay behind that macro.
-- `DEBUG=1` removes `NDEBUG`. `DEBUG=2` also defines `_GLIBCXX_DEBUG`, which turns on the bounds-checked `read`/`write` array overloads in `lib/base.h`.
-- After you add a `.cpp` file to `imread/lib/`, list it in `extensions` in `setup.py`. The exception is `lzw.cpp`, which `_lsm.cpp` `#include`s directly. New test data must match the `package_data` globs in `setup.py` (and `MANIFEST.in`) to ship in the sdist.
-- CI (`.github/workflows/test-python-package-with-conda.yml`) tests Python 3.8–3.12 against NumPy 1.19–2.0, so code must work on both NumPy 1.x and 2.x.
+- System dependencies are libpng, libjpeg, libtiff and libwebp. meson finds them with pkg-config (`libpng`, `libjpeg`, `libtiff-4`, `libwebp`). CI installs everything in `tests-requirements.txt` into a micromamba environment.
+- WebP is the `webp` meson feature option (`auto` by default). `-Dwebp=disabled` turns it off. Without WebP, the build defines `IMREAD_EXCLUDE_WEBP`, so WebP code must stay behind that macro.
+- `-Dglibcpp_debug=true` defines `_GLIBCXX_DEBUG`, which turns on the bounds-checked `read`/`write` array overloads in `lib/base.h`.
+- After you add a `.cpp` file to `imread/lib/`, list it in `extension_sources` in `meson.build`. The exception is `lzw.cpp`, which `_lsm.cpp` `#include`s directly. A new `.py` file must be added to `python_sources` in `meson.build`. Everything under `imread/tests/data/` is installed. The sdist is built by `meson dist`, so it contains exactly the files committed to git.
+- CI (`.github/workflows/test-python-package-with-conda.yml`) tests Python 3.11–3.15 against NumPy 2.0–2.5 on x86_64, plus aarch64. Requires Python 3.11+ and NumPy 2.0+.
+- Wheels are built with cibuildwheel (`.github/workflows/wheel.yml`, config in `pyproject.toml`) on tags and on the `build_wheel` branch. Linux (manylinux, x86_64 and aarch64), macOS (Intel and Apple Silicon) and Windows (AMD64 and ARM64) are covered. The image libraries come from dnf, Homebrew or vcpkg, and are bundled into the wheels.
 
 ## Architecture
 

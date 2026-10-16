@@ -1,3 +1,8 @@
+Version 0.7.7+
+	* Require Python 3.11 or later and NumPy 2.0 or later
+	* Switch build system to meson-python
+	* Build wheels for Linux (x86_64, aarch64), macOS and Windows
+
 Version 0.7.6 2024-08-02 by luispedro
 	* Fix loading paletted PNGs with transparency
 

@@ -1,0 +1,13 @@
+pip
+meson-python>=0.17.1,<0.18
+meson>=1.2.3
+ninja
+pkg-config
+pytest
+c-compiler
+cxx-compiler
+libjpeg-turbo
+libpng
+libtiff
+libwebp
+zlib

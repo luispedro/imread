@@ -1,0 +1,12 @@
+option(
+    'glibcpp_debug',
+    type: 'boolean',
+    value: false,
+    description: 'Enable libstdc++ checked iterators (and the bounds-checked array accessors in lib/base.h).',
+)
+option(
+    'webp',
+    type: 'feature',
+    value: 'auto',
+    description: 'Build WebP support (requires libwebp).',
+)

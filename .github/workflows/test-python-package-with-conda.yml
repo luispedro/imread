@@ -1,92 +1,99 @@
 name: Test mahotas-imread
 
-on: [push]
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-linux:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        os:
+          - ubuntu-latest
         python-version:
-          - '3.8'
-          - '3.9'
-          - '3.10'
           - '3.11'
           - '3.12'
+          - '3.13'
+          - '3.14'
+          - '3.15'
         numpy-version:
-          - '1.19'
-          - '1.20'
-          - '1.21'
-          - '1.22'
-          - '1.23'
-          - '1.24'
-          - '1.25'
-          - '1.26'
           - '2.0'
+          - '2.1'
+          - '2.2'
+          - '2.3'
+          - '2.4'
+          - '2.5'
         exclude:
-            # 3.8 is too old for NumPy 1.25+
-            - python-version: '3.8'
-              numpy-version: '1.25'
-            - python-version: '3.8'
-              numpy-version: '1.26'
-            - python-version: '3.8'
+
+            # NumPy 2.5+ is too new for Python 3.11
+            - python-version: '3.11'
+              numpy-version: '2.5'
+
+
+            # NumPy 2.0 is too old for Python 3.13
+            - python-version: '3.13'
               numpy-version: '2.0'
 
+            # NumPy <=2.3 are too old for Python 3.14
+            - python-version: '3.14'
+              numpy-version: '2.0'
+            - python-version: '3.14'
+              numpy-version: '2.1'
+            - python-version: '3.14'
+              numpy-version: '2.2'
+            - python-version: '3.14'
+              numpy-version: '2.3'
 
-            # NumPy 1.19 is not available on 3.7-9
-            - python-version: '3.8'
-              numpy-version: '1.19'
-            - python-version: '3.9'
-              numpy-version: '1.19'
+            # NumPy <=2.4 are too old for Python 3.15
+            - python-version: '3.15'
+              numpy-version: '2.0'
+            - python-version: '3.15'
+              numpy-version: '2.1'
+            - python-version: '3.15'
+              numpy-version: '2.2'
+            - python-version: '3.15'
+              numpy-version: '2.3'
+            - python-version: '3.15'
+              numpy-version: '2.4'
 
-
-            # NumPy <1.21 are too old for Python 3.10
-            - python-version: '3.10'
-              numpy-version: '1.19'
-            - python-version: '3.10'
-              numpy-version: '1.20'
-
-
-            # NumPy <1.23 are too old for Python 3.11
-            - python-version: '3.11'
-              numpy-version: '1.19'
-            - python-version: '3.11'
-              numpy-version: '1.20'
-            - python-version: '3.11'
-              numpy-version: '1.21'
-            - python-version: '3.11'
-              numpy-version: '1.22'
-
-            # NumPy <=1.25 are too old for Python 3.12
-            - python-version: '3.12'
-              numpy-version: '1.19'
-            - python-version: '3.12'
-              numpy-version: '1.20'
-            - python-version: '3.12'
-              numpy-version: '1.21'
-            - python-version: '3.12'
-              numpy-version: '1.22'
-            - python-version: '3.12'
-              numpy-version: '1.23'
-            - python-version: '3.12'
-              numpy-version: '1.24'
-            - python-version: '3.12'
-              numpy-version: '1.25'
+        # aarch64: plain `char` is unsigned there, unlike x86_64. Oldest and
+        # newest supported Python/NumPy only, to keep the matrix small
+        include:
+            - os: ubuntu-24.04-arm
+              python-version: '3.11'
+              numpy-version: '2.0'
+            - os: ubuntu-24.04-arm
+              python-version: '3.15'
+              numpy-version: '2.5'
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: mamba-org/setup-micromamba@v1
+    - uses: actions/checkout@v7
+
+    # Refresh the cached environment monthly so dependencies do not go stale
+    - name: Get cache period
+      id: period
+      run: echo "month=$(date +%Y-%m)" >> "$GITHUB_OUTPUT"
+
+    # All dependencies are installed when the environment is created so that
+    # they are part of the cached environment (packages installed in a later
+    # step are not cached and get downloaded again on every run)
+    - uses: mamba-org/setup-micromamba@v3
       with:
         cache-environment: true
+        cache-environment-key: env-${{ steps.period.outputs.month }}-${{ hashFiles('tests-requirements.txt') }}-
         cache-downloads: false
         environment-name: imread_test_env
-        create-args: python=${{ matrix.python-version }} numpy=${{ matrix.numpy-version }}
+        create-args: >-
+          python=${{ matrix.python-version }}
+          numpy=${{ matrix.numpy-version }}
+          --file tests-requirements.txt
 
-    - name: Install dependencies
-      shell: bash -l {0}
-      run: |
-        micromamba install --name imread_test_env python=${{ matrix.python-version }} numpy=${{ matrix.numpy-version }}
-        micromamba install --quiet --yes -n imread_test_env jpeg libpng libwebp libtiff gcc_linux-64 gxx_linux-64 coveralls pytest
     - name: Build
       shell: bash -l {0}
       run: |

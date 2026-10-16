@@ -12,7 +12,7 @@ You can get the released version using our favorite Python package manager::
 If you prefer, you can download the source from `PyPI
 <https://pypi.python.org/pypi/mahotas>`__ and run::
 
-    python setup.py install
+    pip install .
 
 You will need to have ``numpy`` and a ``C++`` compiler.
 
