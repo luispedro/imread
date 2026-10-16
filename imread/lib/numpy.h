@@ -41,7 +41,7 @@ class NumpyImage : public Image, public ImageWithMetadata {
 
         PyObject* metadataPyObject() {
             std::string* s =  this->get_meta();
-            if (s) return PyBytes_FromString(s->c_str());
+            if (s) return PyBytes_FromStringAndSize(s->data(), s->size());
             Py_RETURN_NONE;
         }
 

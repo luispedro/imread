@@ -199,6 +199,13 @@ const char* get_optional_cstring(const options_map& opts, const std::string key)
 }
 
 inline
+bool get_optional_string(const options_map& opts, const std::string key, std::string& res) {
+    options_map::const_iterator iter = opts.find(key);
+    if (iter == opts.end()) return false;
+    return iter->second.get_str(res);
+}
+
+inline
 int get_optional_int(const options_map& opts, const std::string key, const int def) {
     options_map::const_iterator iter = opts.find(key);
     if (iter == opts.end()) return def;

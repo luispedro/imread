@@ -152,6 +152,7 @@ or use the `pkgs.python3Packages.imread` object in your `*.nix` files.
 -   Fix BMP reading: top-down bitmaps, BITMAPV4/V5 headers, and swapped red and blue channels in paletted images
 -   Support 1-, 4- and 32-bit BMPs; 16-bit BMPs are now returned as RGB
 -   Fix saving of big-endian (non-native byte order) arrays, which were written byte-swapped
+-   Raise an error when saving TIFF metadata containing NUL bytes, instead of silently truncating it
 
 ### Version 0.7.6 (2024-08-02)
 

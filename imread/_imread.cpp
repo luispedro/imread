@@ -207,7 +207,12 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, boo
             PyObject* final = PyTuple_New(2);
             if (!final) return NULL;
             PyTuple_SET_ITEM(final, 0, static_cast<NumpyImage&>(*output).releasePyObject());
-            PyTuple_SET_ITEM(final, 1, static_cast<NumpyImage&>(*output).metadataPyObject());
+            PyObject* meta = static_cast<NumpyImage&>(*output).metadataPyObject();
+            if (!meta) {
+                Py_DECREF(final);
+                return NULL;
+            }
+            PyTuple_SET_ITEM(final, 1, meta);
             return final;
         }
     } catch (py_exception_set) {

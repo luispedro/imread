@@ -47,6 +47,12 @@ def test_read_back_with_metadata():
     assert meta == meta_read
 
 
+def test_metadata_with_nul():
+    simple = np.zeros((4, 4), np.uint8)
+    with pytest.raises(RuntimeError):
+        imsave(_filename, simple, metadata=b'ab\x00cd')
+
+
 def test_read_back_colour():
     im = np.arange(256).astype(np.uint8).reshape((32,-1))
     im = np.dstack([im, im*0, 255-im])

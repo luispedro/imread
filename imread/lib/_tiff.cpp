@@ -362,9 +362,13 @@ void TIFFFormat::do_write(image_list* input, byte_sink* output, const options_ma
         }
 
         TIFFSetField(t.tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
-        const char* meta = get_optional_cstring(opts, "metadata");
-        if (meta) {
-            TIFFSetField(t.tif, TIFFTAG_IMAGEDESCRIPTION, meta);
+        std::string meta;
+        if (get_optional_string(opts, "metadata", meta)) {
+            // ImageDescription is an ASCII tag: libtiff would silently cut it at the first NUL
+            if (meta.find('\0') != std::string::npos) {
+                throw CannotWriteError("imread.imsave._tiff: metadata cannot contain NUL bytes");
+            }
+            TIFFSetField(t.tif, TIFFTAG_IMAGEDESCRIPTION, meta.c_str());
         }
         double xres, yres;
         const bool has_xres = get_resolution(opts, "tiff:XResolution", xres);
