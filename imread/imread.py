@@ -165,6 +165,12 @@ def imread_multi(filename, formatstr=None):
 imload_multi = imread_multi
 
 
+def _as_native_contiguous(array):
+    # The C++ code reads the raw buffer, so it must be in native byte order
+    array = array.astype(array.dtype.newbyteorder('='), copy=False)
+    return np.ascontiguousarray(array)
+
+
 def imsave(filename, array, formatstr=None, metadata=None, opts=None):
     '''
     imsave(filename, array, formatstr={auto-detect}, metadata={None}, opts={})
@@ -209,7 +215,7 @@ def imsave(filename, array, formatstr=None, metadata=None, opts=None):
         opts = {}
     if not np.issubdtype(array.dtype, np.integer):
         raise TypeError('imread.imsave: only integer images are supported')
-    array = np.ascontiguousarray(array)
+    array = _as_native_contiguous(array)
     filename = _norm_path(filename)
     if formatstr is None:
         dot = filename.rfind('.')
@@ -264,7 +270,7 @@ def imsave_multi(filename, arrays, formatstr=None, opts=None):
     for array in arrays:
         if not np.issubdtype(array.dtype, np.integer):
             raise TypeError('imread.imsave: only integer images are supported')
-    arrays = [np.ascontiguousarray(array) for array in arrays]
+    arrays = [_as_native_contiguous(array) for array in arrays]
     filename = _norm_path(filename)
     if formatstr is None:
         dot = filename.rfind('.')
