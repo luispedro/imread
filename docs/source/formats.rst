@@ -54,5 +54,5 @@ tiff:horizontal-predictor
     Whether to use horizontal prediction in TIFF. This defaults to True
     for 16 bit images, and to False for 8 bit images. This is because
     compressing 16 bit images without horizontal prediction is often
-    counter-productive (see http://www.asmail.be/msg0055176395.html)
+    counter-productive (see https://web.archive.org/web/20190922141532/https://asmail.be/msg0055176395.html)
 

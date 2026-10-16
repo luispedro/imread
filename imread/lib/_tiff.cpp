@@ -337,7 +337,7 @@ void TIFFFormat::do_write(image_list* input, byte_sink* output, const options_ma
             // For 8 bit images, prediction defaults to false; for 16 bit images,
             // it defaults to true. This is because compression of raw 16 bit
             // images is often counter-productive without this flag. See the
-            // discusssion at http://www.asmail.be/msg0055176395.html
+            // discussion at https://web.archive.org/web/20190922141532/https://asmail.be/msg0055176395.html
             const bool prediction_default = im->nbits() != 8;
             if (get_optional_bool(opts, "tiff:horizontal-predictor", prediction_default)) {
                 TIFFSetField(t.tif, TIFFTAG_PREDICTOR, PREDICTOR_HORIZONTAL);

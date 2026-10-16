@@ -18,8 +18,8 @@ def read_roi(fileobj):
     points: a list of points
     '''
 # This is based on:
-# http://rsbweb.nih.gov/ij/developer/source/ij/io/RoiDecoder.java.html
-# http://rsbweb.nih.gov/ij/developer/source/ij/io/RoiEncoder.java.html
+# https://github.com/imagej/ImageJ/blob/master/ij/io/RoiDecoder.java
+# https://github.com/imagej/ImageJ/blob/master/ij/io/RoiEncoder.java
 
 
     SPLINE_FIT = 1

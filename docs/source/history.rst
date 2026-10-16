@@ -2,6 +2,12 @@
 History
 =======
 
+Version 0.7.7+
+--------------
+- Require Python 3.11 or later and NumPy 2.0 or later
+- Switch build system to meson-python
+- Build wheels for Linux (x86_64, aarch64), macOS and Windows
+
 Version 0.7.6 (2024-08-02)
 --------------------------
 - Fix loading paletted PNGs with transparency
@@ -10,7 +16,7 @@ Version 0.7.5 (2023-11-22)
 --------------------------
 - Fix build issue (#43, patch by @carlosal1015)
 
-Version 0.7.4 (2020-04-09)
+Version 0.7.4 (2020-04-14)
 --------------------------
 - Add missing header files to distribution
 
@@ -70,7 +76,7 @@ Version 0.3.2 (2013-10-06)
 - Allow user to specify JPEG quality when saving
 - Fix loading of 16 bit PNG images
 
-Version 0.3.1 (2013-06-20)
+Version 0.3.1 (2013-08-20)
 --------------------------
 - Fix possible crash on error with TIFF
 - Fix compilation on Windows (reported by Volker Hilsenstein)
@@ -104,12 +110,12 @@ Version 0.2.4 (2012-06-26)
 - Support saving 16-bit TIFF
 - Better Mac OS support (patch from Alexander Bohn)
 
-Version 0.2.3 (2012-06-8)
--------------------------
+Version 0.2.3 (2012-06-08)
+--------------------------
 - Fix imread_multi
 
-Version 0.2.2 (2012-06-5)
--------------------------
+Version 0.2.2 (2012-06-05)
+--------------------------
 - Add `formatstr` argument to imread
 - Open files in binary mode on Windows (patch by Christoph Gohlke)
 - Read-only support for LSM files
@@ -117,7 +123,7 @@ Version 0.2.2 (2012-06-5)
 - Fix writing of non-contiguous images (at least PNG was affected)
 
 
-Version 0.2.1 (2012-02-11)
+Version 0.2.1 (2012-04-11)
 --------------------------
 - Add missing files to distribution
 

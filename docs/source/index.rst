@@ -17,7 +17,7 @@ This needs to be used with a a computer vision & image processing packages:
 
 - `mahotas <https://luispedro.org/software/mahotas>`__
 - `scikit-image <https://scikit-image.org/>`__
-- `OpenCV <https://opencv.willowgarage.com/wiki/>`__
+- `OpenCV <https://opencv.org/>`__
 
 
 This grew out of frustration at current image loading solutions in Python, in
@@ -37,7 +37,7 @@ imread-mahotas on a scientific publication, please cite:
 
     **Luis Pedro Coelho** Mahotas: Open source software for scriptable computer
     vision in Journal of Open Research Software, vol 1, 2013. [`DOI
-    <https://dx.doi.org/10.5334/jors.ac>`__]
+    <https://doi.org/10.5334/jors.ac>`__]
 
 
 In Bibtex format::
@@ -47,7 +47,7 @@ In Bibtex format::
         title = {Mahotas: Open source software for scriptable computer vision},
         journal = {Journal of Open Research Software},
         year = {2013},
-        doi = {https://dx.doi.org/10.5334/jors.ac},
+        doi = {10.5334/jors.ac},
         month = {July},
         volume = {1}
     }

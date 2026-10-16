@@ -94,7 +94,7 @@ Version 0.2.2 2012-06-05 by luispedro
 	* Read-only support for XCF files (through `xcf2png`)
 	* Fix writing of non-contiguous images (at least PNG was affected)
 
-Version 0.2.1 2012-02-10 by luispedro
+Version 0.2.1 2012-04-11 by luispedro
 	* Add missing files to distribution
 
 Version 0.2 2012-03-19 by luispedro
