@@ -145,6 +145,7 @@ or use the `pkgs.python3Packages.imread` object in your `*.nix` files.
 -   Build wheels for Linux (x86_64, aarch64), macOS and Windows
 -   Fix the `tiff:YResolution` option, which was ignored (`tiff:XResolution` was used for both)
 -   Fix hang and buffer over-read on truncated JPEG files
+-   Raise `TypeError` on invalid options instead of aborting the interpreter
 
 ### Version 0.7.6 (2024-08-02)
 

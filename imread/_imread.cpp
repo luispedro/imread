@@ -61,9 +61,18 @@ options_map parse_options(PyObject* dict) {
     Py_ssize_t pos = 0;
 
     while (PyDict_Next(dict, &pos, &key, &value)) {
-        std::string k = get_cstring(key);
+        const char* kc = get_cstring(key);
+        if (!kc) {
+            if (!PyErr_Occurred()) {
+                PyErr_SetString(PyExc_TypeError, "imread: option names must be strings");
+            }
+            throw py_exception_set();
+        }
+        std::string k = kc;
         if (PyLong_Check(value)) {
-            res[k] = number_or_string(int(PyLong_AsLong(value)));
+            const long v = PyLong_AsLong(value);
+            if (v == -1 && PyErr_Occurred()) throw py_exception_set();
+            res[k] = number_or_string(int(v));
 #if PY_MAJOR_VERSION < 3
         } else if (PyInt_Check(value)) {
             res[k] = number_or_string(int(PyInt_AS_LONG(value)));
@@ -79,9 +88,12 @@ options_map parse_options(PyObject* dict) {
         } else {
             const char* c = get_cstring(value);
             if (!c) {
-                std::stringstream ss;
-                ss << "Error while parsing option value for '" << k << "': type was not understood.";
-                throw OptionsError(ss.str());
+                if (!PyErr_Occurred()) {
+                    std::stringstream ss;
+                    ss << "imread: Error while parsing option value for '" << k << "': type was not understood.";
+                    PyErr_SetString(PyExc_TypeError, ss.str().c_str());
+                }
+                throw py_exception_set();
             }
             res[k] = number_or_string(std::string(c));
         }
@@ -174,9 +186,8 @@ PyObject* py_imread_may_multi(PyObject* self, PyObject* args, bool is_multi, boo
         PyErr_SetString(PyExc_RuntimeError,TypeErrorMsg);
         return NULL;
     }
-    options_map opts = parse_options(optsDict);
-
     try {
+        options_map opts = parse_options(optsDict);
         std::unique_ptr<ImageFormat> format(get_format(formatstr));
         if (!format.get()) {
             std::stringstream ss;
