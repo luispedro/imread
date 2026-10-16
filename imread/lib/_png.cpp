@@ -17,7 +17,7 @@ void throw_error(png_structp png_ptr, png_const_charp error_msg) {
     throw CannotReadError(error_msg);
 }
 
-// This checks how 16-bit uints are stored in the current platform.
+// This checks how 16-bit uints are stored on the current platform.
 bool is_big_endian() {
     uint16_t v = 0xff00;
     unsigned char* vp = reinterpret_cast<unsigned char*>(&v);
@@ -106,7 +106,7 @@ std::unique_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory, 
         throw CannotReadError(out.str());
     }
 
-    // PNGs are in "network" order (ie., big-endian)
+    // PNGs are in "network" order (i.e., big-endian)
     if (bit_depth == 16 && !is_big_endian()) png_set_swap(p.png_ptr);
 
     const bool strip_alpha = get_optional_bool(opts, "strip_alpha", false);

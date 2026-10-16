@@ -9,7 +9,7 @@ def readxcf(xcf_filename, formatstr, _flags):
     '''
     im = readxcf(xcf_filename, formatstr)
 
-    Returns a numpy array with the (flattened) XCF file.
+    Returns a NumPy array with the (flattened) XCF file.
 
     Depends on `xcf2png` being available.
 
@@ -19,7 +19,7 @@ def readxcf(xcf_filename, formatstr, _flags):
         Filename
 
     formatstr : str
-        format. Must be 'xcf'
+        Format. Must be 'xcf'
 
     Returns
     -------

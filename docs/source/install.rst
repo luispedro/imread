@@ -45,8 +45,8 @@ only if it is found. pixi can provide all of these::
 To build without WebP support, pass
 ``--config-settings=setup-args=-Dwebp=disabled`` to ``pip install``.
 
-Development happens on `github <https://github.com/luispedro/imread>`__. Watch
-out that *development versions are more likely to have problems*.
+Development happens on `GitHub <https://github.com/luispedro/imread>`__. Note
+that *development versions are more likely to have problems*.
 
 With nix
 --------

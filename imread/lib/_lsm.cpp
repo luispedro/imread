@@ -554,7 +554,7 @@ int LSMReader::ReadTimeStampInformation(byte_source* s, unsigned long offset) {
 int LSMReader::ReadLSMSpecificInfo(byte_source* s, unsigned long pos) {
 
   pos += 2 * 4; // skip over the start of the LSMInfo
-                // first 4 byte entry if magic number
+                // first 4 byte entry is magic number
                 // second is number of bytes in this structure
 
   // Then we read X
@@ -640,7 +640,7 @@ int LSMReader::ReadLSMSpecificInfo(byte_source* s, unsigned long pos) {
 
   // Read scan information
   this->ReadScanInformation(s, scanInformationOffset);
-  // SKip Zeiss Vision KS-3D speific data
+  // Skip Zeiss Vision KS-3D specific data
   pos +=  4;
   // Read timestamp information
   unsigned long offset = ReadUnsignedInt(s, &pos);
@@ -775,7 +775,7 @@ int LSMReader::AnalyzeTag(byte_source* s, unsigned long startPos) {
 
     const int value = parse_uint32_t(valueData);
 
-    // if there is more than 4 bytes in value,
+    // if there are more than 4 bytes in value,
     // value is an offset to the actual data
     const int dataSize = TIFF_BYTES(type);
     const unsigned long readSize = dataSize*length;

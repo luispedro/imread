@@ -138,7 +138,7 @@ struct image_list {
         void push_back(std::unique_ptr<Image>&& p) { content.push_back(p.release()); }
         Image* at(const unsigned ix) const { return content.at(ix); }
 
-        /// After release(), all of the pointers will be owned by the caller
+        /// After release(), all of the pointers will be owned by the caller,
         /// who must figure out how to delete them. Note that release() resets the list.
         std::vector<Image*> release() {
             std::vector<Image*> r;

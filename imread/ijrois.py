@@ -6,7 +6,7 @@ def read_roi(fileobj):
     '''
     points = read_roi(fileobj)
 
-    Read ImageJ's ROI format
+    Read ImageJ's ROI format.
 
     Parameters
     ----------
@@ -60,9 +60,9 @@ def read_roi(fileobj):
         raise IOError('Magic number not found')
     version = get16()
 
-    # It seems that the roi type field occupies 2 Bytes, but only one is used
+    # It seems that the ROI type field occupies 2 bytes, but only one is used
     roi_type = get8()
-    # Discard second Byte:
+    # Discard second byte:
     get8()
 
     if not (0 <= roi_type < 11):
@@ -110,7 +110,7 @@ def read_roi(fileobj):
 
 def read_roi_zip(fname):
     '''
-    Reads all ROIs in a ZIP file
+    Reads all ROIs in a ZIP file.
 
     Parameters
     ----------

@@ -2,6 +2,6 @@
 IMREAD
 ======
 
-This is library to read & write image files.
+This is a library to read & write image files.
 
 

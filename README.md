@@ -6,7 +6,7 @@
 [![Test mahotas-imread](https://github.com/luispedro/imread/actions/workflows/test-python-package-with-conda.yml/badge.svg)](https://github.com/luispedro/imread/actions/workflows/test-python-package-with-conda.yml)
 [![Documentation Status](https://readthedocs.org/projects/imread/badge/?version=latest)](https://imread.readthedocs.io/en/latest/?badge=latest)
 
-IO with images and numpy arrays.
+IO with images and NumPy arrays.
 
 Mahotas-imread is a simple module with a small number of functions:
 
@@ -46,8 +46,8 @@ Python, in either my packages \[[mahotas](https://mahotas.rtfd.io)\] or
 packages from others \[[scikit-image](https://scikit-image.org/), for
 example\].
 
-The relationship with numpy is very contained and this could be easily
-repurposed to load images in other frameworks, even other programming
+The relationship with NumPy is very contained, so this could easily be
+repurposed to load images in other frameworks, or even in other programming
 languages.
 
 [Online documentation](https://imread.rtfd.io/)
@@ -62,7 +62,7 @@ mahotas):
 > computer vision in Journal of Open Research Software, vol 1, 2013.
 > \[[DOI](https://doi.org/10.5334/jors.ac)\]
 
-In Bibtex format:
+In BibTeX format:
 
 ```
 @article{mahotas,
@@ -133,9 +133,9 @@ or use the `pkgs.python3Packages.imread` object in your `*.nix` files.
 ## Links & Contacts
 
 - *Documentation*: https://imread.readthedocs.io/
-- *Issue Tracker*: [github imread issues](https://github.com/luispedro/imread/issues)
+- *Issue Tracker*: [GitHub imread issues](https://github.com/luispedro/imread/issues)
 - *Mailing List*: Use the [pythonvision mailing list](https://groups.google.com/group/pythonvision?pli=1) for questions, bug submissions, etc.
-- *Main Author & Maintainer*: [Luis Pedro Coelho](https://luispedro.org) (follow on [twitter](https://twitter.com/luispedrocoelho) or [github](https://github.com/luispedro)).
+- *Main Author & Maintainer*: [Luis Pedro Coelho](https://luispedro.org) (follow on [Twitter](https://twitter.com/luispedrocoelho) or [GitHub](https://github.com/luispedro)).
 
 ## History
 
@@ -185,38 +185,38 @@ or use the `pkgs.python3Packages.imread` object in your `*.nix` files.
 ### Version 0.6.1 (2018-02-15)
 
 -   Support pathlib paths as function arguments
--   Fix 16 bit PNG write support (patch by Tomi Aarnio)
+-   Fix 16-bit PNG write support (patch by Tomi Aarnio)
 
 ### Version 0.6 (2016-09-21)
 
 -   Add `supports_format` function
--   Make png compression level tunable when calling imsave
+-   Make PNG compression level tunable when calling imsave
 -   Add imsave_multi
 -   Add partial support for reading PNG files in Gray+alpha format
 
 ### Version 0.5.1 (2014-11-06)
 
 -   Improve tests to work after installation
--   Fix compilation in MSVC (patch by Christoph Gohlke)
+-   Fix compilation with MSVC (patch by Christoph Gohlke)
 
 ### Version 0.5 (2014-10-16)
 
 -   Add magic-number based format auto-detection
--   Auto detect whether webp is installed
+-   Auto-detect whether WebP is installed
 -   Fix WebP reading (update to newer API)
 
 ### Version 0.4 (2014-07-21)
 
 -   Add configuration for TIFF saving
--   Correctly save 16 bit PNG images
+-   Correctly save 16-bit PNG images
 -   Better error messages for JPEG
 
 ### Version 0.3.2 (2013-10-06)
 
--   Added imload\*/imwrite synonyms as suggested by Thouis (Ray) Jones
+-   Add imload\*/imwrite synonyms as suggested by Thouis (Ray) Jones
 -   Options framework
 -   Allow user to specify JPEG quality when saving
--   Fix loading of 16 bit PNG images
+-   Fix loading of 16-bit PNG images
 
 ### Version 0.3.1 (2013-08-20)
 
@@ -234,7 +234,7 @@ or use the `pkgs.python3Packages.imread` object in your `*.nix` files.
 ### Version 0.2.6 (2013-06-19)
 
 -   Fix hard crash when saving with non-existing file type
--   Fix compilation on MacOS (patch by Alexander Bohn)
+-   Fix compilation on macOS (patch by Alexander Bohn)
 -   Add `verbose` argument to tests.run()
 -   Better error when attempting to save floating point images
 
@@ -242,8 +242,8 @@ or use the `pkgs.python3Packages.imread` object in your `*.nix` files.
 
 -   Correctly accept uppercase extensions
 -   Python 3 support (patch by Christoph Gohlke \[pull request 8 on
-    github\])
--   Read 1-Bit PNGs
+    GitHub\])
+-   Read 1-bit PNGs
 -   Read simple BMPs (compression and many bit types not supported)
 -   More complete debug mode (export DEBUG=2 when building), more checks
 
@@ -251,7 +251,7 @@ or use the `pkgs.python3Packages.imread` object in your `*.nix` files.
 
 -   Add lzw.cpp to source distribution
 -   Support saving 16-bit TIFF
--   Better Mac OS support (patch from Alexander Bohn)
+-   Better macOS support (patch from Alexander Bohn)
 
 ### Version 0.2.3 (2012-06-08)
 
@@ -271,7 +271,7 @@ or use the `pkgs.python3Packages.imread` object in your `*.nix` files.
 
 ### Version 0.2 (2012-03-19)
 
--   Compile on MSVC++ (Patches by Christoph Gohlke)
+-   Compile on MSVC++ (patches by Christoph Gohlke)
 -   Support for WebP
 -   Support for 1-bit TIFFs
 -   Better error message

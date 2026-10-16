@@ -53,8 +53,8 @@ PNG
 - **Reading:** 8- and 16-bit greyscale, RGB and RGBA, and 1-bit greyscale
   (returned as ``bool``). Paletted images with 8-bit indices are expanded to
   RGB, or to RGBA if they have transparency. Other paletted images, and 2- and
-  4-bit greyscale images, are not supported. Greyscale+alpha images can only be read with
-  ``opts={'strip_alpha': True}``, which drops the alpha channel.
+  4-bit greyscale images, are not supported. Greyscale+alpha images can only be
+  read with ``opts={'strip_alpha': True}``, which drops the alpha channel.
 - **Writing:** ``uint8`` and ``uint16`` arrays, either 2-dimensional
   (greyscale) or with 3 (RGB) or 4 (RGBA) channels.
 
@@ -65,7 +65,7 @@ TIFF
   any number of channels. ``imread`` returns the first page and ``imread_multi``
   returns a list with all the pages.
 
-  Floating point and signed integer TIFFs are not supported: they are returned
+  Floating-point and signed integer TIFFs are not supported: they are returned
   as unsigned integers holding the raw bits. Tiled TIFFs and TIFFs with
   separate colour planes are not supported either. Photometric interpretation
   is ignored, so palette images return the indices and "min-is-white" images
@@ -164,17 +164,17 @@ jpeg:quality
     clamped.
 
 tiff:compress
-    Whether to use (LZW) compression when saving TIFF (default: True)
+    Whether to use (LZW) compression when saving TIFF (default: True).
 
 tiff:horizontal-predictor
     Whether to use horizontal prediction in TIFF. This defaults to True for
-    16 bit images, and to False for 8 bit images. This is because compressing
-    16 bit images without horizontal prediction is often counter-productive
+    16-bit images, and to False for 8-bit images. This is because compressing
+    16-bit images without horizontal prediction is often counterproductive
     (see `this discussion on the libtiff mailing list
     <https://web.archive.org/web/20190922141532/https://asmail.be/msg0055176395.html>`__).
 
 tiff:XResolution, tiff:YResolution
-    The resolution (pixels per unit), as an integer or a floating point
+    The resolution (pixels per unit), as an integer or a floating-point
     number. If only one of them is given, it is used for both.
 
 tiff:XResolutionUnit
