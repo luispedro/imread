@@ -20,6 +20,9 @@ class NumpyImage : public Image, public ImageWithMetadata {
             Py_XDECREF(array_);
         }
 
+        NumpyImage(const NumpyImage&) = delete;
+        NumpyImage& operator=(const NumpyImage&) = delete;
+
         std::unique_ptr<Image> clone() const {
             Py_XINCREF(array_);
             return std::unique_ptr<Image>(new NumpyImage(this->array_));

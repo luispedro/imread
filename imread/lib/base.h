@@ -119,12 +119,12 @@ class ImageFactory {
 
 class ImageWithMetadata {
     public:
-        ImageWithMetadata():meta_(0) { }
-        virtual ~ImageWithMetadata() { delete meta_; };
-        std::string* get_meta() { return meta_; }
-        void set_meta(const std::string& m) { if (meta_) delete meta_; meta_ = new std::string(m); }
+        ImageWithMetadata() { }
+        virtual ~ImageWithMetadata() { }
+        std::string* get_meta() { return meta_.get(); }
+        void set_meta(const std::string& m) { meta_.reset(new std::string(m)); }
     private:
-        std::string* meta_;
+        std::unique_ptr<std::string> meta_;
 };
 
 /// This class *owns* its members and will delete them if destroyed
