@@ -7,16 +7,16 @@ version: 2
 
 # Set the version of Python and other tools you might need
 build:
-  os: ubuntu-22.04
+  os: ubuntu-24.04
   tools:
-    python: "3.11"
+    python: "3.12"
 
 sphinx:
   configuration: docs/source/conf.py
+  fail_on_warning: true
 
+# imread itself is not installed: building it needs the C image libraries, and
+# the docs do not import it (conf.py reads the version from the source tree)
 python:
    install:
    - requirements: readthedocs-requirements.txt
-   - method: pip
-     path: .
-

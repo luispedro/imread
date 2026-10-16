@@ -9,13 +9,15 @@
 # serve to show the default.
 
 
-# We cannot import ``imread`` as imread does not install correctly in the
-# rtfd.io environment (jpeglib is missing).
+import sys, os, re
 
-# from imread import __version__ as imread_version
-
-imread_version = '0.7.4'
-import sys, os
+# imread is not installed in the Read the Docs environment (building it needs
+# the C image libraries), so the version is read from the source tree instead
+# of importing it.
+_version_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             '..', '..', 'imread', 'imread_version.py')
+with open(_version_file, encoding='utf-8') as f:
+    imread_version = re.search(r"__version__\s*=\s*['\"]([^'\"]+)['\"]", f.read()).group(1)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -51,14 +53,14 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'imread'
-copyright = u'2012-2023, Luis Pedro Coelho'
+copyright = u'2012-2026, Luis Pedro Coelho'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = imread_version[:3]
+version = '.'.join(imread_version.split('.')[:2])
 # The full version, including alpha/beta/rc tags.
 release = imread_version
 
@@ -130,7 +132,7 @@ html_theme = 'nature'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+#html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -234,7 +236,7 @@ man_pages = [
 epub_title = u'imread'
 epub_author = u'Luis Pedro Coelho'
 epub_publisher = u'Luis Pedro Coelho'
-epub_copyright = u'2012-2023, Luis Pedro Coelho'
+epub_copyright = u'2012-2026, Luis Pedro Coelho'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
@@ -269,4 +271,4 @@ epub_copyright = u'2012-2023, Luis Pedro Coelho'
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
