@@ -3,7 +3,6 @@
 #
 # License: MIT (see COPYING.MIT file)
 
-from __future__ import print_function
 try:
     from .imread import imread, imwrite, imread_multi, imread_from_blob, imwrite_multi
     from .imread import detect_format, supports_format

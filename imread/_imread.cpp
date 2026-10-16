@@ -31,26 +31,15 @@ namespace{
 struct py_exception_set { };
 
 const char* get_blob(PyObject* data, size_t& len) {
-#if PY_MAJOR_VERSION < 3
-    if (!PyString_Check(data)) return 0;
-    len = PyString_Size(data);
-    return PyString_AsString(data);
-#else
     len = PyBytes_Size(data);
     if (!PyBytes_Check(data)) return 0;
     return PyBytes_AsString(data);
-#endif
 }
 
 
 const char* get_cstring(PyObject* stro) {
-#if PY_MAJOR_VERSION < 3
-    if (!PyString_Check(stro)) return 0;
-    return PyString_AsString(stro);
-#else
     if (!PyUnicode_Check(stro)) return 0;
     return PyUnicode_AsUTF8(stro);
-#endif
 }
 
 
@@ -73,18 +62,12 @@ options_map parse_options(PyObject* dict) {
             const long v = PyLong_AsLong(value);
             if (v == -1 && PyErr_Occurred()) throw py_exception_set();
             res[k] = number_or_string(int(v));
-#if PY_MAJOR_VERSION < 3
-        } else if (PyInt_Check(value)) {
-            res[k] = number_or_string(int(PyInt_AS_LONG(value)));
-#endif
         } else if (PyFloat_Check(value)) {
             res[k] = number_or_string(PyFloat_AS_DOUBLE(value));
-#if PY_MAJOR_VERSION >= 3
         } else if (PyBytes_Check(value)) {
             size_t len;
             const char* blob = get_blob(value, len);
             res[k] = number_or_string(std::string(blob, len));
-#endif
         } else {
             const char* c = get_cstring(value);
             if (!c) {
@@ -146,11 +129,7 @@ PyObject* py_detect_format(PyObject* self, PyObject* args) {
         std::unique_ptr<byte_source> input = get_input(filename_or_blob_object, is_blob);
         const char* format = magic_format(&*input);
         if (!format) Py_RETURN_NONE;
-#if PY_MAJOR_VERSION >= 3
         return PyUnicode_FromString(format);
-#else
-        return PyBytes_FromString(format);
-#endif
     } catch (py_exception_set) {
         return 0;
     } catch (const std::bad_alloc& a) {
@@ -356,15 +335,6 @@ PyMethodDef methods[] = {
 
 } // namespace
 
-#if PY_MAJOR_VERSION < 3
-PyMODINIT_FUNC
-init_imread()
-  {
-    import_array();
-    (void)Py_InitModule("_imread", methods);
-  }
-#else
-
 static struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
         "_imread",
@@ -384,4 +354,3 @@ PyInit__imread()
     PyObject *module = PyModule_Create(&moduledef);
     return module;
   }
-#endif
