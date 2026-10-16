@@ -76,11 +76,14 @@ int color_type_of(Image* im) {
 }
 
 
-void swap_bytes_inplace(std::vector<png_bytep>& data, const int nelems, stack_based_memory_pool& mem) {
-    for (unsigned int r = 0; r != data.size(); ++r) {
-        png_bytep row = data[r];
-        png_bytep newbf = mem.allocate_as<png_bytep>(nelems * 2);
-        std::memcpy(newbf, row, nelems*2);
+// Copies every row into buf with the bytes of each 16-bit value swapped and
+// repoints data at the copies. buf must stay alive until the rows are written.
+void swap_bytes_to_buffer(std::vector<png_bytep>& data, const int nelems, std::vector<png_byte>& buf) {
+    const std::size_t rowbytes = std::size_t(nelems) * 2;
+    buf.resize(data.size() * rowbytes);
+    for (std::size_t r = 0; r != data.size(); ++r) {
+        png_bytep newbf = &buf[r * rowbytes];
+        std::memcpy(newbf, data[r], rowbytes);
         for (int c = 0; c != nelems; ++c) {
             std::swap(newbf[2*c], newbf[2*c + 1]);
         }
@@ -157,7 +160,6 @@ std::unique_ptr<Image> PNGFormat::read(byte_source* src, ImageFactory* factory, 
 
 void PNGFormat::write(Image* input, byte_sink* output, const options_map& opts) {
     png_holder p(png_holder::write_mode);
-    stack_based_memory_pool alloc;
     p.create_info();
     png_set_write_fn(p.png_ptr, output, write_to_source, flush_source);
     const int height = input->dim(0);
@@ -176,8 +178,9 @@ void PNGFormat::write(Image* input, byte_sink* output, const options_map& opts) 
     png_write_info(p.png_ptr, p.png_info);
 
     std::vector<png_bytep> rowps = allrows<png_byte>(*input);
+    std::vector<png_byte> swapped;
     if (bit_depth == 16 && !is_big_endian()) {
-        swap_bytes_inplace(rowps, width * nchannels, alloc);
+        swap_bytes_to_buffer(rowps, width * nchannels, swapped);
     }
 
     png_write_image(p.png_ptr, &rowps[0]);
