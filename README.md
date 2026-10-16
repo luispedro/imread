@@ -149,6 +149,8 @@ or use the `pkgs.python3Packages.imread` object in your `*.nix` files.
 -   Raise `TypeError` on invalid options instead of aborting the interpreter
 -   Fix out-of-bounds reads in `imread_from_blob` on malformed or truncated input
 -   Fix crash when reading an empty WebP blob
+-   Fix BMP reading: top-down bitmaps, BITMAPV4/V5 headers, and swapped red and blue channels in paletted images
+-   Support 1-, 4- and 32-bit BMPs; 16-bit BMPs are now returned as RGB
 
 ### Version 0.7.6 (2024-08-02)
 

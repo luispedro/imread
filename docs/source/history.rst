@@ -8,6 +8,8 @@ Version 0.7.7+
 - Switch build system to meson-python
 - Build wheels for Linux (x86_64, aarch64), macOS and Windows
 - Fix the ``tiff:YResolution`` option, which was ignored (``tiff:XResolution`` was used for both)
+- Fix BMP reading: top-down bitmaps, BITMAPV4/V5 headers, and swapped red and blue channels in paletted images
+- Support 1-, 4- and 32-bit BMPs; 16-bit BMPs are now returned as RGB
 
 Version 0.7.6 (2024-08-02)
 --------------------------

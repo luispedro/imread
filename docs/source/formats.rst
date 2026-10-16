@@ -97,9 +97,12 @@ found when imread was built.
 BMP
 ---
 
-Read-only. Only uncompressed, bottom-up bitmaps with 8, 16 or 24 bits per pixel
-are supported. 8-bit (paletted) images are expanded to RGB. 16-bit images are
-returned as a 2-dimensional ``uint16`` array of the raw pixel values.
+Read-only. Uncompressed bitmaps with 1, 4, 8, 16, 24 or 32 bits per pixel are
+supported, in both bottom-up and top-down row order. Images are returned as RGB
+(``uint8``, 3 channels). Paletted images (1, 4 and 8 bits) are expanded to RGB.
+16- and 32-bit images may use bit-field colour masks; when they include an alpha
+mask, the image is returned as RGBA (4 channels). Run-length encoded (RLE)
+bitmaps are not supported.
 
 STK
 ---
