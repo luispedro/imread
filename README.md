@@ -146,6 +146,7 @@ or use the `pkgs.python3Packages.imread` object in your `*.nix` files.
 -   Fix the `tiff:YResolution` option, which was ignored (`tiff:XResolution` was used for both)
 -   Fix hang and buffer over-read on truncated JPEG files
 -   Raise `TypeError` on invalid options instead of aborting the interpreter
+-   Fix out-of-bounds reads in `imread_from_blob` on malformed or truncated input
 
 ### Version 0.7.6 (2024-08-02)
 
