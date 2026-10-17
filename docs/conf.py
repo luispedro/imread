@@ -13,13 +13,13 @@ import sys, os, re
 # the C image libraries), so the version is read from the source tree instead
 # of importing it.
 _version_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                             '..', '..', 'imread', 'imread_version.py')
+                             '..', 'imread', 'imread_version.py')
 with open(_version_file, encoding='utf-8') as f:
     imread_version = re.search(r"__version__\s*=\s*['\"]([^'\"]+)['\"]", f.read()).group(1)
 
 # autodoc imports imread from the source tree. The compiled extension and NumPy
 # are mocked (see autodoc_mock_imports below), so neither needs to be installed.
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # -- General configuration -----------------------------------------------------
 
@@ -52,8 +52,12 @@ napoleon_type_aliases = {
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
-# The suffix of source filenames.
-source_suffix = '.rst'
+# The suffix of source filenames. The .md files are still reStructuredText
+# (they are converted to Markdown in the next commit).
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'restructuredtext',
+}
 
 # The encoding of source files.
 source_encoding = 'utf-8'
@@ -86,7 +90,7 @@ release = imread_version
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = []
+exclude_patterns = ['_build']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None

@@ -12,7 +12,7 @@ build:
     python: "3.12"
 
 sphinx:
-  configuration: docs/source/conf.py
+  configuration: docs/conf.py
   fail_on_warning: true
 
 # imread itself is not installed, as building it needs the C image libraries.

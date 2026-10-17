@@ -17,7 +17,7 @@ tests: debug
 
 docs:
 	rm -rf build/docs
-	cd docs && make html && cp -r build/html ../build/docs
+	sphinx-build -b html docs build/docs
 	@echo python -m build
 
 .PHONY: clean docs tests fast debug install
