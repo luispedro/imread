@@ -15,8 +15,9 @@ sphinx:
   configuration: docs/source/conf.py
   fail_on_warning: true
 
-# imread itself is not installed: building it needs the C image libraries, and
-# the docs do not import it (conf.py reads the version from the source tree)
+# imread itself is not installed, as building it needs the C image libraries.
+# conf.py reads the version from the source tree, and autodoc imports the
+# Python code from there, with the compiled extension and NumPy mocked.
 python:
    install:
    - requirements: readthedocs-requirements.txt

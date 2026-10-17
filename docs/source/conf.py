@@ -17,10 +17,9 @@ _version_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 with open(_version_file, encoding='utf-8') as f:
     imread_version = re.search(r"__version__\s*=\s*['\"]([^'\"]+)['\"]", f.read()).group(1)
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+# autodoc imports imread from the source tree. The compiled extension and NumPy
+# are mocked (see autodoc_mock_imports below), so neither needs to be installed.
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 # -- General configuration -----------------------------------------------------
 
@@ -31,11 +30,24 @@ with open(_version_file, encoding='utf-8') as f:
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
     ]
+
+autodoc_mock_imports = ['numpy', 'imread._imread']
+autodoc_member_order = 'bysource'
+
+# The docstrings are in NumPy style
+napoleon_google_docstring = False
+napoleon_use_rtype = False
+napoleon_preprocess_types = True
+napoleon_type_aliases = {
+    'ndarray': 'numpy.ndarray',
+    'file-like': ':term:`file-like <python:file-like object>`',
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -269,4 +281,7 @@ epub_copyright = '2012-2026, Luis Pedro Coelho'
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+}

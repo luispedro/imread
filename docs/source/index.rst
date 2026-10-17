@@ -3,25 +3,26 @@ Welcome to imread's documentation!
 
 Imread is a very simple library, with a small number of functions:
 
-imread
+:func:`~imread.imread`
     Reads an image file
-imread_multi
+:func:`~imread.imread_multi`
     Reads all the images in a multi-image file (TIFF and STK)
-imread_from_blob
+:func:`~imread.imread_from_blob`
     Reads an image from a ``bytes`` object in memory
-imsave
+:func:`~imread.imsave`
     Writes an image file
-imsave_multi
+:func:`~imread.imsave_multi`
     Writes several images into a single file (TIFF only)
-detect_format
+:func:`~imread.detect_format`
     Detects the format of a file or blob from its magic number (PNG and JPEG
     only)
-supports_format
+:func:`~imread.supports_format`
     Checks whether a format is supported
 
 ``imload``, ``imload_multi``, ``imload_from_blob``, ``imwrite`` and
-``imwrite_multi`` are aliases. The ``imread.ijrois`` module reads `ImageJ
-<https://imagej.net/>`__ regions of interest (see :doc:`formats`).
+``imwrite_multi`` are aliases. The :mod:`imread.ijrois` module reads `ImageJ
+<https://imagej.net/>`__ regions of interest (see :doc:`formats`). All of them
+are documented in the :doc:`api`.
 
 It is meant to be used with a computer vision & image processing package, such
 as:
@@ -83,6 +84,7 @@ Contents:
    readme
    install
    formats
+   api
    non-python
    history
 
