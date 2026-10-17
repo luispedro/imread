@@ -33,36 +33,39 @@ def _norm_path(path):
     return path
 
 def imread(filename, as_grey=False, formatstr=None, return_metadata=False, opts=None):
-    '''
-    im = imread(filename, as_grey=False, formatstr={filename extension}, return_metadata=False)
-    im,meta = imread(filename, as_grey=False, formatstr={filename extension}, return_metadata=True)
-
-    Read an image into an ndarray from a file.
+    '''Read an image from a file.
 
     Parameters
     ----------
     filename : str or os.PathLike
-        filename
-    as_grey : boolean, optional
-        Whether to convert to a greyscale image (default: False)
+        Path to the file.
+    as_grey : bool, optional
+        Whether to convert the image to greyscale (default: False).
     formatstr : str, optional
-        Format name. This is typically the same as the extension of the file
-        and inferred from there. However, if you have a file whose extension
-        does not correspond to the format, you can pass it explicitly.
+        Format name (see :doc:`formats`). By default, the format is taken from
+        the lowercased file extension, so ``image.PNG`` is read as PNG. Aliases
+        such as ``jpg`` and ``tif`` are accepted. Pass it explicitly if the
+        extension does not match the format.
     return_metadata : bool, optional
-        Whether to return metadata (default: False)
+        Whether to also return the metadata (default: False).
     opts : dict, optional
-        Other options. Support will depend on the backend. Currently used:
+        Options for the reader. Options that do not apply to the format are
+        ignored. Currently, only one is used:
 
-            strip_alpha: bool
-                Whether to strip the alpha channel.
+        strip_alpha : bool
+            (PNG only) Whether to drop the alpha channel (default: False).
 
     Returns
     -------
     im : ndarray
-        The type of this array will depend on the contents of the file and of
-        `as_grey`. Conversion from colour to greyscale will return a floating
-        point image.
+        The image, of shape ``(height, width)`` or ``(height, width,
+        channels)``. Integer data is always returned as an unsigned type
+        (``uint8``, ``uint16`` or ``uint32``), and 1-bit images as ``bool``.
+        See :doc:`formats` for the details of each format.
+
+        With ``as_grey=True``, RGB images are converted with the weights 0.30,
+        0.59 and 0.11 and returned as ``float64``. Single-channel images are
+        returned as 2-dimensional arrays of their original type.
     meta : bytes or None
         The metadata in the file. Only returned if ``return_metadata``. For
         TIFF, this is the ImageDescription tag as ``bytes`` (``b''`` if the tag
@@ -70,8 +73,8 @@ def imread(filename, as_grey=False, formatstr=None, return_metadata=False, opts=
 
     See Also
     --------
-    imread_from_blob : function
-        Read from an in-memory blob
+    imread_from_blob : Read an image from an in-memory blob.
+    imread_multi : Read all the images in a multi-image file.
     '''
     if opts is None:
         opts = {}
@@ -88,37 +91,39 @@ imload = imread
 
 
 def imread_from_blob(blob, formatstr=None, as_grey=False, return_metadata=False, opts=None):
-    '''
-    imdata = imread_from_blob(blob, formatstr=None, as_grey=False, return_metadata=False)
-    imdata,metadata = imread_from_blob(blob, formatstr=None, as_grey=False, return_metadata=True)
-
-    Read an image into an ndarray from an in-memory blob.
+    '''Read an image from an in-memory blob.
 
     Parameters
     ----------
     blob : bytes
-        Input data
+        The contents of an image file.
     formatstr : str, optional
-        Format name. This is the file extension typically associated with this
-        format. If None is given, then ``detect_format`` is used to auto-detect
-        the format. Auto-detection only works for PNG and JPEG, so
-        ``formatstr`` must be given for other formats.
-    as_grey : boolean, optional
-        Whether to convert to a greyscale image (default: False)
+        Format name (see :doc:`formats`). If it is not given,
+        :func:`detect_format` is used to detect the format. Detection only
+        works for PNG and JPEG, so ``formatstr`` must be given for other
+        formats.
+    as_grey : bool, optional
+        Whether to convert the image to greyscale (default: False).
     return_metadata : bool, optional
-        Whether to return metadata (default: False)
+        Whether to also return the metadata (default: False).
     opts : dict, optional
-        Other options. Support will depend on the backend. Currently used:
+        Options for the reader. Options that do not apply to the format are
+        ignored. Currently, only one is used:
 
-            strip_alpha: bool
-                Whether to strip the alpha channel.
+        strip_alpha : bool
+            (PNG only) Whether to drop the alpha channel (default: False).
 
     Returns
     -------
     im : ndarray
-        The type of this array will depend on the contents of the file and of
-        `as_grey`. Conversion from colour to greyscale will return a floating
-        point image.
+        The image, of shape ``(height, width)`` or ``(height, width,
+        channels)``. Integer data is always returned as an unsigned type
+        (``uint8``, ``uint16`` or ``uint32``), and 1-bit images as ``bool``.
+        See :doc:`formats` for the details of each format.
+
+        With ``as_grey=True``, RGB images are converted with the weights 0.30,
+        0.59 and 0.11 and returned as ``float64``. Single-channel images are
+        returned as 2-dimensional arrays of their original type.
     meta : bytes or None
         The metadata in the file. Only returned if ``return_metadata``. For
         TIFF, this is the ImageDescription tag as ``bytes`` (``b''`` if the tag
@@ -126,8 +131,7 @@ def imread_from_blob(blob, formatstr=None, as_grey=False, return_metadata=False,
 
     See Also
     --------
-    imread : function
-        Read from a file on disk
+    imread : Read an image from a file.
     '''
     if opts is None:
         opts = {}
@@ -143,22 +147,29 @@ def imread_from_blob(blob, formatstr=None, as_grey=False, return_metadata=False,
 imload_from_blob = imread_from_blob
 
 def imread_multi(filename, formatstr=None):
-    '''
-    images = imread_multi(filename, formatstr={from filename})
+    '''Read all the images in a multi-image file.
 
-    The file type is guessed from `filename`.
+    Only TIFF (all the pages) and STK (all the planes) are supported. Unlike
+    :func:`imread`, this function returns no metadata and takes no options.
 
     Parameters
     ----------
     filename : str or os.PathLike
-        filename
-
+        Path to the file.
     formatstr : str, optional
-        File format. If ``None``, then it is derived from the filename.
+        Format name: ``tiff`` (or ``tif``) or ``stk``. By default, it is taken
+        from the lowercased file extension.
 
     Returns
     -------
-    images : list
+    images : list of ndarray
+        One array per image in the file. See :func:`imread` for the types and
+        shapes.
+
+    See Also
+    --------
+    imread : Read a single image.
+    imsave_multi : Write several images into a single file.
     '''
     filename = _norm_path(filename)
     formatstr = _parse_formatstr(filename, formatstr, 'imread')
@@ -174,43 +185,62 @@ def _as_native_contiguous(array):
 
 
 def imsave(filename, array, formatstr=None, metadata=None, opts=None):
-    '''
-    imsave(filename, array, formatstr={auto-detect}, metadata={None}, opts={})
-
-    Writes `array` into file `filename`.
+    '''Write an image to a file.
 
     Parameters
     ----------
     filename : str or os.PathLike
-        Path on the file system
-    array : ndarray-like
+        Path to the file.
+    array : ndarray
+        The image. It must have an integer type, and should be unsigned
+        (signed values are written as their unsigned bit patterns). The
+        accepted types and shapes depend on the format (see :doc:`formats`).
     formatstr : str, optional
-        Format string
+        Format name (see :doc:`formats`). By default, it is taken from the file
+        extension. Unlike in :func:`imread`, the extension is not lowercased,
+        so pass ``formatstr`` if it is in uppercase.
     metadata : bytes, optional
-        Metadata to write to the file. Note that not all formats support writing
-        metadata.
+        Metadata to write to the file. Only TIFF supports this (it is written
+        as the ImageDescription tag); for other formats, it is ignored.
     opts : dict, optional
-        This is a dictionary of options. Any non-applicable option is typically
-        silently ignored. Currently, the following options are accepted:
+        Options for the writer. Options that do not apply to the format are
+        ignored. Currently, the following ones are used:
+
+        png:compression_level
+            Compression level to use, from 0 (no compression) to 9. Setting it
+            to 0 is discouraged, as 1 already provides a modicum of compression
+            at no extra computational cost. The default is zlib's (6).
 
         jpeg:quality
-            An integer 1-100 determining the quality used by the JPEG backend
-            (default is the libjpeg default: 75).
+            An integer from 1 to 100 determining the quality used by the JPEG
+            backend (default is the libjpeg default: 75).
 
         tiff:compress
-            Whether to use compression when saving TIFF (default: True).
+            Whether to use (LZW) compression when saving TIFF (default: True).
 
         tiff:horizontal-predictor
             Whether to use horizontal prediction in TIFF. This defaults to True
             for 16-bit images, and to False for 8-bit images. This is because
             compressing 16-bit images without horizontal prediction is often
-            counterproductive (see https://web.archive.org/web/20190922141532/https://asmail.be/msg0055176395.html).
+            counterproductive (see `this discussion on the libtiff mailing list
+            <https://web.archive.org/web/20190922141532/https://asmail.be/msg0055176395.html>`__).
 
-        png:compression_level
-            Compression level to use, from 0 (no compression) to 9. Setting
-            this parameter to 0 is discouraged, as setting it to 1 already
-            provides a modicum of compression at no extra computational cost.
+        tiff:XResolution, tiff:YResolution
+            The resolution (pixels per unit), as an integer or a floating-point
+            number. If only one of them is given, it is used for both.
 
+        tiff:XResolutionUnit
+            The resolution unit, using the TIFF codes: 1 (none), 2 (inch) or
+            3 (centimetre).
+
+    Raises
+    ------
+    TypeError
+        If ``array`` does not have an integer type.
+
+    See Also
+    --------
+    imsave_multi : Write several images into a single file.
     '''
     if opts is None:
         opts = {}
@@ -228,42 +258,56 @@ def imsave(filename, array, formatstr=None, metadata=None, opts=None):
     _imread.imsave(filename, formatstr, array, opts)
 
 def imsave_multi(filename, arrays, formatstr=None, opts=None):
-    '''Saves multiple arrays into a single file.
+    '''Write several images into a single file.
 
-    Only certain formats (in the current version of imread, only TIFF) support
-    writing multiple outputs.
+    Only TIFF supports this: each array is written as one page.
 
     Parameters
     ----------
     filename : str or os.PathLike
-        Path on the file system
-    arrays : list of ndarray-like
+        Path to the file.
+    arrays : list of ndarray
+        The images. As in :func:`imsave`, they must have an integer type and
+        should be unsigned (see :doc:`formats`).
     formatstr : str, optional
-        Format string
-    metadata : bytes, optional
-        Metadata to write to the file. Note that not all formats support writing
-        metadata.
+        Format name: ``tiff`` (or ``tif``). By default, it is taken from the
+        file extension (which is not lowercased).
     opts : dict, optional
-        This is a dictionary of options. Any non-applicable option is typically
-        silently ignored. Currently, the following options are accepted:
+        Options for the writer. Options that do not apply to the format are
+        ignored. Currently, the following ones are used:
 
-        jpeg:quality
-            An integer 1-100 determining the quality used by the JPEG backend
-            (default is the libjpeg default: 75).
+        metadata
+            Metadata (``bytes``) to write as the ImageDescription tag of each
+            page. Unlike :func:`imsave`, this function has no ``metadata``
+            argument.
 
         tiff:compress
-            Whether to use compression when saving TIFF (default: True).
+            Whether to use (LZW) compression when saving TIFF (default: True).
 
         tiff:horizontal-predictor
             Whether to use horizontal prediction in TIFF. This defaults to True
             for 16-bit images, and to False for 8-bit images. This is because
             compressing 16-bit images without horizontal prediction is often
-            counterproductive (see https://web.archive.org/web/20190922141532/https://asmail.be/msg0055176395.html).
+            counterproductive (see `this discussion on the libtiff mailing list
+            <https://web.archive.org/web/20190922141532/https://asmail.be/msg0055176395.html>`__).
 
-        png:compression_level
-            Compression level to use, from 0 (no compression) to 9. Setting
-            this parameter to 0 is discouraged, as setting it to 1 already
-            provides a modicum of compression at no extra computational cost.
+        tiff:XResolution, tiff:YResolution
+            The resolution (pixels per unit), as an integer or a floating-point
+            number. If only one of them is given, it is used for both.
+
+        tiff:XResolutionUnit
+            The resolution unit, using the TIFF codes: 1 (none), 2 (inch) or
+            3 (centimetre).
+
+    Raises
+    ------
+    TypeError
+        If any of the arrays does not have an integer type.
+
+    See Also
+    --------
+    imsave : Write a single image.
+    imread_multi : Read all the images in a multi-image file.
     '''
     if opts is None:
         opts = {}
@@ -284,24 +328,23 @@ imwrite_multi = imsave_multi
 
 
 def detect_format(filename_or_blob, is_blob=False):
-    '''
-    Detect format using magic numbers.
+    '''Detect the format of a file or blob from its magic number.
 
-    Note that this function does not check that the data is valid; it only
-    checks magic numbers. Not all formats can be autodetected.
+    Only PNG and JPEG can be detected. This function does not check that the
+    data is valid; it only checks the magic number.
 
     Parameters
     ----------
-    filename_or_blob : str, os.PathLike, or bytes
-    is_blob : boolean, optional
-        If true, then filename_or_blob is interpreted as a blob; otherwise,
-        it is interpreted as a filename.
+    filename_or_blob : str, os.PathLike or bytes
+        Path to the file, or its contents.
+    is_blob : bool, optional
+        If true, ``filename_or_blob`` is interpreted as the contents of a file
+        (a blob); otherwise, it is interpreted as a filename (default: False).
 
     Returns
     -------
     format : str or None
-        Representation of the format if detected. When no format matches, None
-        is returned.
+        ``'png'`` or ``'jpeg'``, or None if neither matches.
     '''
     if not is_blob:
         filename_or_blob = _norm_path(filename_or_blob)
@@ -309,12 +352,17 @@ def detect_format(filename_or_blob, is_blob=False):
 
 
 def supports_format(formatstr):
-    '''Query whether the format is supported by imread.
+    '''Check whether a format is supported by the compiled module.
+
+    This reports what the compiled module handles, so it returns False for
+    ``'webp'`` if imread was built without libwebp, and always returns False
+    for ``'xcf'``, which is read through the external ``xcf2png`` utility (see
+    :doc:`formats`).
 
     Parameters
     ----------
     formatstr : str
-        Format string (for example, 'png')
+        Format name (for example, ``'png'``).
 
     Returns
     -------

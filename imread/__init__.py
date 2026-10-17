@@ -3,6 +3,36 @@
 #
 # License: MIT (see COPYING.MIT file)
 
+'''Read and write images as NumPy arrays.
+
+The functions are:
+
+imread
+    Read an image from a file.
+imread_multi
+    Read all the images in a multi-image file (TIFF and STK).
+imread_from_blob
+    Read an image from a ``bytes`` object in memory.
+imsave
+    Write an image to a file.
+imsave_multi
+    Write several images into a single file (TIFF only).
+detect_format
+    Detect the format of a file or blob from its magic number (PNG and JPEG
+    only).
+supports_format
+    Check whether a format is supported.
+
+``imload``, ``imload_multi``, ``imload_from_blob``, ``imwrite`` and
+``imwrite_multi`` are aliases. The ``imread.ijrois`` module reads ImageJ
+regions of interest.
+
+Supported formats: PNG, TIFF, JPEG, WebP, BMP, STK, LSM and XCF (read-only,
+through ``xcf2png``). Only PNG, TIFF and JPEG can be written.
+
+Documentation: https://imread.readthedocs.io/
+'''
+
 try:
     from .imread import imread, imwrite, imread_multi, imread_from_blob, imwrite_multi
     from .imread import detect_format, supports_format

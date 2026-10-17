@@ -1,27 +1,37 @@
 # Copyright: Luis Pedro Coelho <luis@luispedro.org>, 2012-2018
 # License: MIT
+'''Read ImageJ regions of interest (ROIs).
+'''
 import numpy as np
 
-def read_roi(fileobj):
-    '''
-    points = read_roi(fileobj)
-
-    Read ImageJ's ROI format.
-
-    Parameters
-    ----------
-    fileobj: should be a file-like object
-
-    Returns
-    -------
-
-    points: a list of points
-    '''
 # This is based on:
 # https://github.com/imagej/ImageJ/blob/master/ij/io/RoiDecoder.java
 # https://github.com/imagej/ImageJ/blob/master/ij/io/RoiEncoder.java
+def read_roi(fileobj):
+    '''Read a single ROI in ImageJ's format.
 
+    Only freehand ROIs are supported.
 
+    Parameters
+    ----------
+    fileobj : file-like
+        An open binary file (or any object with a ``read`` method that
+        returns ``bytes``).
+
+    Returns
+    -------
+    points : ndarray
+        Array of shape ``(n, 2)``, with one point per row, in (y, x) order and
+        with 1 subtracted from ImageJ's coordinates. Its type is ``int16``, or
+        ``float32`` for ROIs with sub-pixel resolution.
+
+    Raises
+    ------
+    IOError
+        If the data is not an ImageJ ROI, or is truncated.
+    ValueError
+        If the ROI is not a freehand ROI.
+    '''
     SPLINE_FIT = 1
     DOUBLE_HEADED = 2
     OUTLINE = 4
@@ -109,22 +119,23 @@ def read_roi(fileobj):
     return points
 
 def read_roi_zip(fname):
-    '''
-    Reads all ROIs in a ZIP file.
+    '''Read all the ROIs in a ZIP file.
+
+    These ZIP files are, for example, saved by ImageJ's ROI Manager.
 
     Parameters
     ----------
-    fname : str
-        Input filename
+    fname : str or os.PathLike
+        Path to the ZIP file.
 
     Returns
     -------
-    rois: list of ROIs
-        Each ROI is a vector of 2D points
+    rois : list of ndarray
+        One array per ROI, as returned by :func:`read_roi`.
 
     See Also
     --------
-    read_roi: function, reads a single ROI
+    read_roi : Read a single ROI.
     '''
     import zipfile
     with zipfile.ZipFile(fname) as zf:

@@ -6,24 +6,26 @@
 import imread
 
 def readxcf(xcf_filename, formatstr, _flags):
-    '''
-    im = readxcf(xcf_filename, formatstr)
+    '''Read an XCF file, flattening all the layers.
 
-    Returns a NumPy array with the (flattened) XCF file.
-
-    Depends on `xcf2png` being available.
+    Depends on the ``xcf2png`` utility being available.
 
     Parameters
     ----------
     xcf_filename : str
-        Filename
-
+        Path to the file.
     formatstr : str
-        Format. Must be 'xcf'
+        Format name. Must be ``'xcf'``.
+    _flags : dict
+        Reader options. These are ignored, but the argument is needed because
+        all readers are called as ``reader(filename, formatstr, opts)``.
 
     Returns
     -------
     im : ndarray
+        The image.
+    meta : None
+        The metadata (as for PNG, always None).
     '''
     from os import system, unlink
     from tempfile import NamedTemporaryFile
